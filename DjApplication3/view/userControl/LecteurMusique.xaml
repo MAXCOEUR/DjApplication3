@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="DjApplication3.view.page.LecteurMusique"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DjApplication3.view.page" xmlns:local1="clr-namespace:DjApplication3.view.composentPerso"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid>
+        <!-- Définition des colonnes -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Définition des lignes -->
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label x:Name="tv_titleAuthor" Content="tv_titleAuthor" Grid.ColumnSpan="11" VerticalAlignment="Center" Foreground="#FFFDFDFD"/>
+        <Label x:Name="tv_bpm" Grid.Column="11" Content="tv_bpm" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+        <Label x:Name="tv_nbrPiste" Grid.Column="13" Content="tv_nbrPiste" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" Foreground="White"/>
+        <Label x:Name="tv_durationCurrent" Content="tv_durationCurrent" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.ColumnSpan="3" Foreground="White"/>
+        <Label x:Name="tv_durationTotal" Content="tv_durationTotal" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="6" Grid.ColumnSpan="3" Foreground="White"/>
+        <Label x:Name="tv_durationRest" Content="tv_durationRest" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="12" Grid.ColumnSpan="3" Foreground="White"/>
+        <Button x:Name="bt_playPause" Content="" Grid.Row="5" Grid.ColumnSpan="2" Click="bt_playPause_Click" Background="#FF37FF00">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Rectangle Fill="{TemplateBinding Background}"/>
+                        <Image x:Name="img_PlayPause" Source="/DjApplication3;component/Resources/pause.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+        <Button x:Name="bt_stop" Content="" Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="2" Click="bt_stop_Click" Background="Red">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Rectangle Fill="{TemplateBinding Background}"/>
+                        <Image x:Name="img_stop" Source="/DjApplication3;component/Resources/stop.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+        <Button x:Name="bt_headphone" Grid.Column="13" Content="" Grid.ColumnSpan="2" Grid.Row="5" Click="bt_headphone_Click" Background="Red">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Rectangle Fill="{TemplateBinding Background}"/>
+                        <Image x:Name="img_headphone" Source="/DjApplication3;component/Resources/headphone.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
+        <local1:TrackBarPerso x:Name="tb_volume" Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="9" />
+        <local1:WaveView x:Name="waveForme" Grid.Row="1" Grid.RowSpan="3" Grid.ColumnSpan="15" MouseDown="waveForme_MouseDown"/>
+    </Grid>
+</UserControl>
+
