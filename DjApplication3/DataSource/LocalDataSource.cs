@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using TagLib;
 
 namespace DjApplication3.DataSource
@@ -72,36 +73,36 @@ namespace DjApplication3.DataSource
             }
         }
 
-        //public TreeNode GetTreeNode(string rootFolder)
-        //{
-        //    rootFolder = rootFolder.TrimEnd('\\');
-        //    TreeNode rootNode = new TreeNode(Path.GetFileName(rootFolder));
-        //    GenerateSubfolders(rootFolder, rootNode);
-        //    return rootNode;
-        //}
-        //private void GenerateSubfolders(string folderPath, TreeNode parentNode)
-        //{
-        //    try
-        //    {
-        //        string[] subfolders = Directory.GetDirectories(folderPath);
+        public DossierPerso GetDossierPerso(string rootFolder)
+        {
+            rootFolder = rootFolder.TrimEnd('\\');
+            DossierPerso rootDossier= new DossierPerso(Path.GetFileName(rootFolder));
+            GenerateSubfolders(rootFolder, rootDossier);
+            return rootDossier;
+        }
+        private void GenerateSubfolders(string folderPath, DossierPerso parentDossier)
+        {
+            try
+            {
+                string[] subfolders = Directory.GetDirectories(folderPath);
 
-        //        foreach (string subfolder in subfolders)
-        //        {
-        //            var subfolderNode = new TreeNode(Path.GetFileName(subfolder));
+                foreach (string subfolder in subfolders)
+                {
+                    var subfolderNode = new DossierPerso(parentDossier,Path.GetFileName(subfolder));
 
-        //            parentNode.Nodes.Add(subfolderNode);
+                    parentDossier.Children.Add(subfolderNode);
 
-        //            GenerateSubfolders(subfolder, subfolderNode);
-        //        }
-        //    }
-        //    catch (UnauthorizedAccessException)
-        //    {
-        //        // Gérer les erreurs d'accès non autorisé
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("Une erreur s'est produite lors de la génération de l'arborescence des dossiers : " + ex.Message);
-        //    }
-        //}
+                    GenerateSubfolders(subfolder, subfolderNode);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Gérer les erreurs d'accès non autorisé
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Une erreur s'est produite lors de la génération de l'arborescence des dossiers : " + ex.Message);
+            }
+        }
     }
 }

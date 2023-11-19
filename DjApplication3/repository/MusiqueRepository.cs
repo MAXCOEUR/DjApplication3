@@ -47,11 +47,11 @@ namespace DjApplication3.repository
             YoutubeDataSource dataSource = new YoutubeDataSource();
             return await dataSource.search(search);
         }
-        //public TreeNode GetTreeNode(string rootFolder)
-        //{
-        //    LocalDataSource dataSource = new LocalDataSource();
-        //    return dataSource.GetTreeNode(rootFolder);
-        //}
+        public DossierPerso GetDossierPerso(string rootFolder)
+        {
+            LocalDataSource dataSource = new LocalDataSource();
+            return dataSource.GetDossierPerso(rootFolder);
+        }
 
         async public Task<Musique> DownloadMusiqueYoutube(Musique musiqueyt)
         {

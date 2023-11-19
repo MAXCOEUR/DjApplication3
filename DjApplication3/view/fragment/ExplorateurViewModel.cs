@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace DjApplication3.View.userControlDJ
 {
-    internal class ExplorateurModelView
+    internal class ExplorateurViewModel
     {
         public event EventHandler<List<Musique>> TacheGetMusique;
-        //public event EventHandler<TreeNode> TacheGetTreeNode;
+        public event EventHandler<DossierPerso> TacheGetDossierPerso;
         public async void getMusique(string folderPath)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
@@ -19,11 +19,11 @@ namespace DjApplication3.View.userControlDJ
             TacheGetMusique?.Invoke(this, musiques);
         }
 
-        public async void GetTreeNode(string rootFolder)
+        public async void GetDossierPerso(string rootFolder)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            //TreeNode treeNode = await Task.Run(() => musiqueRepository.GetTreeNode(rootFolder));
-            //TacheGetTreeNode?.Invoke(this, treeNode);
+            DossierPerso dossier = await Task.Run(() => musiqueRepository.GetDossierPerso(rootFolder));
+            TacheGetDossierPerso?.Invoke(this, dossier);
         }
         public int? getBpm(Musique musique)
         {

@@ -14,7 +14,7 @@
     <None Remove="Resources\play.png" />
     <None Remove="Resources\reload.png" />
     <None Remove="Resources\stop.png" />
-    <None Remove="view\userControl\play.png" />
+    <None Remove="view\fragment\play.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="view\activity\" />
     <Folder Include="view\windows\" />
   </ItemGroup>
 
@@ -64,7 +65,7 @@
     <Resource Include="Resources\stop.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="view\userControl\play.png" />
+    <Resource Include="view\fragment\play.png" />
   </ItemGroup>
 
 </Project>

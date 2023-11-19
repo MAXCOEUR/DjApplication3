@@ -26,8 +26,8 @@ namespace DjApplication3
             InitializeComponent();
 
             Musique musique = new Musique("musique/DirtyTalk.mp3", "test", "auth");
-            lecteur.setMusique(musique);
-            lecteur.play();
+            //lecteur.setMusique(musique);
+            //lecteur.play();
         }
     }
 }
