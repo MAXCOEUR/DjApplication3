@@ -66,7 +66,7 @@ namespace DjApplication3.DataSource
                 var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
                 var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
                 //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
-                string lienMusiqueTmp = Path.Combine("musique/tmp", $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+                string lienMusiqueTmp = Path.Combine("musique/tmp", $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
                 Console.WriteLine("start download");
                 await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);

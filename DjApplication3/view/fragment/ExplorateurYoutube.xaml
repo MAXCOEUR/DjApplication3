@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="DjApplication3.view.fragment.ExplorateurYoutube"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DjApplication3.view.fragment"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
+        <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
+                <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
+                <DataGridTextColumn Width="40" Header="dl" Binding="{Binding Dl}" IsReadOnly="True" />
+                <DataGridTextColumn Width="40" Header="Bpm" Binding="{Binding Bpm}" IsReadOnly="True" />
+                <DataGridTextColumn Header="musique" Binding="{Binding musique}" Visibility="Hidden" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid.ContextMenu>
+            <ContextMenu x:Name="cm_PisteList">
+            </ContextMenu>
+        </Grid.ContextMenu>
+
+    </Grid>
+</UserControl>

@@ -1,75 +1,44 @@
-﻿using CSCore.XAudio2.X3DAudio;
-using DjApplication3.model;
+﻿using DjApplication3.model;
 using DjApplication3.View.userControlDJ;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
+using System.Collections.Generic;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Media;
+using System.Windows;
+using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace DjApplication3.view.fragment
 {
     /// <summary>
-    /// Logique d'interaction pour Explorateur.xaml
+    /// Logique d'interaction pour ExplorateurYoutube.xaml
     /// </summary>
-    public partial class Explorateur : System.Windows.Controls.UserControl
+    public partial class ExplorateurYoutube : System.Windows.Controls.UserControl
     {
         public event EventHandler<Musique> eventMusiqueSlected;
         public event EventHandler<(Musique, int)> eventMusiqueSlectedWithPiste;
 
-        string rootFolder;
-        private ExplorateurViewModel viewModel = new ExplorateurViewModel();
         List<MusiqueColonne> musiques = new List<MusiqueColonne>();
 
-        public Explorateur()
+
+        private ExplorateurYoutubeViewModel viewModel = new ExplorateurYoutubeViewModel();
+        private System.Windows.Forms.Timer searchTimer = new System.Windows.Forms.Timer();
+        private string endSearch = " musique";
+        static public string rootFolder = Path.GetFullPath("musique/tmp");
+        private List<(Musique, int)> listeMusiqueSelectedPiste = new List<(Musique, int)>();
+        public ExplorateurYoutube()
         {
             InitializeComponent();
+            searchTimer.Interval = 500; // Délai en millisecondes (0.5 seconde)
+            searchTimer.Tick += SearchTimer_Tick;
 
-            viewModel.TacheGetDossierPerso += ViewModel_TacheGetDossierPerso;
-            viewModel.TacheGetMusique += ModelView_TacheGetMusique;
-
-            
-            initRoot("musique");
+            viewModel.TacheSearch += ViewModel_TacheSearch;
+            viewModel.TacheDownload += ViewModel_TacheDownload;
+            viewModel.search(endSearch);
         }
 
-        private void initRoot(string rootFolder)
-        {
-            this.rootFolder = Path.GetFullPath(rootFolder);
-            viewModel.GetDossierPerso(this.rootFolder);
-            viewModel.getMusique(this.rootFolder);
-        }
-        private void ViewModel_TacheGetDossierPerso(object? sender, DossierPerso e)
-        {
-            ObservableCollection<DossierPerso> dossier = new ObservableCollection<DossierPerso> { e };
-            tv_tree.ItemsSource = dossier;
-        }
-
-        private void bt_changeRoot_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
-            {
-                // Définissez le titre de la boîte de dialogue
-                folderBrowser.Description = "Sélectionnez le dossier racine pour l'explorateur de musique";
-
-                // Affichez la boîte de dialogue et vérifiez si l'utilisateur a appuyé sur OK
-                if (folderBrowser.ShowDialog() == DialogResult.OK)
-                {
-                    // Le chemin du dossier sélectionné par l'utilisateur
-                    string selectedFolderPath = folderBrowser.SelectedPath;
-                    initRoot(selectedFolderPath);
-
-                }
-            }
-        }
-
-        private void bt_reload_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            initRoot(rootFolder);
-        }
-        private void ModelView_TacheGetMusique(object? sender, List<Musique> e)
+        private void ViewModel_TacheSearch(object? sender, List<Musique> e)
         {
             musiques.Clear();
 
@@ -81,18 +50,21 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.ItemsSource = musiques;
             dgv_listeMusic.Items.Refresh();
         }
-        public void updateData()
+        private void SearchTimer_Tick(object sender, EventArgs e)
         {
-            dgv_listeMusic.Items.Refresh();
+            // Le minuteur a expiré, déclencher la recherche
+            searchTimer.Stop();
+            PerformSearch(tb_serach.Text);
         }
-        private void tv_tree_SelectedItemChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<object> e)
+        private void PerformSearch(string searchText)
         {
-            if (e.NewValue != null)
-            {
-                var selectedItem = (DossierPerso)e.NewValue;
-                string path = Path.Combine(Path.GetDirectoryName(rootFolder), selectedItem.getPath());
-                viewModel.getMusique(path);
-            }
+            viewModel.search(searchText + endSearch);
+        }
+
+        private void tb_serach_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            searchTimer.Stop();
+            searchTimer.Start();
         }
 
         private void dgv_listeMusic_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -101,7 +73,7 @@ namespace DjApplication3.view.fragment
 
             if (selectedItem != null)
             {
-                eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+                valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
             }
         }
 
@@ -124,9 +96,9 @@ namespace DjApplication3.view.fragment
             // Code à exécuter lorsqu'une option du menu est cliquée
             MenuItem menuItem = (MenuItem)sender;
             (Musique m, int p) = ((ValueTuple<Musique, int>)menuItem.Tag);
-            eventMusiqueSlectedWithPiste?.Invoke(this, (m, p));
+            valideRow(m, dgv_listeMusic.SelectedIndex);
+            //eventMusiqueSlectedWithPiste?.Invoke(this, (m, p));
         }
-
 
         private void dgv_listeMusic_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -158,19 +130,47 @@ namespace DjApplication3.view.fragment
             }
             return null;
         }
+        private void valideRow(Musique musique,int rowIndex)
+        {
+            MusiqueColonne tmp = (MusiqueColonne) dgv_listeMusic.Items[rowIndex];
+
+            tmp.Dl = "...";
+            dgv_listeMusic.Items.Refresh();
+            viewModel.DownloadMusique(musique);
+        }
+        private void ViewModel_TacheDownload(object? sender, Musique musique)
+        {
+            eventMusiqueSlected?.Invoke(this, musique);
+
+        }
     }
-}
-
-public class MusiqueColonne
-{
-    public Musique musique;
-    public int? Bpm;
-
-    public string Title => musique.title;
-    public string Author => musique.author;
-    public MusiqueColonne(Musique musique, int? bpm)
+    public class MusiqueColonne
     {
-        this.musique = musique;
-        Bpm = bpm;
+        public Musique musique;
+        public int? Bpm;
+        private string dl;
+
+        public string Title => musique.title;
+        public string Author => musique.author;
+
+        public string Dl { 
+            set {  dl = value; }
+            get {  
+                if(Bpm != null)
+                {
+                    dl = "✔️";
+                }
+                return dl; 
+            }
+        }
+
+        //public string dl => (Bpm == null) ? "" : "✔️";
+        public MusiqueColonne(Musique musique, int? bpm)
+        {
+            this.musique = musique;
+            Bpm = bpm;
+            dl = "";
+        }
     }
 }
+
