@@ -1,6 +1,7 @@
 ﻿using DjApplication3.model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,10 +25,36 @@ namespace DjApplication3
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            Musique musique = new Musique("musique/DirtyTalk.mp3", "test", "auth");
-            //lecteur.setMusique(musique);
-            //lecteur.play();
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            mainPageMixage.Dispose();
+            cleanTmp();
+
+        }
+
+        void cleanTmp()
+        {
+            try
+            {
+                string[] allFiles = Directory.GetFiles("musique/tmp");
+
+                // Filtrer les fichiers avec l'extension .mp3
+                List<string> mp3Files = allFiles
+                    .Where(file => System.IO.Path.GetExtension(file).Equals(".mp3", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                foreach (string mp3File in mp3Files)
+                {
+                    File.Delete(mp3File);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
         }
     }
 }

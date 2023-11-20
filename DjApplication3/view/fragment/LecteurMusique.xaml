@@ -42,12 +42,12 @@
         <Label x:Name="tv_durationCurrent" Content="tv_durationCurrent" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.ColumnSpan="3" Foreground="White"/>
         <Label x:Name="tv_durationTotal" Content="tv_durationTotal" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="6" Grid.ColumnSpan="3" Foreground="White"/>
         <Label x:Name="tv_durationRest" Content="tv_durationRest" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="12" Grid.ColumnSpan="3" Foreground="White"/>
-        <Button x:Name="bt_playPause" Content="" Grid.Row="5" Grid.ColumnSpan="2" Click="bt_playPause_Click" Background="#FF37FF00">
+        <Button x:Name="bt_playPause" Content="" Grid.Row="5" Grid.ColumnSpan="2" Click="bt_playPause_Click" Background="#FF0000">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Rectangle Fill="{TemplateBinding Background}"/>
-                        <Image x:Name="img_PlayPause" Source="/DjApplication3;component/Resources/pause.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
+                        <Image x:Name="img_PlayPause" Source="/DjApplication3;component/Resources/play.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Grid>
                 </ControlTemplate>

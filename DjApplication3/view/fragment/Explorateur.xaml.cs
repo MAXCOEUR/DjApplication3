@@ -158,6 +158,16 @@ namespace DjApplication3.view.fragment
             }
             return null;
         }
+        public void updateBPM()
+        {
+            for (int i = 0;i<dgv_listeMusic.Items.Count;i++)
+            {
+                MusiqueColonne musiqueColonne = (MusiqueColonne) dgv_listeMusic.Items[i];
+                int? bpm = viewModel.getBpm(musiqueColonne.musique);
+                musiqueColonne.Bpm = bpm;
+            }
+            dgv_listeMusic.Items.Refresh();
+        }
     }
 }
 
@@ -165,6 +175,18 @@ public class MusiqueColonne
 {
     public Musique musique;
     public int? Bpm;
+    public string getBpm
+    {
+        get
+        {
+            string v = "";
+            if (Bpm != null)
+            {
+                v = Bpm?.ToString();
+            }
+            return v;
+        }
+    }
 
     public string Title => musique.title;
     public string Author => musique.author;

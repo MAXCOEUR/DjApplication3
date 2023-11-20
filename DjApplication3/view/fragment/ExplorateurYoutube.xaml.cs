@@ -30,6 +30,7 @@ namespace DjApplication3.view.fragment
         public ExplorateurYoutube()
         {
             InitializeComponent();
+
             searchTimer.Interval = 500; // Délai en millisecondes (0.5 seconde)
             searchTimer.Tick += SearchTimer_Tick;
 
@@ -95,9 +96,9 @@ namespace DjApplication3.view.fragment
         {
             // Code à exécuter lorsqu'une option du menu est cliquée
             MenuItem menuItem = (MenuItem)sender;
-            (Musique m, int p) = ((ValueTuple<Musique, int>)menuItem.Tag);
-            valideRow(m, dgv_listeMusic.SelectedIndex);
-            //eventMusiqueSlectedWithPiste?.Invoke(this, (m, p));
+            var tuple = ((ValueTuple<Musique, int>)menuItem.Tag);
+            listeMusiqueSelectedPiste.Add(tuple);
+            valideRow(tuple.Item1, dgv_listeMusic.SelectedIndex);
         }
 
         private void dgv_listeMusic_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -140,8 +141,31 @@ namespace DjApplication3.view.fragment
         }
         private void ViewModel_TacheDownload(object? sender, Musique musique)
         {
-            eventMusiqueSlected?.Invoke(this, musique);
+            var resultatRecherche = listeMusiqueSelectedPiste.Find(tuple => tuple.Item1.title == musique.title && tuple.Item1.author == musique.author);
+            if (resultatRecherche != default)
+            {
+                listeMusiqueSelectedPiste.Remove(resultatRecherche);
+                int numeroPisteAssocie = resultatRecherche.Item2;
 
+                eventMusiqueSlectedWithPiste?.Invoke(this, (musique, numeroPisteAssocie));
+
+            }
+            else
+            {
+                eventMusiqueSlected?.Invoke(this, musique);
+            }
+            dgv_listeMusic.Items.Refresh();
+        }
+        public void updateBPM()
+        {
+            for (int i = 0; i < dgv_listeMusic.Items.Count; i++)
+            {
+                MusiqueColonne musiqueColonne = (MusiqueColonne)dgv_listeMusic.Items[i];
+                musiqueColonne.musique.url= Path.Combine(rootFolder, $"{musiqueColonne.musique.title} ({musiqueColonne.musique.author}).mp3");
+                int? bpm = viewModel.getBpm(musiqueColonne.musique);
+                musiqueColonne.Bpm = bpm;
+            }
+            dgv_listeMusic.Items.Refresh();
         }
     }
     public class MusiqueColonne
@@ -153,14 +177,28 @@ namespace DjApplication3.view.fragment
         public string Title => musique.title;
         public string Author => musique.author;
 
+        public string getBpm
+        {
+            get
+            {
+                string v = "";
+                if (Bpm != null)
+                {
+                    v = Bpm?.ToString();
+                }
+                return v;
+            }
+        }
+
         public string Dl { 
             set {  dl = value; }
-            get {  
-                if(Bpm != null)
+            get {
+                string url = Path.Combine(ExplorateurYoutube.rootFolder, $"{musique.title} ({musique.author}).mp3");
+                if (File.Exists(url))
                 {
-                    dl = "✔️";
+                    return "✔️";
                 }
-                return dl; 
+                return dl;
             }
         }
 

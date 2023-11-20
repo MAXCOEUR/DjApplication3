@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.view.fragment;
 using SpotifyAPI.Web;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ namespace DjApplication3.DataSource
         async public Task<Musique> DownloadMusique(Musique musiqueSp)
         {
             //string lienMusique = Path.Combine(ExplorateurSpotify.rootFolder, $"{musiqueSp.title} ({musiqueSp.author}).mp3");
-            string lienMusique = Path.Combine("musique/tmp", $"{musiqueSp.title} ({musiqueSp.author}).mp3");
+            string lienMusique = Path.Combine(ExplorateurSpotify.rootFolder, $"{musiqueSp.title} ({musiqueSp.author}).mp3");
             if (System.IO.File.Exists(lienMusique))
             {
                 TagLib.File chemain = TagLib.File.Create(lienMusique);

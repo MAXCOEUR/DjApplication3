@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.view.fragment;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,8 @@ namespace DjApplication3.DataSource
         {
             
             //string lienMusique = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
-            string lienMusique = Path.Combine("musique/tmp", $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+            string lienMusique = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+            
 
             if (System.IO.File.Exists(lienMusique))
             {
@@ -66,7 +68,7 @@ namespace DjApplication3.DataSource
                 var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
                 var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
                 //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
-                string lienMusiqueTmp = Path.Combine("musique/tmp", $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
+                string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
                 Console.WriteLine("start download");
                 await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);

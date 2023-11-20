@@ -35,6 +35,12 @@ namespace DjApplication3.view.page
             InitializeComponent();
             InitializeTimer();
             tb_volume.ValueChanged += Tb_volume_ValueChanged;
+            LecteurMusiqueViewModel.TacheGetBPM += LecteurMusiqueViewModel_TacheGetBPM;
+        }
+
+        private void LecteurMusiqueViewModel_TacheGetBPM(object? sender, int bpm)
+        {
+            tv_bpm.Content = $"{bpm} BPM";
         }
 
         private void Tb_volume_ValueChanged(object? sender, int e)
@@ -144,7 +150,7 @@ namespace DjApplication3.view.page
 
             // Modifiez le numéro du périphérique audio (ajustez en conséquence)
             audioPlayer.Device = isHeadPhone ? SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrHeadPhone] : SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrOut];
-            bt_headphone.Background = isHeadPhone ? bt_playPause.Background = System.Windows.Media.Brushes.Green : bt_playPause.Background = System.Windows.Media.Brushes.Red;
+            bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
 
             // Réinitialisez le lecteur audio
             initaudioPlayer();

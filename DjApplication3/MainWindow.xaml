@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DjApplication3" xmlns:local1="clr-namespace:DjApplication3.view.activity"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="#FF404040">
+        Title="MainWindow" Height="450" Width="800" Background="#FF404040" Closing="Window_Closing">
     <Grid>
-        <local1:MainPageMixage x:Name="lecteur"/>
+        <local1:MainPageMixage x:Name="mainPageMixage"/>
     </Grid>
 </Window>
