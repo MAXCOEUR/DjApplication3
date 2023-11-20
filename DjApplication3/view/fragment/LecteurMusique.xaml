@@ -29,12 +29,12 @@
 
         <!-- Définition des lignes -->
         <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Label x:Name="tv_titleAuthor" Content="tv_titleAuthor" Grid.ColumnSpan="11" VerticalAlignment="Center" Foreground="#FFFDFDFD"/>
         <Label x:Name="tv_bpm" Grid.Column="11" Content="tv_bpm" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
