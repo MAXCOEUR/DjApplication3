@@ -72,7 +72,7 @@ namespace DjApplication3.DataSource
                     WorkingDirectory = Path.GetFullPath(".\\outilsExtern")
                 };
                 string output;
-                Console.WriteLine("start dowload");
+                Console.WriteLine("start dowload :"+musiqueSp.title+" "+musiqueSp.url);
                 using (Process process = new Process())
                 {
                     process.StartInfo = processInfo;

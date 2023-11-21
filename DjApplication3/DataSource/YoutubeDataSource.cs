@@ -70,7 +70,7 @@ namespace DjApplication3.DataSource
                 //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
                 string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
-                Console.WriteLine("start download");
+                Console.WriteLine("start download :"+ musiqueyt.title + " " + musiqueyt.url);
                 await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);
                 Console.WriteLine("end download");
                 Console.WriteLine("start mp3");

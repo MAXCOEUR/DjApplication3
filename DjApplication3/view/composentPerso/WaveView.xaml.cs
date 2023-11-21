@@ -24,7 +24,7 @@ namespace DjApplication3.view.composentPerso
     /// </summary>
     public partial class WaveView : UserControl
     {
-        private List<float> wafeFrome;
+        private float[] wafeFrome;
         private Musique musique;
         private WaveViewModelView modelView = new WaveViewModelView();
         private float _indicateurPosition;
@@ -59,16 +59,15 @@ namespace DjApplication3.view.composentPerso
             this.musique = musique;
 
             clearMusique();
-            wafeFrome.Clear();
             modelView.getWave(musique);
         }
 
         public void clearMusique()
         {
             indicateurPosition = 0;
-            TacheGetWaveHandler(this, new List<float>());
+            TacheGetWaveHandler(this, new float[0]);
         }
-        private void TacheGetWaveHandler(object sender, List<float> wave)
+        private void TacheGetWaveHandler(object sender, float[] wave)
         {
             wafeFrome = wave;
             updateGraphBitmap();
@@ -79,7 +78,7 @@ namespace DjApplication3.view.composentPerso
         private void updateGraphBitmap()
         {
             waveCanvas.Children.Clear();
-            if (wafeFrome == null || wafeFrome.Count < 1) return;
+            if (wafeFrome == null || wafeFrome.Length < 1) return;
             
 
             int multiplicateur = 10;
@@ -88,7 +87,7 @@ namespace DjApplication3.view.composentPerso
             float[] tableauReduit = new float[nbrx];
             for (int i = 0; i < nbrx; i++)
             {
-                int tauxReduc = wafeFrome.Count / nbrx;
+                int tauxReduc = wafeFrome.Length / nbrx;
                 int nbr = i * tauxReduc;
                 tableauReduit[i] = wafeFrome[nbr];
             }

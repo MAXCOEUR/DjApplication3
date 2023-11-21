@@ -11,7 +11,7 @@ namespace DjApplication3.DataSource
 {
     internal class GraphiqueDataSource
     {
-        public List<float> getWaveForme(Musique musique)
+        public float[] getWaveForme(Musique musique)
         {
             const int bufferSize = 8192;
 
@@ -29,7 +29,7 @@ namespace DjApplication3.DataSource
 
             lecteurAudio.Dispose(); // Assurez-vous de libérer les ressources du lecteur temporaire
 
-            return waveform;
+            return waveform.ToArray();
         }
     }
 }

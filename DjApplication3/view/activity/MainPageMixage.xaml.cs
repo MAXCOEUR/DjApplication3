@@ -59,14 +59,24 @@ namespace DjApplication3.view.activity
 
         private void ExploLocal_eventMusiqueSlectedWithPiste(object? sender, (Musique, int) e)
         {
-            lecteurMusiques[e.Item2].setMusique(e.Item1);
+            int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
+            if (code==2)
+            {
+                MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
+            }
         }
         private void eventMusiqueSlected(object? sender, Musique musique)
         {
             foreach (LecteurMusique lecteur in lecteurMusiques)
             {
-                if (lecteur.setMusique(musique) == 0)
+                int code = lecteur.setMusique(musique);
+                if (code == 0)
                 {
+                    return;
+                }
+                else if (code == 2) ;
+                {
+                    MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
                     return;
                 }
 

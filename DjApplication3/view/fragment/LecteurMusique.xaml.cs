@@ -114,10 +114,11 @@ namespace DjApplication3.view.page
         public int setMusique(Musique musique)
         {
             if (audioPlayer.PlaybackState == PlaybackState.Playing) return 1;
-            this.musique = musique;
+            
 
-            if (musique != null)
+            if (musique != null && musique.title!=""&& musique.author!=""&& musique.url!="")
             {
+                this.musique = musique;
                 Console.WriteLine("setMusique start");
 
                 tv_titleAuthor.Content = $"{musique.title} ({musique.author})";
