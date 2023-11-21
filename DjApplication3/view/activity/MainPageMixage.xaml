@@ -7,7 +7,7 @@
              xmlns:composentPerso="clr-namespace:DjApplication3.view.composentPerso" x:Class="DjApplication3.view.activity.MainPageMixage"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+    <Grid Background="#FF404040">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition Height="*"/>

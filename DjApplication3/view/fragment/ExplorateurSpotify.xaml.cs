@@ -51,7 +51,8 @@ namespace DjApplication3.view.fragment
 
             foreach (Musique musique in e)
             {
-                int? bpm = viewModel.getBpm(musique);
+                Musique musiqueTmp = new Musique(System.IO.Path.Combine(rootFolder, $"{musique.title} ({musique.author}).mp3"), musique.title, musique.author);
+                int? bpm = viewModel.getBpm(musiqueTmp);
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
             dgv_listeMusic.ItemsSource = musiques;

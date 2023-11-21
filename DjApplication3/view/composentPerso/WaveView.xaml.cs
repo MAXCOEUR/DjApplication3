@@ -29,7 +29,7 @@ namespace DjApplication3.view.composentPerso
         private WaveViewModelView modelView = new WaveViewModelView();
         private float _indicateurPosition;
 
-        private Brush defaultBack = new SolidColorBrush(Color.FromRgb(50, 50, 50)); 
+        private Brush defaultBack = new SolidColorBrush(Color.FromRgb(40, 40, 40)); 
         private Brush warningBack = new SolidColorBrush(Color.FromRgb(250, 128, 114));
 
         public float indicateurPosition
