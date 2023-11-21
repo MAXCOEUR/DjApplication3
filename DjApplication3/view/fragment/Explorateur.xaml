@@ -60,6 +60,16 @@
                     <DataGridTextColumn Width="40" Header="Bpm" Binding="{Binding getBpm}" IsReadOnly="True" />
                     <DataGridTextColumn Header="musique" Binding="{Binding musique}" Visibility="Hidden" IsReadOnly="True" />
                 </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="Yellow" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding getBpm}" Value="">
+                                <Setter Property="Background" Value="White" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
             </DataGrid>
 
             <Grid.ContextMenu>
