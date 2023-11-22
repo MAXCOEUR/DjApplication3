@@ -10,11 +10,11 @@ namespace DjApplication3.view.composentPerso
 {
     internal class WaveViewModelView
     {
-        public event EventHandler<float[]> TacheGetWave;
+        public event EventHandler<sbyte[]> TacheGetWave;
         public async void getWave(Musique musique)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            float[] wave = await Task.Run(() => musiqueRepository.getWave(musique));
+            sbyte[] wave = await Task.Run(() => musiqueRepository.getWave(musique));
             TacheGetWave?.Invoke(this, wave);
         }
     }

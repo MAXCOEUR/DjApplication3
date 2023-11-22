@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:DjApplication3.view.composentPerso"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <Canvas Name="waveCanvas" Background="Black" SizeChanged="waveCanvas_SizeChanged"/>
+    <Grid x:Name="background" Background="Black">
+        <Canvas Name="waveCanvas" SizeChanged="waveCanvas_SizeChanged"/>
         <Rectangle x:Name="cursor" Fill="Red" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="2" Margin="0,0,0,0">
             <Rectangle.RenderTransform>
                 <TransformGroup>

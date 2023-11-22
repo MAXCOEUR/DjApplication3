@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +14,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Windows.Forms.LinkLabel;
 
 namespace DjApplication3.view.composentPerso
 {
@@ -24,13 +22,13 @@ namespace DjApplication3.view.composentPerso
     /// </summary>
     public partial class WaveView : UserControl
     {
-        private float[] wafeFrome;
+        private sbyte[] wafeFrome;
         private Musique musique;
         private WaveViewModelView modelView = new WaveViewModelView();
         private float _indicateurPosition;
 
-        private Brush defaultBack = new SolidColorBrush(Color.FromRgb(40, 40, 40)); 
-        private Brush warningBack = new SolidColorBrush(Color.FromRgb(250, 128, 114));
+        private System.Windows.Media.Brush defaultBack = new SolidColorBrush(System.Windows.Media.Color.FromRgb(40, 40, 40)); 
+        private System.Windows.Media.Brush warningBack = new SolidColorBrush(System.Windows.Media.Color.FromRgb(250, 128, 114));
 
         public float indicateurPosition
         {
@@ -52,7 +50,7 @@ namespace DjApplication3.view.composentPerso
         {
 
             // Mettre à jour la position du rectangle du curseur
-            cursorTranslateTransform.X = ActualWidth* indicateurPosition;
+            cursorTranslateTransform.X = ActualWidth * indicateurPosition;
         }
         public void setMusique(Musique musique)
         {
@@ -65,9 +63,9 @@ namespace DjApplication3.view.composentPerso
         public void clearMusique()
         {
             indicateurPosition = 0;
-            TacheGetWaveHandler(this, new float[0]);
+            TacheGetWaveHandler(this, new sbyte[0]);
         }
-        private void TacheGetWaveHandler(object sender, float[] wave)
+        private void TacheGetWaveHandler(object sender, sbyte[] wave)
         {
             wafeFrome = wave;
             updateGraph();
@@ -75,47 +73,68 @@ namespace DjApplication3.view.composentPerso
 
         }
 
-        private void updateGraph()
+        private async void updateGraph()
         {
-            waveCanvas.Children.Clear();
             if (wafeFrome == null || wafeFrome.Length < 1) return;
-            
+
+            indicateurPosition = indicateurPosition;
 
             int multiplicateur = 10;
             int nbrx = (int)(ActualWidth * multiplicateur);
 
-            float[] tableauReduit = new float[nbrx];
-            for (int i = 0; i < nbrx; i++)
-            {
-                int tauxReduc = wafeFrome.Length / nbrx;
-                int nbr = i * tauxReduc;
-                tableauReduit[i] = wafeFrome[nbr];
-            }
-
-            double yBase = (int) (ActualHeight / 2);
+            double yBase = (int)(ActualHeight / 2);
             int x = 0;
 
-            for (int i = 0; i < tableauReduit.Length; i++)
+            await Task.Run(() =>
             {
-                float nbr = tableauReduit[i];
-
-                Line line = new Line
+                sbyte[] tableauReduit = new sbyte[nbrx];
+                for (int i = 0; i < nbrx; i++)
                 {
-                    X1 = x,
-                    Y1 = yBase,
-                    X2 = x,
-                    Y2 = yBase + nbr * yBase,
-                    Stroke = Brushes.White,
-                    StrokeThickness = 1
-                };
-                waveCanvas.Children.Add(line);
-
-                if (i % multiplicateur == 0)
-                {
-                    x++;
+                    int tauxReduc = wafeFrome.Length / nbrx;
+                    int nbr = i * tauxReduc;
+                    tableauReduit[i] = wafeFrome[nbr];
                 }
-            }
+
+                Bitmap bitmap = new Bitmap((int)ActualWidth, (int)ActualHeight);
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    g.Clear(System.Drawing.Color.Transparent);
+                    System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(175,255,255,255));
+
+                    for (int i = 0; i < tableauReduit.Length; i++)
+                    {
+                        sbyte nbr = tableauReduit[i];
+                        g.DrawLine(pen, x, (float)yBase, x, (float)(yBase + (nbr / 100.0f) * yBase));
+
+                        if (i % multiplicateur == 0)
+                        {
+                            x++;
+                        }
+                    }
+                }
+
+                
+
+                this.Dispatcher.Invoke(() =>
+                {
+                    waveCanvas.Children.Clear();
+
+                    // Convert Bitmap to BitmapImage
+                    BitmapImage bitmapImage = BitmapToBitmapImage(bitmap);
+
+                    // Create ImageBrush
+                    ImageBrush brush = new ImageBrush();
+                    brush.ImageSource = bitmapImage;
+
+                    // Apply ImageBrush to Canvas
+                    waveCanvas.Background = brush;
+                });
+            });
         }
+
+
+
+
 
         private void waveCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -126,18 +145,35 @@ namespace DjApplication3.view.composentPerso
         {
             if (timeRight < SettingsManager.Instance.timeBeforBlinkSecond && timeRight != 0)
             {
-                if (waveCanvas.Background == defaultBack)
+                if (background.Background == defaultBack)
                 {
-                    waveCanvas.Background = warningBack;
+                    background.Background = warningBack;
                 }
                 else
                 {
-                    waveCanvas.Background = defaultBack;
+                    background.Background = defaultBack;
                 }
             }
-            else if (waveCanvas.Background != defaultBack)
+            else if (background.Background != defaultBack)
             {
-                waveCanvas.Background = defaultBack;
+                background.Background = defaultBack;
+            }
+        }
+
+        // Method to convert Bitmap to BitmapImage
+        public BitmapImage BitmapToBitmapImage(Bitmap bitmap)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+
+                return bitmapImage;
             }
         }
     }

@@ -31,7 +31,7 @@ namespace DjApplication3.repository
             }
             return null;
         }
-        public float[] getWave(Musique musique)
+        public sbyte[] getWave(Musique musique)
         {
             GraphiqueDataSource dataSource = new GraphiqueDataSource();
             return dataSource.getWaveForme(musique);
