@@ -116,7 +116,7 @@ namespace DjApplication3.view.page
             if (audioPlayer.PlaybackState == PlaybackState.Playing) return 1;
             
 
-            if (musique != null && musique.title!=""&& musique.author!=""&& musique.url!="")
+            if (musique != null)
             {
                 this.musique = musique;
                 Console.WriteLine("setMusique start");

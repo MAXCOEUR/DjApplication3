@@ -181,6 +181,11 @@ namespace DjApplication3.view.composentPerso
             }
         }
 
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Value = Value;
+        }
+
         private void cursorRectangle_MouseLeave(object sender, MouseEventArgs e)
         {
             isLeftDown = false;

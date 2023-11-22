@@ -70,12 +70,12 @@ namespace DjApplication3.view.composentPerso
         private void TacheGetWaveHandler(object sender, float[] wave)
         {
             wafeFrome = wave;
-            updateGraphBitmap();
+            updateGraph();
             indicateurPosition = 0;
 
         }
 
-        private void updateGraphBitmap()
+        private void updateGraph()
         {
             waveCanvas.Children.Clear();
             if (wafeFrome == null || wafeFrome.Length < 1) return;
@@ -119,7 +119,7 @@ namespace DjApplication3.view.composentPerso
 
         private void waveCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            updateGraphBitmap();
+            updateGraph();
         }
 
         public void changeColorBack(double timeRight)

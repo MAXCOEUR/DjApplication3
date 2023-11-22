@@ -62,10 +62,6 @@ namespace DjApplication3.view.activity
             try
             {
                 int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
-                if (code == 2)
-                {
-                    MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
-                }
             }catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -84,11 +80,7 @@ namespace DjApplication3.view.activity
                     {
                         return;
                     }
-                    else if (code == 2) ;
-                    {
-                        MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
-                        return;
-                    }
+                    
                 }
                 catch (Exception ex)
                 {

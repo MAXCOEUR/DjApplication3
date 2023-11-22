@@ -162,8 +162,10 @@ namespace DjApplication3.view.fragment
             for (int i = 0; i < dgv_listeMusic.Items.Count; i++)
             {
                 MusiqueColonne musiqueColonne = (MusiqueColonne)dgv_listeMusic.Items[i];
-                musiqueColonne.musique.url= Path.Combine(rootFolder, $"{musiqueColonne.musique.title} ({musiqueColonne.musique.author}).mp3");
-                int? bpm = viewModel.getBpm(musiqueColonne.musique);
+
+                Musique musiqueTmp = new Musique(Path.Combine(rootFolder, $"{musiqueColonne.musique.title} ({musiqueColonne.musique.author}).mp3"), musiqueColonne.musique.title, musiqueColonne.musique.author);
+
+                int? bpm = viewModel.getBpm(musiqueTmp);
                 musiqueColonne.Bpm = bpm;
             }
             dgv_listeMusic.Items.Refresh();
