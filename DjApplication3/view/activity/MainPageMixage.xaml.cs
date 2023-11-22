@@ -59,26 +59,42 @@ namespace DjApplication3.view.activity
 
         private void ExploLocal_eventMusiqueSlectedWithPiste(object? sender, (Musique, int) e)
         {
-            int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
-            if (code==2)
+            try
             {
-                MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
+                int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
+                if (code == 2)
+                {
+                    MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
+            
         }
         private void eventMusiqueSlected(object? sender, Musique musique)
         {
             foreach (LecteurMusique lecteur in lecteurMusiques)
             {
-                int code = lecteur.setMusique(musique);
-                if (code == 0)
+                try
                 {
-                    return;
+                    int code = lecteur.setMusique(musique);
+
+                    if (code == 0)
+                    {
+                        return;
+                    }
+                    else if (code == 2) ;
+                    {
+                        MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
+                        return;
+                    }
                 }
-                else if (code == 2) ;
+                catch (Exception ex)
                 {
-                    MessageBox.Show("la musique n'as pas pu etre telecharger et importer");
-                    return;
+                    MessageBox.Show(ex.Message);
                 }
+                
 
             }
             Console.WriteLine("Toutes les pistes sont prises");
