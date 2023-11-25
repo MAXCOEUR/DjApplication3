@@ -114,9 +114,7 @@ namespace DjApplication3.view.page
         public int setMusique(Musique musique)
         {
             if (audioPlayer.PlaybackState == PlaybackState.Playing) return 1;
-            
-
-            if (musique != null)
+            try
             {
                 this.musique = musique;
                 Console.WriteLine("setMusique start");
@@ -133,16 +131,19 @@ namespace DjApplication3.view.page
                 initaudioPlayer();
                 updateOutAudio();
                 updateDuration();
-                tv_bpm.Content= $"000 BPM";
+                tv_bpm.Content = $"000 BPM";
                 LecteurMusiqueViewModel.getBpm(musique);
                 waveForme.setMusique(musique);
 
                 Console.WriteLine("setMusique end");
 
                 return 0;
+            }catch(Exception e)
+            {
+                return 2;
             }
 
-            return 2;
+            
         }
         private void updateOutAudio()
         {

@@ -85,11 +85,11 @@ namespace DjApplication3.view.activity
                 {
                     int code = lecteur.setMusique(musique);
 
-                    if (code == 0)
+                    if (code == 0 || code == 2)
                     {
                         return;
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {

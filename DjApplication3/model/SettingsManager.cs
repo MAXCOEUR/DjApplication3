@@ -37,6 +37,7 @@ namespace DjApplication3.model
             nbrOut = 0;
             nbrPiste = 2;
             browser = 0;
+            browserName = "edge";
         }
 
         // Méthode pour obtenir l'instance unique de la classe
