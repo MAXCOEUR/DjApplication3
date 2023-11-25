@@ -128,6 +128,7 @@ namespace DjApplication3.view.page
                 if (audioPlayer.WaveSource != null)
                 {
                     audioPlayer.WaveSource.Position = 0;
+                    audioPlayer.WaveSource.Dispose();
                 }
                 initaudioPlayer();
                 updateOutAudio();

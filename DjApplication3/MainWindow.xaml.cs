@@ -28,6 +28,12 @@ namespace DjApplication3
         {
             //new YtMusicDataSource().search("vald vlad");
             new FFmpegGestion();
+            Console.WriteLine("Voulez-vous vous connecter à YouTube Music ? (o/n) Si vous répondez 'oui', vous devrez également vous connecter sur votre navigateur et le paramétrer dans les paramètres.");
+            string input = Console.ReadLine();
+            if(input.ToLower()== "o")
+            {
+                YtMusicDataSource.Connected();
+            }
             InitializeComponent();
         }
 

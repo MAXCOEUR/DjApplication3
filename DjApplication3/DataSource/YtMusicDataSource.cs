@@ -43,6 +43,7 @@ namespace DjApplication3.DataSource
             {
                 process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
                 process.StartInfo.Arguments = $"\"{search}\"";
+                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.UseShellExecute = false;
@@ -165,9 +166,98 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message, "Alerte", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return new Musique("", "", "");
+                try
+                {
+                    return await otherdl(musiqueyt);
+                }
+                catch (Exception ex2)
+                {
+                    Console.WriteLine(ex2.Message);
+                    MessageBox.Show(ex.Message);
+                    return new Musique("", "", "");
+                }
+                
+            }
+
+        }
+
+        private async Task<Musique> otherdl(Musique musiqueyt)
+        {
+            string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+
+            string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string spotdlDirectory = Path.Combine(userDirectory, ".spotdl");
+            string ffmpegPath = Path.Combine(spotdlDirectory, "ffmpeg.exe");
+
+            string arguments = $"-x --audio-format mp3 -o \"{lienMusique}\" ";
+            if (File.Exists(ffmpegPath))
+            {
+                arguments += " --ffmpeg-location \"" + ffmpegPath + "\"";
+            }
+
+            if(SettingsManager.Instance.browserName.ToLower().Contains("chrome"))
+            {
+                arguments += " --cookies-from-browser chrome";
+            }
+            else if (SettingsManager.Instance.browserName.ToLower().Contains("edge"))
+            {
+                arguments += " --cookies-from-browser edge";
+            }
+            else if (SettingsManager.Instance.browserName.ToLower().Contains("firefox"))
+            {
+                arguments += " --cookies-from-browser firefox";
+            }
+
+
+            arguments += " " + musiqueyt.url;
+
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = ".\\outilsExtern\\yt-dlp.exe";
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.EnableRaisingEvents = true;
+
+                // Événement pour la sortie standard
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        Console.WriteLine(e.Data);
+                    }
+                };
+
+                // Événement pour la sortie d'erreur
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        Console.WriteLine($"Error: {e.Data}");
+                        // Traiter la sortie d'erreur ici
+                    }
+                };
+
+                // Démarrer le processus
+                process.Start();
+
+                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // Attendre que le processus se termine
+                await Task.Run(() => process.WaitForExit());
+
+                Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
+
+                var file = TagLib.File.Create(musique.url);
+                file.Tag.Title = musique.title;
+                file.Tag.Performers = new[] { musique.author };
+                file.Save();
+                return musique;
             }
 
         }
@@ -180,6 +270,66 @@ namespace DjApplication3.DataSource
             string cleanedFileName = Regex.Replace(fileName, invalidCharsPattern, "-");
 
             return cleanedFileName;
+        }
+
+        public static async Task Connected()
+        {
+            if (!File.Exists(".\\outilsExtern\\ytmusicapioauth.exe"))
+            {
+                // Gérer l'erreur ou lancer une exception
+                return ;
+            }
+
+
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = ".\\outilsExtern\\ytmusicapioauth.exe";
+                process.StartInfo.Arguments = $"oauth";
+                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.EnableRaisingEvents = true;
+
+                string output = "";
+                // Événement pour la sortie standard
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        output += e.Data;
+                    }
+                };
+
+                // Événement pour la sortie d'erreur
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        Console.WriteLine($"Error: {e.Data}");
+                        // Traiter la sortie d'erreur ici
+                    }
+                };
+
+                // Démarrer le processus
+                process.Start();
+
+                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                Console.WriteLine("appuis sur entrer lors que vous avez finis de vous conneter a youtube Music");
+                Console.ReadLine();
+                process.StandardInput.WriteLine();
+
+                // Attendre que le processus se termine
+                await Task.Run(() => process.WaitForExit());
+                Console.WriteLine(output);
+                process.Dispose();
+
+            }
         }
     }
 }

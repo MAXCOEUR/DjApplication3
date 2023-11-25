@@ -1,4 +1,5 @@
 ﻿using CSCore.CoreAudioAPI;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,9 @@ namespace DjApplication3.model
 
         public int nbrPiste { get; set; }
 
+        public int browser { get; set; }
+        public string browserName { get; set; }
+
         MMDeviceEnumerator enumerator;
         public MMDeviceCollection dispositifsAudio;
 
@@ -32,6 +36,7 @@ namespace DjApplication3.model
             nbrHeadPhone = 0;
             nbrOut = 0;
             nbrPiste = 2;
+            browser = 0;
         }
 
         // Méthode pour obtenir l'instance unique de la classe
