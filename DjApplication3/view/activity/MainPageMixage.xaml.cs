@@ -1,6 +1,8 @@
 ﻿using DjApplication3.model;
+using DjApplication3.view.fragment;
 using DjApplication3.view.page;
 using DjApplication3.view.windows;
+using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +33,13 @@ namespace DjApplication3.view.activity
 
             exploLocal.eventMusiqueSlected += eventMusiqueSlected;
             exploLocal.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
+
+            exploYoutube.setViewModel(new ExplorateurYoutubeViewModel());
+            exploSpotify.setViewModel(new ExplorateurSpotifyViewModel());
+            exploYtMusic.setViewModel(new ExplorateurYtMusicViewModel());
+
+            exploYtMusic.eventMusiqueSlected += eventMusiqueSlected;
+            exploYtMusic.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
 
             exploYoutube.eventMusiqueSlected += eventMusiqueSlected;
             exploYoutube.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;

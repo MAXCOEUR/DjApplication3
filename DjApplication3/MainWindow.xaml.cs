@@ -1,4 +1,5 @@
-﻿using DjApplication3.model;
+﻿using DjApplication3.DataSource;
+using DjApplication3.model;
 using DjApplication3.outils;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace DjApplication3
     {
         public MainWindow()
         {
+            //new YtMusicDataSource().search("vald vlad");
             new FFmpegGestion();
             InitializeComponent();
         }

@@ -48,11 +48,14 @@
                 <TabItem Header="Local">
                     <local1:Explorateur x:Name="exploLocal"/>
                 </TabItem>
+                <TabItem Header="Youtube Music">
+                    <local1:ExplorateurInternet x:Name="exploYtMusic"/>
+                </TabItem>
                 <TabItem Header="Youtube">
-                    <local1:ExplorateurYoutube x:Name="exploYoutube"/>
+                    <local1:ExplorateurInternet x:Name="exploYoutube"/>
                 </TabItem>
                 <TabItem Header="Spotify">
-                    <local1:ExplorateurSpotify x:Name="exploSpotify"/>
+                    <local1:ExplorateurInternet x:Name="exploSpotify"/>
                 </TabItem>
             </TabControl>
         </Grid>
