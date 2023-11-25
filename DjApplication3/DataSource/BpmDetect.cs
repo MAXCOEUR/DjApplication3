@@ -42,12 +42,20 @@ namespace DjApplication3.DataSource
 
                 // Récupérer la sortie standard une fois le processus terminé
                 string output = process.StandardOutput.ReadToEnd();
-                output = output.Remove(output.Length - 4, 4);
-                float parsedValue;
-                float.TryParse(output, NumberStyles.Float, CultureInfo.InvariantCulture, out parsedValue);
+                try
+                {
+                    output = output.Remove(output.Length - 4, 4);
+                    float parsedValue;
+                    float.TryParse(output, NumberStyles.Float, CultureInfo.InvariantCulture, out parsedValue);
 
-                process.Dispose();
-                return (int)parsedValue;
+                    process.Dispose();
+                    return (int)parsedValue;
+                }catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return 0;
+                }
+                
             }
         }
     }

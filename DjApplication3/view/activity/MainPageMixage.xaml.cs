@@ -124,8 +124,9 @@ namespace DjApplication3.view.activity
             {
                 LecteurMusique lecteurASupprimer = lecteurMusiques[lecteurMusiques.Count - 1];
                 lecteurASupprimer.Dispose();
-                t_player.RowDefinitions.RemoveAt(t_player.RowDefinitions.Count - 1);
-                lecteurMusiques.RemoveAt(lecteurMusiques.Count - 1);
+                t_player.Children.Remove(lecteurASupprimer);
+                t_player.RowDefinitions.RemoveAt(t_player.RowDefinitions.Count-1);
+                lecteurMusiques.RemoveAt(lecteurMusiques.Count-1);
             }
 
             // Ajoute les nouveaux lecteurs de musique nécessaires

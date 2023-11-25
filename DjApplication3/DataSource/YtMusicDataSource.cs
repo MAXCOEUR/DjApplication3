@@ -92,8 +92,8 @@ namespace DjApplication3.DataSource
 
                         Musique musique = new Musique(
                             baseUrl + element.GetProperty("videoId").GetString(),
-                            element.GetProperty("title").GetString(),
-                            authorTmp
+                            CleanFileName(element.GetProperty("title").GetString()),
+                            CleanFileName(authorTmp)
                             );
 
                         // Parcourir les artistes

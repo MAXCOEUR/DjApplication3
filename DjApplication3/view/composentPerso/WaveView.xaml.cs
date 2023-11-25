@@ -69,12 +69,11 @@ namespace DjApplication3.view.composentPerso
         {
             wafeFrome = wave;
             updateGraph();
-
         }
 
         private async void updateGraph()
         {
-            if (wafeFrome == null || wafeFrome.Length < 1) return;
+            if (wafeFrome == null) return;
 
             indicateurPosition = indicateurPosition;
 
@@ -86,14 +85,22 @@ namespace DjApplication3.view.composentPerso
 
             await Task.Run(() =>
             {
-                sbyte[] tableauReduit = new sbyte[nbrx];
-                for (int i = 0; i < nbrx; i++)
+                sbyte[] tableauReduit = new sbyte[0];
+                if(wafeFrome.Length > 0)
                 {
-                    int tauxReduc = wafeFrome.Length / nbrx;
-                    int nbr = i * tauxReduc;
-                    tableauReduit[i] = wafeFrome[nbr];
+                    tableauReduit = new sbyte[nbrx];
+                    for (int i = 0; i < nbrx; i++)
+                    {
+                        int tauxReduc = wafeFrome.Length / nbrx;
+                        int nbr = i * tauxReduc;
+                        tableauReduit[i] = wafeFrome[nbr];
+                    }
                 }
-
+                
+                if(ActualWidth<2 || ActualHeight < 2)
+                {
+                    return;
+                }
                 Bitmap bitmap = new Bitmap((int)ActualWidth, (int)ActualHeight);
                 using (Graphics g = Graphics.FromImage(bitmap))
                 {
