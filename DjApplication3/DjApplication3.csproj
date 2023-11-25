@@ -14,7 +14,6 @@
     <None Remove="Resources\play.png" />
     <None Remove="Resources\reload.png" />
     <None Remove="Resources\stop.png" />
-    <None Remove="view\fragment\play.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,7 +59,6 @@
     <Resource Include="Resources\stop.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="view\fragment\play.png" />
   </ItemGroup>
 
 </Project>
