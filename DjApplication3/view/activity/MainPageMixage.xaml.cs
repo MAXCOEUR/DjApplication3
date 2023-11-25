@@ -172,6 +172,7 @@ namespace DjApplication3.view.activity
             exploYoutube.updateBPM();
             exploLocal.updateBPM();
             exploSpotify.updateBPM();
+            exploYtMusic.updateBPM();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

@@ -69,7 +69,6 @@ namespace DjApplication3.view.composentPerso
         {
             wafeFrome = wave;
             updateGraph();
-            indicateurPosition = 0;
 
         }
 
