@@ -321,13 +321,14 @@ namespace DjApplication3.DataSource
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                Console.WriteLine("appuis sur entrer lors que vous avez finis de vous conneter a youtube Music");
+                Console.WriteLine("-Si votre navigateur s'ouvre, il vous demandera de vous connecter à votre compte Premium YouTube Music.\n" +
+                    "-Si votre navigateur ne s'ouvre pas, c'est que vous êtes déjà connecté.\n\n" +
+                    "Appuyez sur la touche \"Entrée\" pour lancer l'application. Pour pouvoir télécharger les musiques, vous devrez renseigner le navigateur sur lequel vous êtes connecté à votre compte YouTube Music Premium.");
                 Console.ReadLine();
                 process.StandardInput.WriteLine();
 
                 // Attendre que le processus se termine
                 await Task.Run(() => process.WaitForExit());
-                Console.WriteLine(output);
                 process.Dispose();
 
             }

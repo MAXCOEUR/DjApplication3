@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -23,6 +24,8 @@ namespace DjApplication3.view.fragment
         string rootFolder;
         private ExplorateurViewModel viewModel = new ExplorateurViewModel();
         List<MusiqueColonne> musiques = new List<MusiqueColonne>();
+
+        string search = "";
 
         public Explorateur()
         {
@@ -71,16 +74,24 @@ namespace DjApplication3.view.fragment
         }
         private void ModelView_TacheGetMusique(object? sender, List<Musique> e)
         {
-            musiques.Clear();
+            musiques.Clear();            
 
             foreach (Musique musique in e)
             {
                 int? bpm = viewModel.getBpm(musique);
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
-            dgv_listeMusic.ItemsSource = musiques;
+            filtreMusique();
+            
+        }
+
+        private void filtreMusique()
+        {
+            List<MusiqueColonne> musiquesTmp = musiques.Where(m => m.musique.title.Contains(search, StringComparison.OrdinalIgnoreCase) || m.musique.author.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+            dgv_listeMusic.ItemsSource = musiquesTmp;
             dgv_listeMusic.Items.Refresh();
         }
+
         public void updateData()
         {
             dgv_listeMusic.Items.Refresh();
@@ -89,6 +100,8 @@ namespace DjApplication3.view.fragment
         {
             if (e.NewValue != null)
             {
+                cleatDGV();
+
                 var selectedItem = (DossierPerso)e.NewValue;
                 string path = Path.Combine(Path.GetDirectoryName(rootFolder), selectedItem.getPath());
                 viewModel.getMusique(path);
@@ -168,6 +181,25 @@ namespace DjApplication3.view.fragment
             }
             dgv_listeMusic.Items.Refresh();
         }
+
+        private void tb_serach_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            search=tb_serach.Text;
+            filtreMusique();
+        }
+
+        private void cleatDGV()
+        {
+            // Définir la source de données à null
+            dgv_listeMusic.ItemsSource = null;
+
+            // Nettoyer les éléments du contrôle
+            dgv_listeMusic.Items.Clear();
+
+            // Actualiser le contrôle
+            dgv_listeMusic.Items.Refresh();
+        }
+
     }
 }
 
