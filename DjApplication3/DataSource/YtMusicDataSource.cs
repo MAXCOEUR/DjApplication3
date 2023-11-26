@@ -46,6 +46,7 @@ namespace DjApplication3.DataSource
                 process.StartInfo.WorkingDirectory = ".\\outilsExtern";
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardInput = true;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
                 process.EnableRaisingEvents = true;
@@ -56,6 +57,7 @@ namespace DjApplication3.DataSource
                     if (!string.IsNullOrEmpty(e.Data))
                     {
                         output += e.Data;
+                        
                     }
                 };
 
@@ -274,17 +276,16 @@ namespace DjApplication3.DataSource
 
         public static async Task Connected()
         {
-            if (!File.Exists(".\\outilsExtern\\ytmusicapioauth.exe"))
+            if (!File.Exists(".\\outilsExtern\\apiYouMusicOAuth.exe"))
             {
                 // Gérer l'erreur ou lancer une exception
-                return ;
+                return;
             }
 
 
             using (var process = new Process())
             {
-                process.StartInfo.FileName = ".\\outilsExtern\\ytmusicapioauth.exe";
-                process.StartInfo.Arguments = $"oauth";
+                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusicOAuth.exe";
                 process.StartInfo.WorkingDirectory = ".\\outilsExtern";
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
