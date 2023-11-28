@@ -1,6 +1,7 @@
 ﻿using DjApplication3.model;
 using DjApplication3.view.fragment;
 using NAudio.Wave;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,6 +23,7 @@ namespace DjApplication3.DataSource
     {
         YoutubeClient _youtube = new YoutubeClient();
         private string baseUrl = "https://music.youtube.com/watch?v=";
+        private static string oauthJson="outilsExtern/oauth.json";
         async public Task<List<Musique>> search(string search)
         {
             if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
@@ -111,6 +113,8 @@ namespace DjApplication3.DataSource
             return musiques;
         }
 
+        
+
         async public Task<Musique> DownloadMusique(Musique musiqueyt)
         {
 
@@ -168,6 +172,11 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                if (!isConnected())
+                {
+                    MessageBox.Show(ex.Message);
+                    return new Musique("", "", "");
+                }
                 try
                 {
                     return await otherdl(musiqueyt);
@@ -175,7 +184,7 @@ namespace DjApplication3.DataSource
                 catch (Exception ex2)
                 {
                     Console.WriteLine(ex2.Message);
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex2.Message);
                     return new Musique("", "", "");
                 }
                 
@@ -274,16 +283,24 @@ namespace DjApplication3.DataSource
             return cleanedFileName;
         }
 
-        public static async Task Connected()
+        public static async Task<Process?> Connected()
         {
             if (!File.Exists(".\\outilsExtern\\apiYouMusicOAuth.exe"))
             {
                 // Gérer l'erreur ou lancer une exception
-                return;
+                return null;
+            }
+
+            if (isConnected())
+            {
+                Console.WriteLine("l'utilisateur est deja connecté");
+                return null;
             }
 
 
-            using (var process = new Process())
+
+            var process = new Process();
+            if (process != null)
             {
                 process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusicOAuth.exe";
                 process.StartInfo.WorkingDirectory = ".\\outilsExtern";
@@ -321,16 +338,37 @@ namespace DjApplication3.DataSource
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                Console.WriteLine("-Si votre navigateur s'ouvre, il vous demandera de vous connecter à votre compte Premium YouTube Music.\n" +
-                    "-Si votre navigateur ne s'ouvre pas, c'est que vous êtes déjà connecté.\n\n" +
-                    "Appuyez sur la touche \"Entrée\" pour lancer l'application. Pour pouvoir télécharger les musiques, vous devrez renseigner le navigateur sur lequel vous êtes connecté à votre compte YouTube Music Premium.");
-                Console.ReadLine();
-                process.StandardInput.WriteLine();
+                return process;
+            }
+            return null;
+        }
 
-                // Attendre que le processus se termine
-                await Task.Run(() => process.WaitForExit());
-                process.Dispose();
-
+        public static bool isConnected()
+        {
+            if (File.Exists(oauthJson))
+            {
+                string json = File.ReadAllText(oauthJson);
+                JObject googleAuth = JObject.Parse(json);
+                long expiresAt = (long)googleAuth["expires_at"];
+                DateTime expiryDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(expiresAt);
+                if (expiryDate <= DateTime.UtcNow)
+                {
+                    //Console.WriteLine("Le jeton est expiré");
+                    return false;
+                }
+                else
+                {
+                    //Console.WriteLine("Le jeton n'est pas encore expiré");
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static void removeConnect()
+        {
+            if (File.Exists(oauthJson))
+            {
+                File.Delete(oauthJson);
             }
         }
     }

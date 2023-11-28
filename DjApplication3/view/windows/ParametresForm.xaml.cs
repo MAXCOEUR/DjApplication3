@@ -1,4 +1,6 @@
-﻿using DjApplication3.model;
+﻿using CSCore.XAudio2;
+using DjApplication3.DataSource;
+using DjApplication3.model;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using TagLib.Tiff.Pef;
 
 namespace DjApplication3.view.windows
 {
@@ -21,11 +24,14 @@ namespace DjApplication3.view.windows
     /// </summary>
     public partial class ParametresForm : Window
     {
+        private string CoYtMusic ="Connexion Youtube Music";
+        private string decoYtMusic = "Deconnexion Youtube Music";
         private SettingsManager settingsManager = SettingsManager.Instance;
         public ParametresForm()
         {
             InitializeComponent();
             PopulateComboBoxes();
+            setButtonConnectionYoutubeMusic();
         }
         private void PopulateComboBoxes()
         {
@@ -44,6 +50,16 @@ namespace DjApplication3.view.windows
             settingsManager.browserName = cb_browser.SelectedItem.ToString();
         }
 
+        private void setButtonConnectionYoutubeMusic() {
+            if (YtMusicDataSource.isConnected())
+            {
+                bt_connectYtMusic.Content = decoYtMusic;
+            }
+            else
+            {
+                bt_connectYtMusic.Content = CoYtMusic;
+            }
+        }
         private void bt_close_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -88,6 +104,26 @@ namespace DjApplication3.view.windows
         {
             settingsManager.browser = cb_browser.SelectedIndex;
             settingsManager.browserName = cb_browser.SelectedItem.ToString();
+        }
+
+
+        private async void btConnected()
+        {
+            if (YtMusicDataSource.isConnected())
+            {
+                YtMusicDataSource.removeConnect();
+            }
+            else
+            {
+                ConnectedYtMusic connectedytMusic = new ConnectedYtMusic();
+                connectedytMusic.ShowDialog();
+            }
+            setButtonConnectionYoutubeMusic();
+        }
+
+        private void bt_connectYtMusic_Click(object sender, RoutedEventArgs e)
+        {
+            btConnected();
         }
     }
 }

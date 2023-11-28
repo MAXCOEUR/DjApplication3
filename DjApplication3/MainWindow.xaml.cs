@@ -26,7 +26,6 @@ namespace DjApplication3
     {
         public MainWindow()
         {
-            YtMusicDataSource.Connected();
             new FFmpegGestion();
             InitializeComponent();
         }

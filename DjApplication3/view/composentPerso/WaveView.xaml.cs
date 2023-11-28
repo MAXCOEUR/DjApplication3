@@ -165,6 +165,10 @@ namespace DjApplication3.view.composentPerso
                 background.Background = defaultBack;
             }
         }
+        public void setEndColorBack()
+        {
+            background.Background = warningBack;
+        }
 
         // Method to convert Bitmap to BitmapImage
         public BitmapImage BitmapToBitmapImage(Bitmap bitmap)

@@ -116,10 +116,10 @@ namespace DjApplication3.view.page
             if (audioPlayer.PlaybackState == PlaybackState.Playing) return 1;
             try
             {
-                this.musique = musique;
+                
                 Console.WriteLine("setMusique start");
 
-                tv_titleAuthor.Content = $"{musique.title} ({musique.author})";
+                
 
                 // Exécutez ces opérations dans un thread séparé
                 fichierAudio = CodecFactory.Instance.GetCodec(musique.url);
@@ -128,9 +128,14 @@ namespace DjApplication3.view.page
                     audioPlayer.WaveSource.Position = 0;
                     audioPlayer.WaveSource.Dispose();
                 }
+
+                this.musique = musique;
+
                 initaudioPlayer();
                 updateOutAudio();
                 updateDuration();
+
+                tv_titleAuthor.Content = $"{musique.title} ({musique.author})";
                 tv_bpm.Content = $"000 BPM";
                 LecteurMusiqueViewModel.getBpm(musique);
                 waveForme.setMusique(musique);
@@ -206,9 +211,9 @@ namespace DjApplication3.view.page
             tv_durationRest.Content = $"{durationRestantFormattee}";
             waveForme.changeColorBack((durationRestant).TotalSeconds);
 
-            if (durationRestant == TimeSpan.Zero)
+            if (durationRestant.TotalMilliseconds <=100)
             {
-                setPosition(0);
+                waveForme.setEndColorBack();
                 pause();
             }
 
