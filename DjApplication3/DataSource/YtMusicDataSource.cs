@@ -44,7 +44,7 @@ namespace DjApplication3.DataSource
             using (var process = new Process())
             {
                 process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
-                process.StartInfo.Arguments = $"\"{search}\"";
+                process.StartInfo.Arguments = $"-m m -s \"{search}\"";
                 process.StartInfo.WorkingDirectory = ".\\outilsExtern";
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
@@ -113,7 +113,176 @@ namespace DjApplication3.DataSource
             return musiques;
         }
 
-        
+        async public Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste)
+        {
+            if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
+            {
+                // Gérer l'erreur ou lancer une exception
+                return null;
+            }
+
+            if (idPlayliste == "")
+            {
+                return null;
+            }
+            if(!isConnected())
+            {
+                return null;
+            }
+
+            List<Musique> musiques = new List<Musique>();
+
+            string output = "";
+
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
+                process.StartInfo.Arguments = $"-m p -s \"{idPlayliste}\"";
+                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.EnableRaisingEvents = true;
+
+                // Événement pour la sortie standard
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        output += e.Data;
+
+                    }
+                };
+
+                // Événement pour la sortie d'erreur
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        Console.WriteLine($"Error: {e.Data}");
+                        // Traiter la sortie d'erreur ici
+                    }
+                };
+
+                // Démarrer le processus
+                process.Start();
+
+                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // Attendre que le processus se termine
+                await Task.Run(() => process.WaitForExit());
+
+                using (JsonDocument document = JsonDocument.Parse(output))
+                {
+                    // Parcourir le tableau JSON
+                    foreach (JsonElement element in document.RootElement.EnumerateArray())
+                    {
+                        string authorTmp = "";
+                        foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
+                        {
+                            authorTmp = artistElement.GetProperty("name").GetString();
+                            break;
+                        }
+
+                        Musique musique = new Musique(
+                            baseUrl + element.GetProperty("videoId").GetString(),
+                            CleanFileName(element.GetProperty("title").GetString()),
+                            CleanFileName(authorTmp)
+                            );
+
+                        // Parcourir les artistes
+
+
+                        musiques.Add(musique);
+                    }
+                }
+
+            }
+
+            return musiques;
+        }
+
+        async public Task<List<PlayListe>> getPlayListe()
+        {
+            if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
+            {
+                // Gérer l'erreur ou lancer une exception
+                return null;
+            }
+            if (!isConnected())
+            {
+                return null;
+            }
+
+            List<PlayListe> playListes = new List<PlayListe>();
+
+            string output = "";
+
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
+                process.StartInfo.Arguments = $"-m p";
+                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.EnableRaisingEvents = true;
+
+                // Événement pour la sortie standard
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        output += e.Data;
+
+                    }
+                };
+
+                // Événement pour la sortie d'erreur
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        Console.WriteLine($"Error: {e.Data}");
+                        // Traiter la sortie d'erreur ici
+                    }
+                };
+
+                // Démarrer le processus
+                process.Start();
+
+                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // Attendre que le processus se termine
+                await Task.Run(() => process.WaitForExit());
+
+                using (JsonDocument document = JsonDocument.Parse(output))
+                {
+                    // Parcourir le tableau JSON
+                    foreach (JsonElement element in document.RootElement.EnumerateArray())
+                    {
+                        PlayListe playListe = new PlayListe(
+                            element.GetProperty("id").GetString(),
+                            CleanFileName(element.GetProperty("name").GetString())
+                            );
+                        playListes.Add(playListe);
+                    }
+                }
+
+            }
+
+            return playListes;
+        }
+
+
 
         async public Task<Musique> DownloadMusique(Musique musiqueyt)
         {
