@@ -19,27 +19,29 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
             <ColumnDefinition />
+            <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
 
         <!-- FlowLayoutPanel1 -->
         <Label Grid.Row="0" Grid.Column="0" Content="Sortie audio standard : " HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="cb_audioStandard" VerticalAlignment="Center" SelectionChanged="cb_audioStandard_SelectionChanged"/>
+        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="cb_audioStandard" VerticalAlignment="Center" SelectionChanged="cb_audioStandard_SelectionChanged" Grid.ColumnSpan="2"/>
 
         <!-- FlowLayoutPanel2 -->
         <Label Grid.Row="1" Grid.Column="0" Content="Sortie audio casque : " HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="cb_audioHeadPhone" VerticalAlignment="Center" SelectionChanged="cb_audioHeadPhone_SelectionChanged"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="cb_audioHeadPhone" VerticalAlignment="Center" SelectionChanged="cb_audioHeadPhone_SelectionChanged" Grid.ColumnSpan="2"/>
 
         <Label Grid.Row="2" Grid.Column="0" Content="navigateur YoutubeMusic" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cb_browser" VerticalAlignment="Center" SelectionChanged="cb_browser_SelectionChanged"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cb_browser" VerticalAlignment="Center" SelectionChanged="cb_browser_SelectionChanged" Grid.ColumnSpan="2"/>
 
-        <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="2" Click="bt_connectYtMusic_Click" Margin="10,0,10,0"/>
+        <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="3" Click="bt_connectYtMusic_Click" Margin="10,0,10,0"/>
 
         <!-- Button -->
         <Button x:Name="bt_close" Background="Lime" Content="Fermer" Height="30" Grid.Row="6" Grid.ColumnSpan="2" Click="bt_close_Click" Margin="10,0,10,0"/>
         <Label Content="chemain jusqu'a TShark" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center"/>
         <Label Content="numero usb" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center"/>
-        <TextBox x:Name="tb_pathTshark" Grid.Column="1" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Center" TextChanged="tb_chemainTshark_TextChanged"/>
+        <TextBox x:Name="tb_pathTshark" Grid.Column="1" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Center" TextChanged="tb_chemainTshark_TextChanged" Grid.ColumnSpan="2"/>
         <TextBox x:Name="tb_numeroUSB" Grid.Column="1" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Center" TextChanged="tb_numeroUSB_TextChanged"/>
+        <Button x:Name="bt_reloadHercule" Grid.Column="2" Content="lancer Hercule" Grid.Row="5" Click="bt_reloadHercule_Click"/>
 
     </Grid>
 </Window>

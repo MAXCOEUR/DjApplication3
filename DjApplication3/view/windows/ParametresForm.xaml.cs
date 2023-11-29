@@ -27,6 +27,8 @@ namespace DjApplication3.view.windows
         private string CoYtMusic ="Connexion Youtube Music";
         private string decoYtMusic = "Deconnexion Youtube Music";
         private SettingsManager settingsManager = SettingsManager.Instance;
+
+        public event EventHandler eventReloadHecules;
         public ParametresForm()
         {
             InitializeComponent();
@@ -136,6 +138,11 @@ namespace DjApplication3.view.windows
         private void tb_numeroUSB_TextChanged(object sender, TextChangedEventArgs e)
         {
             settingsManager.numeroUSB=tb_numeroUSB.Text;
+        }
+
+        private void bt_reloadHercule_Click(object sender, RoutedEventArgs e)
+        {
+            eventReloadHecules?.Invoke(this, e);
         }
     }
 }

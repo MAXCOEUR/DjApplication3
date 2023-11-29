@@ -262,12 +262,17 @@ namespace DjApplication3.view.activity
         {
             ParametresForm parametresForm = new ParametresForm();
             parametresForm.Closing += ParametresForm_Closing;
+            parametresForm.eventReloadHecules += ParametresForm_eventReloadHecules;
             parametresForm.Show();
+        }
+
+        private void ParametresForm_eventReloadHecules(object? sender, EventArgs e)
+        {
+            startHercule();
         }
 
         private void ParametresForm_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            startHercule();
             explorateurYtMusicViewModel.getPlayListe();
         }
     }
