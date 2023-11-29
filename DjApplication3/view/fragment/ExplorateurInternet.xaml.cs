@@ -1,4 +1,5 @@
-﻿using DjApplication3.model;
+﻿using DjApplication3.DataSource;
+using DjApplication3.model;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ namespace DjApplication3.view.fragment
 
 
         private ExplorateurInternetViewModel viewModel;
+        private ExplorateurYtMusicViewModel viewModelYtMusic;
         private System.Windows.Forms.Timer searchTimer = new System.Windows.Forms.Timer();
         static public string rootFolder = System.IO.Path.GetFullPath("musique/tmp");
         private List<(Musique, int)> listeMusiqueSelectedPiste = new List<(Musique, int)>();
@@ -42,6 +44,27 @@ namespace DjApplication3.view.fragment
         {
             viewModel = model;
 
+            if(model is ExplorateurYtMusicViewModel)
+            {
+                viewModelYtMusic = (ExplorateurYtMusicViewModel) model;
+
+                // Créez une nouvelle ColumnDefinition
+                ColumnDefinition columnDefinition = new ColumnDefinition();
+                columnDefinition.Width = new GridLength(1, GridUnitType.Star); // Définissez la largeur à "*"
+
+                // Insérez la nouvelle colonne à la position 0
+                g_column.ColumnDefinitions.Insert(0, columnDefinition);
+
+                GridSplitter.Visibility = Visibility.Visible;
+                g_tree.Visibility = Visibility.Visible;
+
+                viewModelYtMusic.TacheGetMusiqueInPlayListe += ViewModelYtMusic_TacheGetMusiqueInPlayListe;
+                viewModelYtMusic.TacheGetPlayListe += ViewModelYtMusic_TacheGetPlayListe;
+
+                viewModelYtMusic.getPlayListe();
+
+            }
+
             searchTimer.Interval = 500; // Délai en millisecondes (0.5 seconde)
             searchTimer.Tick += SearchTimer_Tick;
 
@@ -50,9 +73,38 @@ namespace DjApplication3.view.fragment
             viewModel.search("");
         }
 
+        private void ViewModelYtMusic_TacheGetPlayListe(object? sender, List<PlayListe> e)
+        {
+            tv_tree.ItemsSource = e;
+        }
+
+        private void ViewModelYtMusic_TacheGetMusiqueInPlayListe(object? sender, List<Musique> e)
+        {
+            musiques.Clear();
+
+            if (e == null)
+            {
+                return;
+            }
+
+            foreach (Musique musique in e)
+            {
+                Musique musiqueTmp = new Musique(System.IO.Path.Combine(rootFolder, $"{musique.title} ({musique.author}).mp3"), musique.title, musique.author);
+                int? bpm = viewModel.getBpm(musiqueTmp);
+                musiques.Add(new MusiqueColonne(musique, bpm));
+            }
+            dgv_listeMusic.ItemsSource = musiques;
+            dgv_listeMusic.Items.Refresh();
+        }
+
         private void ViewModel_TacheSearch(object? sender, List<Musique> e)
         {
             musiques.Clear();
+
+            if (e == null)
+            {
+                return;
+            }
 
             foreach (Musique musique in e)
             {
@@ -76,6 +128,12 @@ namespace DjApplication3.view.fragment
 
         private void tb_serach_TextChanged(object sender, TextChangedEventArgs e)
         {
+            cleatDGV();
+
+            var treeViewSource = (List<PlayListe>)tv_tree.ItemsSource;
+            tv_tree.ItemsSource = null;
+            tv_tree.ItemsSource = treeViewSource;
+
             searchTimer.Stop();
             searchTimer.Start();
         }
@@ -179,6 +237,35 @@ namespace DjApplication3.view.fragment
                 int? bpm = viewModel.getBpm(musiqueTmp);
                 musiqueColonne.Bpm = bpm;
             }
+            dgv_listeMusic.Items.Refresh();
+        }
+
+        private void bt_reload_Click(object sender, RoutedEventArgs e)
+        {
+            viewModelYtMusic.getPlayListe();
+        }
+
+        private void tv_tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue != null)
+            {
+                cleatDGV();
+
+                var selectedItem = (PlayListe)e.NewValue;
+                viewModelYtMusic.getMusiqueInPlayListe(selectedItem.id);
+                tb_serach.Text = "";
+            }
+        }
+
+        private void cleatDGV()
+        {
+            // Définir la source de données à null
+            dgv_listeMusic.ItemsSource = null;
+
+            // Nettoyer les éléments du contrôle
+            dgv_listeMusic.Items.Clear();
+
+            // Actualiser le contrôle
             dgv_listeMusic.Items.Refresh();
         }
     }

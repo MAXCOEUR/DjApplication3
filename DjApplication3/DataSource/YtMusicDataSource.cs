@@ -115,18 +115,9 @@ namespace DjApplication3.DataSource
 
         async public Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste)
         {
-            if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
+            if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe") || idPlayliste == "" || !isConnected())
             {
                 // Gérer l'erreur ou lancer une exception
-                return null;
-            }
-
-            if (idPlayliste == "")
-            {
-                return null;
-            }
-            if(!isConnected())
-            {
                 return null;
             }
 
@@ -344,7 +335,7 @@ namespace DjApplication3.DataSource
                 if (!isConnected())
                 {
                     MessageBox.Show(ex.Message);
-                    return new Musique("", "", "");
+                    return null;
                 }
                 try
                 {
@@ -354,7 +345,7 @@ namespace DjApplication3.DataSource
                 {
                     Console.WriteLine(ex2.Message);
                     MessageBox.Show(ex2.Message);
-                    return new Musique("", "", "");
+                    return null;
                 }
                 
             }

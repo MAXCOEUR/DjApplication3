@@ -10,9 +10,11 @@ namespace DjApplication3.model
     {
         public string id { get; set; }
         public string name { get; set; }
+        public List<PlayListe> children { get; set; }
         public PlayListe(string id,string name) {
             this.id = id;
             this.name = name;
+            children = new List<PlayListe>();
         }
     }
 }

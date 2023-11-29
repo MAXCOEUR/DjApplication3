@@ -46,8 +46,7 @@ namespace DjApplication3.view.fragment
         }
         private void ViewModel_TacheGetDossierPerso(object? sender, DossierPerso e)
         {
-            ObservableCollection<DossierPerso> dossier = new ObservableCollection<DossierPerso> { e };
-            tv_tree.ItemsSource = dossier;
+            tv_tree.ItemsSource = e.Children;
         }
 
         private void bt_changeRoot_Click(object sender, System.Windows.RoutedEventArgs e)
