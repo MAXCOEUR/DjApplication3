@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TagLib.WavPack;
 
 namespace DjApplication3.outils
 {
@@ -27,6 +28,10 @@ namespace DjApplication3.outils
         bool isPressSratchRight = false;
         public async void start()
         {
+            if (!System.IO.File.Exists(SettingsManager.Instance.pathTShark))
+            {
+                return;
+            }
             // Créer un processus pour exécuter tshark
             process = new Process();
             process.StartInfo.FileName = SettingsManager.Instance.pathTShark;
@@ -69,7 +74,7 @@ namespace DjApplication3.outils
         }
         public void Dispose()
         {
-            process.Dispose();
+            process?.Dispose();
         }
 
 
