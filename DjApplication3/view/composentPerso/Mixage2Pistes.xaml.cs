@@ -34,6 +34,8 @@ namespace DjApplication3.view.composentPerso
 
         public void updatePiste()
         {
+            
+
             List<string> optionsListGauche = new List<string>();
             List<string> optionsListDroite = new List<string>();
             for (int i = 0; i < SettingsManager.Instance.nbrPiste; i++)

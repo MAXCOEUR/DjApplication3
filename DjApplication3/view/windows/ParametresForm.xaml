@@ -13,6 +13,8 @@
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
@@ -33,7 +35,11 @@
         <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="2" Click="bt_connectYtMusic_Click" Margin="10,0,10,0"/>
 
         <!-- Button -->
-        <Button x:Name="bt_close" Background="Lime" Content="Fermer" Height="30" Grid.Row="4" Grid.ColumnSpan="2" Click="bt_close_Click" Margin="10,0,10,0"/>
+        <Button x:Name="bt_close" Background="Lime" Content="Fermer" Height="30" Grid.Row="6" Grid.ColumnSpan="2" Click="bt_close_Click" Margin="10,0,10,0"/>
+        <Label Content="chemain jusqu'a TShark" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center"/>
+        <Label Content="numero usb" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center"/>
+        <TextBox x:Name="tb_pathTshark" Grid.Column="1" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Center" TextChanged="tb_chemainTshark_TextChanged"/>
+        <TextBox x:Name="tb_numeroUSB" Grid.Column="1" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Center" TextChanged="tb_numeroUSB_TextChanged"/>
 
     </Grid>
 </Window>

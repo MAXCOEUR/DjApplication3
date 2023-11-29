@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.outils;
 using DjApplication3.view.fragment;
 using DjApplication3.view.page;
 using DjApplication3.view.windows;
@@ -27,6 +28,8 @@ namespace DjApplication3.view.activity
     {
 
         List<LecteurMusique> lecteurMusiques = new List<LecteurMusique>();
+        HerculesDJ hercules;
+        ExplorateurYtMusicViewModel explorateurYtMusicViewModel;
         public MainPageMixage()
         {
             InitializeComponent();
@@ -35,7 +38,8 @@ namespace DjApplication3.view.activity
             exploLocal.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
 
             exploYoutube.setViewModel(new ExplorateurYoutubeViewModel());
-            exploYtMusic.setViewModel(new ExplorateurYtMusicViewModel());
+            explorateurYtMusicViewModel = new ExplorateurYtMusicViewModel();
+            exploYtMusic.setViewModel(explorateurYtMusicViewModel);
 
             exploYtMusic.eventMusiqueSlected += eventMusiqueSlected;
             exploYtMusic.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
@@ -47,6 +51,87 @@ namespace DjApplication3.view.activity
             mixage2Pistes.eventSetPiste += Mixage2Pistes_eventSetPiste;
 
             Loaded += MainPageMixage_Loaded;
+
+            
+            startHercule();
+        }
+
+        void startHercule()
+        {
+            hercules?.Dispose();
+            hercules = new HerculesDJ();
+            hercules.eventPlayPauseLeft += Hercules_eventPlayPauseLeft;
+            hercules.eventPlayPauseRight += Hercules_eventPlayPauseRight;
+            hercules.eventCasqueLeft += Hercules_eventCasqueLeft;
+            hercules.eventCasqueRight += Hercules_eventCasqueRight;
+            hercules.eventMixe += Hercules_eventMixe;
+            hercules.eventVolumeLeft += Hercules_eventVolumeLeft;
+            hercules.eventVolumeRight += Hercules_eventVolumeRight;
+
+            hercules.eventPisteLeft += Hercules_eventPisteLeft;
+            hercules.eventPisteRight += Hercules_eventPisteRight;
+            hercules.start();
+        }
+
+        private void Hercules_eventPisteRight(object? sender, int e)
+        {
+            if(e <= SettingsManager.Instance.nbrPiste)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    mixage2Pistes.cb_pisteDroite.SelectedIndex = e - 1;
+                });
+               
+            }
+           
+        }
+
+        private void Hercules_eventPisteLeft(object? sender, int e)
+        {
+            if (e <= SettingsManager.Instance.nbrPiste)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    mixage2Pistes.cb_pisteGauche.SelectedIndex = e - 1;
+                });
+                
+            }
+                
+        }
+
+        private void Hercules_eventVolumeRight(object? sender, float e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteDroite].setTb_volume(e);
+        }
+
+        private void Hercules_eventVolumeLeft(object? sender, float e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteGauche].setTb_volume(e);
+        }
+
+        private void Hercules_eventMixe(object? sender, float e)
+        {
+            mixage2Pistes.tb_mixage.Value = (int)(e * 100);
+        }
+
+        private void Hercules_eventCasqueRight(object? sender, EventArgs e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteDroite].btHeadphone();
+        }
+
+        private void Hercules_eventCasqueLeft(object? sender, EventArgs e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteGauche].btHeadphone();
+        }
+
+        private void Hercules_eventPlayPauseRight(object? sender, EventArgs e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteDroite].btPlayPause();
+        }
+
+        private void Hercules_eventPlayPauseLeft(object? sender, EventArgs e)
+        {
+            lecteurMusiques[mixage2Pistes.nbrPisteGauche].btPlayPause();
         }
 
         public void Dispose()
@@ -55,6 +140,8 @@ namespace DjApplication3.view.activity
             {
                 lecteur.Dispose();
             }
+
+            hercules.Dispose();
         }
 
         private void MainPageMixage_Loaded(object sender, RoutedEventArgs e)
@@ -152,15 +239,15 @@ namespace DjApplication3.view.activity
 
             float pisteDroite = (e >= mixage2Pistes.tb_mixage.Default) ? 1 : ((float)e / mixage2Pistes.tb_mixage.Default);
 
-            lecteurMusiques[mixage2Pistes.nbrPisteGauche].setVolume(pisteGauche);
+            lecteurMusiques[mixage2Pistes.nbrPisteGauche].setMasterVolume(pisteGauche);
 
-            lecteurMusiques[mixage2Pistes.nbrPisteDroite].setVolume(pisteDroite);
+            lecteurMusiques[mixage2Pistes.nbrPisteDroite].setMasterVolume(pisteDroite);
         }
         private void Mixage2Pistes_eventSetPiste(object? sender, EventArgs e)
         {
             foreach (LecteurMusique lecteur in lecteurMusiques)
             {
-                lecteur.setVolume(1);
+                lecteur.setMasterVolume(1);
             }
             Tb_mixage_ValueChanged(mixage2Pistes, mixage2Pistes.tb_mixage.Value);
         }
@@ -174,7 +261,14 @@ namespace DjApplication3.view.activity
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             ParametresForm parametresForm = new ParametresForm();
+            parametresForm.Closing += ParametresForm_Closing;
             parametresForm.Show();
+        }
+
+        private void ParametresForm_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            startHercule();
+            explorateurYtMusicViewModel.getPlayListe();
         }
     }
 }

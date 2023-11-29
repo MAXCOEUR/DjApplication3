@@ -1,0 +1,22 @@
+droite
+	playpause 30
+	scrach 31
+	scrachbutton 34
+	casque 32
+	volume 3b
+	piste1 23
+	piste2 24
+	piste3 25
+	piste4 26
+Gauche
+	playpause 16
+	scrach 30
+	scrachbutton 1a
+	casque 18
+	volume 36
+	piste1 09
+	piste2 0a
+	piste3 0b
+	piste4 0c
+
+mixage 3a

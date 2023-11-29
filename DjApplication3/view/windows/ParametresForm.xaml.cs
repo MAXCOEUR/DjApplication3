@@ -48,6 +48,8 @@ namespace DjApplication3.view.windows
             cb_browser.ItemsSource= installedBrowsers;
             cb_browser.SelectedIndex=settingsManager.browser;
             settingsManager.browserName = cb_browser.SelectedItem.ToString();
+            tb_pathTshark.Text = settingsManager.pathTShark;
+            tb_numeroUSB.Text = settingsManager.numeroUSB;
         }
 
         private void setButtonConnectionYoutubeMusic() {
@@ -124,6 +126,16 @@ namespace DjApplication3.view.windows
         private void bt_connectYtMusic_Click(object sender, RoutedEventArgs e)
         {
             btConnected();
+        }
+
+        private void tb_chemainTshark_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            settingsManager.pathTShark = tb_pathTshark.Text;
+        }
+
+        private void tb_numeroUSB_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            settingsManager.numeroUSB=tb_numeroUSB.Text;
         }
     }
 }

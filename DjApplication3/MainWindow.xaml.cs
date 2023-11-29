@@ -1,6 +1,7 @@
 ﻿using DjApplication3.DataSource;
 using DjApplication3.model;
 using DjApplication3.outils;
+using DjApplication3.repository;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,8 +25,11 @@ namespace DjApplication3
     /// </summary>
     public partial class MainWindow : Window
     {
+        
         public MainWindow()
         {
+
+            
             new FFmpegGestion();
             InitializeComponent();
         }
@@ -34,7 +38,6 @@ namespace DjApplication3
         {
             mainPageMixage.Dispose();
             cleanTmp();
-
         }
 
         void cleanTmp()

@@ -69,31 +69,41 @@ namespace DjApplication3.view.page
         public void play()
         {
             if (audioPlayer.DebuggingId == -1) return;
-            Console.WriteLine("play");
-            audioPlayer.Play();
-            timer.Start();
 
-            bt_playPause.Background = System.Windows.Media.Brushes.Green;
-            System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
-            if (img_PlayPause != null)
+            // Utiliser le Dispatcher pour accéder à l'interface utilisateur
+            Dispatcher.Invoke(() =>
             {
-                img_PlayPause.Source = imgPause;
-            }
+                Console.WriteLine("play");
+                audioPlayer.Play();
+                timer.Start();
+
+                bt_playPause.Background = System.Windows.Media.Brushes.Green;
+                System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
+                if (img_PlayPause != null)
+                {
+                    img_PlayPause.Source = imgPause;
+                }
+            });
         }
+
 
         public void pause()
         {
             if (audioPlayer.DebuggingId == -1) return;
-            Console.WriteLine("pause");
-            audioPlayer.Pause();
-            timer.Stop();
-
-            bt_playPause.Background = System.Windows.Media.Brushes.Red;
-            System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
-            if (img_PlayPause != null)
+            Dispatcher.Invoke(() =>
             {
-                img_PlayPause.Source = imgPlay;
-            }
+                Console.WriteLine("pause");
+                audioPlayer.Pause();
+                timer.Stop();
+
+                bt_playPause.Background = System.Windows.Media.Brushes.Red;
+                System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
+                if (img_PlayPause != null)
+                {
+                    img_PlayPause.Source = imgPlay;
+                }
+            });
+            
         }
         public void stop()
         {
@@ -162,7 +172,12 @@ namespace DjApplication3.view.page
 
             // Modifiez le numéro du périphérique audio (ajustez en conséquence)
             audioPlayer.Device = isHeadPhone ? SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrHeadPhone] : SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrOut];
-            bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            if (audioPlayer.DebuggingId == -1) return;
+            Dispatcher.Invoke(() =>
+            {
+                bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            });
+            
 
             // Réinitialisez le lecteur audio
             initaudioPlayer();
@@ -228,7 +243,7 @@ namespace DjApplication3.view.page
         {
             tv_nbrPiste.Content = $"Piste {nbr}";
         }
-        public void setVolume(float volume)
+        public void setMasterVolume(float volume)
         {
             volumeMaster = volume;
             updateVolume();
@@ -237,6 +252,11 @@ namespace DjApplication3.view.page
         {
             if (audioPlayer.DebuggingId == -1) return;
             audioPlayer.Volume = isHeadPhone ? tb_volume.Value / 100.0F : tb_volume.Value / 100.0F * volumeMaster;
+        }
+
+        public void setTb_volume(float volume)
+        {
+            tb_volume.Value = (int)(volume * 100);
         }
 
         public void Dispose()
@@ -268,6 +288,11 @@ namespace DjApplication3.view.page
 
         private void bt_playPause_Click(object sender, System.Windows.RoutedEventArgs e)
         {
+            btPlayPause();
+        }
+
+        public void btPlayPause()
+        {
             if (audioPlayer.PlaybackState == PlaybackState.Playing)
             {
                 pause();
@@ -284,6 +309,11 @@ namespace DjApplication3.view.page
         }
 
         private void bt_headphone_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            btHeadphone();
+        }
+
+        public void btHeadphone()
         {
             if (audioPlayer.DebuggingId == -1) return;
 
