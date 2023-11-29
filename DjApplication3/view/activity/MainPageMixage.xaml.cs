@@ -35,7 +35,6 @@ namespace DjApplication3.view.activity
             exploLocal.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
 
             exploYoutube.setViewModel(new ExplorateurYoutubeViewModel());
-            exploSpotify.setViewModel(new ExplorateurSpotifyViewModel());
             exploYtMusic.setViewModel(new ExplorateurYtMusicViewModel());
 
             exploYtMusic.eventMusiqueSlected += eventMusiqueSlected;
@@ -43,9 +42,6 @@ namespace DjApplication3.view.activity
 
             exploYoutube.eventMusiqueSlected += eventMusiqueSlected;
             exploYoutube.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
-
-            exploSpotify.eventMusiqueSlected += eventMusiqueSlected;
-            exploSpotify.eventMusiqueSlectedWithPiste += ExploLocal_eventMusiqueSlectedWithPiste;
 
             mixage2Pistes.tb_mixage.ValueChanged += Tb_mixage_ValueChanged;
             mixage2Pistes.eventSetPiste += Mixage2Pistes_eventSetPiste;
@@ -172,7 +168,6 @@ namespace DjApplication3.view.activity
         {
             exploYoutube.updateBPM();
             exploLocal.updateBPM();
-            exploSpotify.updateBPM();
             exploYtMusic.updateBPM();
         }
 

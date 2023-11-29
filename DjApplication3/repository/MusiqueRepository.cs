@@ -54,11 +54,6 @@ namespace DjApplication3.repository
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>> GetMusiqueSpotify(string search)
-        {
-            SpotifyDataSource dataSource = new SpotifyDataSource();
-            return await dataSource.search(search);
-        }
         public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
@@ -91,11 +86,6 @@ namespace DjApplication3.repository
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.DownloadMusique(musiqueyt);
-        }
-        async public Task<Musique> DownloadMusiqueSpotify(Musique musiqueSp)
-        {
-            SpotifyDataSource dataSource = new SpotifyDataSource();
-            return await dataSource.DownloadMusique(musiqueSp);
         }
     }
 }
