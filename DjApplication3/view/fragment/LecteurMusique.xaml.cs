@@ -117,6 +117,7 @@ namespace DjApplication3.view.page
         public int setMusique(Musique musique)
         {
             if (audioPlayer.PlaybackState == PlaybackState.Playing) return 1;
+            if (musique==null) return 2;
             try
             {
                 

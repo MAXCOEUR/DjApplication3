@@ -18,16 +18,8 @@ DjApplication3 est une application conçue pour fonctionner avec une table de mi
 
    Exemple : `C:\Program Files\Wireshark\tshark.exe`
 
-## Utilisation de DjApplication3 avec la table de mixage
+4. Trouver avec l'aide de wireShark le numero Source de la table et rentrer la dans les option 
 
-1. Assurez-vous que votre table de mixage Hercules DjControl Instinct est connectée à votre ordinateur.
+   Exemple : `1.8`
 
-2. Lancez DjApplication3.
-
-3. Commencez à utiliser l'application en fonction de ses fonctionnalités spécifiques.
-
-## Remarques importantes
-
-- Wireshark doit être installé avec l'option USBPcap pour permettre à DjApplication3 de capturer le trafic USB nécessaire.
-
-- Si vous avez des problèmes lors de l'utilisation de DjApplication3, assurez-vous que Wireshark est correctement installé et que le chemin vers TShark est correctement configuré dans les options de l'application.
+5. Le pc doit etre sous tantion et avoir les pilote de la table de mixage : [Téléchargement des pilotes ](https://support.hercules.com/en/product/djcontrolinstinct-en/).
