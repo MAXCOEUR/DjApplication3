@@ -232,6 +232,8 @@ namespace DjApplication3.view.page
 
         public void changePosition(bool isForward)
         {
+            if (audioPlayer.PlaybackState == PlaybackState.Playing) return ;
+            if (audioPlayer.DebuggingId == -1) return;
             float currentPosition = (float) audioPlayer.WaveSource.Position / audioPlayer.WaveSource.Length;
             if (isForward)
             {

@@ -196,10 +196,7 @@ namespace DjApplication3.outils
                     switch (param2)
                     {
                         case "31":
-                            if (isPressSratchRight)
-                            {
-                                eventScratchRight?.Invoke(this, resultat);
-                            }
+                            eventScratchRight?.Invoke(this, resultat);
                             Console.WriteLine("Droite scrach " + resultat);
                             break;
                         case "3b":
@@ -208,10 +205,7 @@ namespace DjApplication3.outils
                             break;
 
                         case "30":
-                            if (isPressSratchLeft)
-                            {
-                                eventScratchLeft?.Invoke(this, resultat);
-                            }
+                            eventScratchLeft?.Invoke(this, resultat);
                             Console.WriteLine("Gauche scrach " + resultat);
                             break;
                         case "36":

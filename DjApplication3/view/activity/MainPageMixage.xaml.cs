@@ -88,7 +88,7 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                lecteurMusiques[mixage2Pistes.nbrPisteDroite].changePosition(e!=127);
+                lecteurMusiques[mixage2Pistes.nbrPisteGauche].changePosition(e!=127);
             });
         }
 
