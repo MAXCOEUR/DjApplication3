@@ -67,10 +67,6 @@ namespace DjApplication3.outils
             // Démarrer le processus et commencer à lire la sortie
             process.Start();
             process.BeginOutputReadLine();
-
-            // Attendre que le processus se termine
-            //process.WaitForExit();
-            //process.Dispose();
         }
         public void Dispose()
         {

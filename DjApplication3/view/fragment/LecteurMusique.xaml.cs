@@ -70,40 +70,33 @@ namespace DjApplication3.view.page
         {
             if (audioPlayer.DebuggingId == -1) return;
 
-            // Utiliser le Dispatcher pour accéder à l'interface utilisateur
-            Dispatcher.Invoke(() =>
-            {
-                Console.WriteLine("play");
-                audioPlayer.Play();
-                timer.Start();
+            Console.WriteLine("play");
+            audioPlayer.Play();
+            timer.Start();
 
-                bt_playPause.Background = System.Windows.Media.Brushes.Green;
-                System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
-                if (img_PlayPause != null)
-                {
-                    img_PlayPause.Source = imgPause;
-                }
-            });
+            bt_playPause.Background = System.Windows.Media.Brushes.Green;
+            System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
+            if (img_PlayPause != null)
+            {
+                img_PlayPause.Source = imgPause;
+            }
         }
 
 
         public void pause()
         {
             if (audioPlayer.DebuggingId == -1) return;
-            Dispatcher.Invoke(() =>
-            {
-                Console.WriteLine("pause");
-                audioPlayer.Pause();
-                timer.Stop();
+            Console.WriteLine("pause");
+            audioPlayer.Pause();
+            timer.Stop();
 
-                bt_playPause.Background = System.Windows.Media.Brushes.Red;
-                System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
-                if (img_PlayPause != null)
-                {
-                    img_PlayPause.Source = imgPlay;
-                }
-            });
-            
+            bt_playPause.Background = System.Windows.Media.Brushes.Red;
+            System.Windows.Controls.Image img_PlayPause = (System.Windows.Controls.Image)bt_playPause.Template.FindName("img_PlayPause", bt_playPause);
+            if (img_PlayPause != null)
+            {
+                img_PlayPause.Source = imgPlay;
+            }
+
         }
         public void stop()
         {
@@ -173,10 +166,7 @@ namespace DjApplication3.view.page
             // Modifiez le numéro du périphérique audio (ajustez en conséquence)
             audioPlayer.Device = isHeadPhone ? SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrHeadPhone] : SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrOut];
             if (audioPlayer.DebuggingId == -1) return;
-            Dispatcher.Invoke(() =>
-            {
-                bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
-            });
+            bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
             
 
             // Réinitialisez le lecteur audio
@@ -233,10 +223,25 @@ namespace DjApplication3.view.page
             }
 
         }
-        public void setPosition(double positionPourcentage)
+        private void setPosition(double positionPourcentage)
         {
             if (audioPlayer.DebuggingId == -1) return;
             audioPlayer.WaveSource.Position = (long)(audioPlayer.WaveSource.Length * positionPourcentage);
+            updateDuration();
+        }
+
+        public void changePosition(bool isForward)
+        {
+            float currentPosition = (float) audioPlayer.WaveSource.Position / audioPlayer.WaveSource.Length;
+            if (isForward)
+            {
+                currentPosition += 0.001F;
+            }
+            else
+            {
+                currentPosition -= 0.001F;
+            }
+            audioPlayer.WaveSource.Position = (long)(audioPlayer.WaveSource.Length * currentPosition);
             updateDuration();
         }
         public void setNbrPiste(int nbr)

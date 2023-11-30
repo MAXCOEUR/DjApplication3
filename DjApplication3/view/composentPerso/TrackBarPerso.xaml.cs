@@ -88,11 +88,8 @@ namespace DjApplication3.view.composentPerso
             double pos = ((double)(value - Minimum) / (Maximum - Minimum)) * ActualWidth - cursorRectangle.ActualWidth/2;
 
             // Mettre à jour la position du rectangle du curseur
-            Dispatcher.Invoke(() =>
-            {
-                translateTransform.X = pos;
-            });
-            
+            translateTransform.X = pos;
+
         }
 
         private void UserControl_MouseUp(object sender, MouseButtonEventArgs e)

@@ -70,7 +70,26 @@ namespace DjApplication3.view.activity
 
             hercules.eventPisteLeft += Hercules_eventPisteLeft;
             hercules.eventPisteRight += Hercules_eventPisteRight;
+
+            hercules.eventScratchLeft += Hercules_eventScratchLeft;
+            hercules.eventScratchRight += Hercules_eventScratchRight;
             hercules.start();
+        }
+
+        private void Hercules_eventScratchRight(object? sender, int e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteDroite].changePosition(e != 127);
+            });
+        }
+
+        private void Hercules_eventScratchLeft(object? sender, int e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteDroite].changePosition(e!=127);
+            });
         }
 
         private void Hercules_eventPisteRight(object? sender, int e)
@@ -81,7 +100,6 @@ namespace DjApplication3.view.activity
                 {
                     mixage2Pistes.cb_pisteDroite.SelectedIndex = e - 1;
                 });
-               
             }
            
         }
@@ -94,44 +112,64 @@ namespace DjApplication3.view.activity
                 {
                     mixage2Pistes.cb_pisteGauche.SelectedIndex = e - 1;
                 });
-                
             }
                 
         }
 
         private void Hercules_eventVolumeRight(object? sender, float e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteDroite].setTb_volume(e);
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteDroite].setTb_volume(e);
+            });
         }
 
         private void Hercules_eventVolumeLeft(object? sender, float e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteGauche].setTb_volume(e);
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteGauche].setTb_volume(e);
+            });
         }
 
         private void Hercules_eventMixe(object? sender, float e)
         {
-            mixage2Pistes.tb_mixage.Value = (int)(e * 100);
+            Dispatcher.Invoke(() =>
+            {
+                mixage2Pistes.tb_mixage.Value = (int)(e * 100);
+            });
         }
 
         private void Hercules_eventCasqueRight(object? sender, EventArgs e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteDroite].btHeadphone();
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteDroite].btHeadphone();
+            });
         }
 
         private void Hercules_eventCasqueLeft(object? sender, EventArgs e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteGauche].btHeadphone();
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteGauche].btHeadphone();
+            });
         }
 
         private void Hercules_eventPlayPauseRight(object? sender, EventArgs e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteDroite].btPlayPause();
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteDroite].btPlayPause();
+            });
         }
 
         private void Hercules_eventPlayPauseLeft(object? sender, EventArgs e)
         {
-            lecteurMusiques[mixage2Pistes.nbrPisteGauche].btPlayPause();
+            Dispatcher.Invoke(() =>
+            {
+                lecteurMusiques[mixage2Pistes.nbrPisteGauche].btPlayPause();
+            });
         }
 
         public void Dispose()
