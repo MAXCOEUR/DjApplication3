@@ -280,7 +280,7 @@ namespace DjApplication3.DataSource
 
             //string lienMusique = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
             string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
-
+            string lienMusiqueTmp="";
 
             if (System.IO.File.Exists(lienMusique))
             {
@@ -306,7 +306,7 @@ namespace DjApplication3.DataSource
                 var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
                 var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
                 //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
-                string lienMusiqueTmp = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
+                lienMusiqueTmp = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
                 Console.WriteLine("start download :" + musiqueyt.title + " " + musiqueyt.url);
                 await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);
@@ -339,6 +339,12 @@ namespace DjApplication3.DataSource
                 }
                 try
                 {
+                    if (lienMusiqueTmp != "")
+                    {
+                        File.Delete(lienMusiqueTmp);
+                        File.Delete(lienMusique);
+                    }
+                    
                     return await otherdl(musiqueyt);
                 }
                 catch (Exception ex2)
