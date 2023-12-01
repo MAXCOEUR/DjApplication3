@@ -150,22 +150,6 @@ namespace DjApplication3.view.composentPerso
             }
         }
 
-        private void cursorRectangle_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (isLeftDown)
-            {
-                double trackBarWidth = ActualWidth;
-
-                // La plage totale de valeurs du TrackBar (Maximum - Minimum)
-                int valueRange = Maximum - Minimum;
-
-                // Calculer la nouvelle valeur en fonction des coordonnées de la souris
-                int newPosition = (int)(e.GetPosition(this).X / trackBarWidth * valueRange);
-
-                Value = Math.Max(Minimum, Math.Min(Maximum, newPosition));
-            }
-        }
-
         private void cursorRectangle_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -187,7 +171,23 @@ namespace DjApplication3.view.composentPerso
             Value = Value;
         }
 
-        private void cursorRectangle_MouseLeave(object sender, MouseEventArgs e)
+        private void Grid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isLeftDown)
+            {
+                double trackBarWidth = ActualWidth;
+
+                // La plage totale de valeurs du TrackBar (Maximum - Minimum)
+                int valueRange = Maximum - Minimum;
+
+                // Calculer la nouvelle valeur en fonction des coordonnées de la souris
+                int newPosition = (int)(e.GetPosition(this).X / trackBarWidth * valueRange);
+
+                Value = Math.Max(Minimum, Math.Min(Maximum, newPosition));
+            }
+        }
+
+        private void Grid_MouseLeave(object sender, MouseEventArgs e)
         {
             isLeftDown = false;
         }
