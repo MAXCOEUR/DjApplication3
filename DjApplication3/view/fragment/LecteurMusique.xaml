@@ -37,11 +37,11 @@
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Label x:Name="tv_titleAuthor" Content="tv_titleAuthor" Grid.ColumnSpan="11" VerticalAlignment="Center" Foreground="#FFFDFDFD"/>
-        <Label x:Name="tv_bpm" Grid.Column="11" Content="tv_bpm" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
-        <Label x:Name="tv_nbrPiste" Grid.Column="13" Content="tv_nbrPiste" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" Foreground="White"/>
+        <Label x:Name="tv_bpm" Grid.Column="10" Content="tv_bpm" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+        <Label x:Name="tv_nbrPiste" Grid.Column="12" Content="tv_nbrPiste" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="3" Foreground="White" FontSize="20" FontWeight="Bold"/>
         <Label x:Name="tv_durationCurrent" Content="tv_durationCurrent" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.ColumnSpan="3" Foreground="White"/>
         <Label x:Name="tv_durationTotal" Content="tv_durationTotal" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="6" Grid.ColumnSpan="3" Foreground="White"/>
-        <Label x:Name="tv_durationRest" Content="tv_durationRest" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="12" Grid.ColumnSpan="3" Foreground="White"/>
+        <Label x:Name="tv_durationRest" Content="tv_durationRest" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Grid.Column="12" Grid.ColumnSpan="3" Foreground="White" FontWeight="Bold"/>
         <Button x:Name="bt_playPause" Content="" Grid.Row="5" Grid.ColumnSpan="2" Click="bt_playPause_Click" Background="#FF0000">
             <Button.Template>
                 <ControlTemplate TargetType="Button">

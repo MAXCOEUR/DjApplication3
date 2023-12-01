@@ -13,8 +13,12 @@
             <ColumnDefinition Width="80"/>
         </Grid.ColumnDefinitions>
         <local:TrackBarPerso x:Name="tb_mixage" Grid.Column="1" Default="50"/>
-        <ComboBox x:Name="cb_pisteGauche" SelectionChanged="cb_pisteGauche_SelectionChanged" VerticalAlignment="Center"/>
-        <ComboBox x:Name="cb_pisteDroite" Grid.Column="2" SelectionChanged="cb_pisteDroite_SelectionChanged" VerticalAlignment="Center"/>
+        <ComboBox x:Name="cb_pisteGauche" SelectionChanged="cb_pisteGauche_SelectionChanged" VerticalAlignment="Center" BorderBrush="#FF0E0E0E" Background="White" Foreground="Black" BorderThickness="2" FontSize="24" FontWeight="Bold">
+            
+        </ComboBox>
+        <ComboBox x:Name="cb_pisteDroite" Grid.Column="2" SelectionChanged="cb_pisteDroite_SelectionChanged" VerticalAlignment="Center" BorderBrush="Black" Background="White" Foreground="Black" BorderThickness="2" FontSize="24" FontWeight="Bold">
+        
+        </ComboBox>
 
     </Grid>
 </UserControl>
