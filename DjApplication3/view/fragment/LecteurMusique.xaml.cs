@@ -185,15 +185,15 @@ namespace DjApplication3.view.page
         {
             audioPlayer.Stop();
 
-            long positionActuelle=0;
+            float positionActuelle=0F;
             if (audioPlayer.WaveSource != null)
             {
-                positionActuelle = audioPlayer.WaveSource.Position;
+                positionActuelle = (float)audioPlayer.WaveSource.Position/ audioPlayer.WaveSource.Length;
             }
             audioPlayer.Initialize(fichierAudio);
             if (audioPlayer.WaveSource != null)
             {
-                audioPlayer.WaveSource.Position = positionActuelle;
+                audioPlayer.WaveSource.Position = (int)(positionActuelle*audioPlayer.WaveSource.Length);
             }
 
             updateVolume();
