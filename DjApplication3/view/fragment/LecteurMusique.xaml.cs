@@ -186,15 +186,31 @@ namespace DjApplication3.view.page
             audioPlayer.Stop();
 
             float positionActuelle=0F;
-            if (audioPlayer.WaveSource != null)
+            try
             {
-                positionActuelle = (float)audioPlayer.WaveSource.Position/ audioPlayer.WaveSource.Length;
+                if (audioPlayer.WaveSource != null)
+                {
+                    positionActuelle = (float)audioPlayer.WaveSource.Position / audioPlayer.WaveSource.Length;
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
             audioPlayer.Initialize(fichierAudio);
-            if (audioPlayer.WaveSource != null)
+
+            try
             {
-                audioPlayer.WaveSource.Position = (int)(positionActuelle*audioPlayer.WaveSource.Length);
+                if (audioPlayer.WaveSource != null)
+                {
+                    audioPlayer.WaveSource.Position = (int)(positionActuelle * audioPlayer.WaveSource.Length);
+                }
+            }catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
+            
 
             updateVolume();
         }
