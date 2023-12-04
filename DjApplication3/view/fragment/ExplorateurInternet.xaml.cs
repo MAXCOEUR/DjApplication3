@@ -211,6 +211,10 @@ namespace DjApplication3.view.fragment
         }
         private void ViewModel_TacheDownload(object? sender, Musique musique)
         {
+            if (musique == null)
+            {
+                return;
+            }
             var resultatRecherche = listeMusiqueSelectedPiste.Find(tuple => tuple.Item1.title == musique.title && tuple.Item1.author == musique.author);
             if (resultatRecherche != default)
             {
