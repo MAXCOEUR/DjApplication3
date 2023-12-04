@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace DjApplication3.view.fragment
@@ -199,6 +200,15 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.Items.Refresh();
         }
 
+        private void dgv_listeMusic_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
+                MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+                eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+            }
+        }
     }
 }
 

@@ -272,6 +272,16 @@ namespace DjApplication3.view.fragment
             // Actualiser le contrôle
             dgv_listeMusic.Items.Refresh();
         }
+
+        private void dgv_listeMusic_KeyUp(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
+                MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+                valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
+            }
+        }
     }
     public class MusiqueColonne
     {
