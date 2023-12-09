@@ -277,7 +277,10 @@ namespace DjApplication3.view.fragment
         {
             if(e.Key == Key.Enter)
             {
-                dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
+                if (dgv_listeMusic.SelectedIndex < dgv_listeMusic.Items.Count - 1)
+                {
+                    dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
+                }
                 MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
                 valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
             }
