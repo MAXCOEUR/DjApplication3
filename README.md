@@ -1,12 +1,6 @@
 # DjApplication3
 
-DjApplication3 est une application qui peut fonctionner avec une table de mixage Hercules DjControl Instinct. Pour utiliser l'interaction, vous devez installer Wireshark et USBPcap.
-
-## Installation de Wireshark
-
-1. Téléchargez Wireshark depuis le site officiel : [Téléchargement de Wireshark](https://www.wireshark.org/download.html).
-
-2. Pendant l'installation, assurez-vous de cocher l'option d'installation pour USBPcap.
+DjApplication3 est une application qui peut fonctionner avec une table de mixage Hercules DjControl Instinct.
 
 ## Installation des pilotes Hercules
 
@@ -20,12 +14,6 @@ DjApplication3 est une application qui peut fonctionner avec une table de mixage
 
 2. Ouvrez les options de DjApplication3.
 
-3. Entrez le chemin d'accès complet vers l'exécutable TShark (ligne de commande de Wireshark) dans le champ `chemin jusqu'à TShark`.
+3. choisiez vos option des sortie audio au péripherique midi Hercules DjControl Instinct.
 
-   Exemple : `C:\Program Files\Wireshark\tshark.exe`
-
-4. Trouvez avec l'aide de Wireshark le numéro Source de la table de mixage et entrez-le dans les options dans le champ `numéro USB`.
-
-   Exemple : `1.8`
-
-5. Cliquez sur le bouton `lancer Hercules`. Cela lancera l'écoute du périphérique.
+4. Puis fermez le menu option et tous fonctionne

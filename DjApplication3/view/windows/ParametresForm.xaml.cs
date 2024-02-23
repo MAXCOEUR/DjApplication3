@@ -28,7 +28,6 @@ namespace DjApplication3.view.windows
         private string decoYtMusic = "Deconnexion Youtube Music";
         private SettingsManager settingsManager = SettingsManager.Instance;
 
-        public event EventHandler eventReloadHecules;
         public ParametresForm()
         {
             InitializeComponent();
@@ -43,15 +42,25 @@ namespace DjApplication3.view.windows
                 cb_audioStandard.Items.Add(sortie);
                 cb_audioHeadPhone.Items.Add(sortie);
             }
-            cb_audioStandard.SelectedItem = cb_audioStandard.Items[settingsManager.nbrOut];
-            cb_audioHeadPhone.SelectedItem = cb_audioHeadPhone.Items[settingsManager.nbrHeadPhone];
+            if(cb_audioStandard.Items.Count>0 && cb_audioHeadPhone.Items.Count > 0)
+            {
+                cb_audioStandard.SelectedItem = cb_audioStandard.Items[settingsManager.nbrOut];
+                cb_audioHeadPhone.SelectedItem = cb_audioHeadPhone.Items[settingsManager.nbrHeadPhone];
+            }
 
             List<string> installedBrowsers = GetInstalledBrowsers();
             cb_browser.ItemsSource= installedBrowsers;
             cb_browser.SelectedIndex=settingsManager.browser;
             settingsManager.browserName = cb_browser.SelectedItem.ToString();
-            tb_pathTshark.Text = settingsManager.pathTShark;
-            tb_numeroUSB.Text = settingsManager.numeroUSB;
+
+            foreach (var midi in settingsManager.listMidi)
+            {
+                cb_midi.Items.Add(midi.ProductName);
+            }
+            if (cb_midi.Items.Count > 0)
+            {
+                cb_midi.SelectedItem = cb_midi.Items[settingsManager.nbrMidi];
+            }
         }
 
         private void setButtonConnectionYoutubeMusic() {
@@ -130,19 +139,9 @@ namespace DjApplication3.view.windows
             btConnected();
         }
 
-        private void tb_chemainTshark_TextChanged(object sender, TextChangedEventArgs e)
+        private void cb_midi_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            settingsManager.pathTShark = tb_pathTshark.Text;
-        }
-
-        private void tb_numeroUSB_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            settingsManager.numeroUSB=tb_numeroUSB.Text;
-        }
-
-        private void bt_reloadHercule_Click(object sender, RoutedEventArgs e)
-        {
-            eventReloadHecules?.Invoke(this, e);
+            settingsManager.nbrMidi = cb_midi.SelectedIndex;
         }
     }
 }

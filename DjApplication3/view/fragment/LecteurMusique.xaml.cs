@@ -2,6 +2,7 @@
 using CSCore.Codecs;
 using CSCore.SoundOut;
 using DjApplication3.model;
+using DjApplication3.outils;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Drawing;
@@ -30,10 +31,13 @@ namespace DjApplication3.view.page
 
         float volumeMaster = 1;
 
+        HerculesDJ hercules;
+
         public LecteurMusique()
         {
             InitializeComponent();
             InitializeTimer();
+            hercules = HerculesDJ.Instance;
             tb_volume.ValueChanged += Tb_volume_ValueChanged;
             LecteurMusiqueViewModel.TacheGetBPM += LecteurMusiqueViewModel_TacheGetBPM;
         }
@@ -80,6 +84,7 @@ namespace DjApplication3.view.page
             {
                 img_PlayPause.Source = imgPause;
             }
+            
         }
 
 
@@ -96,7 +101,6 @@ namespace DjApplication3.view.page
             {
                 img_PlayPause.Source = imgPlay;
             }
-
         }
         public void stop()
         {
@@ -343,6 +347,12 @@ namespace DjApplication3.view.page
 
             isHeadPhone = !isHeadPhone;
             updateOutAudio();
+        }
+
+        public bool isPlay()
+        {
+            if (audioPlayer.DebuggingId == -1) return false;
+            return audioPlayer.PlaybackState == PlaybackState.Playing;
         }
     }
 }

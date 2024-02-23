@@ -1,16 +1,14 @@
 ﻿using DjApplication3.model;
+using NAudio.Midi;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TagLib.WavPack;
 
 namespace DjApplication3.outils
 {
     internal class HerculesDJ
     {
+        private static HerculesDJ _instance;
+        private static readonly object _lockObject = new object();
+
         public event EventHandler eventPlayPauseLeft;
         public event EventHandler eventPlayPauseRight;
         public event EventHandler eventCasqueLeft;
@@ -22,204 +20,215 @@ namespace DjApplication3.outils
         public event EventHandler<float> eventMixe;
         public event EventHandler<int> eventScratchLeft;
         public event EventHandler<int> eventScratchRight;
-        Process process;
+        public event EventHandler<bool> eventScratchLeftPress;
+        public event EventHandler<bool> eventScratchRightPress;
 
-        bool isPressSratchLeft = false;
-        bool isPressSratchRight = false;
-        public async void start()
+        MidiIn midiIn;
+
+        public static HerculesDJ Instance
         {
-            if (!System.IO.File.Exists(SettingsManager.Instance.pathTShark))
+            get
             {
-                return;
+                lock (_lockObject)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new HerculesDJ();
+                    }
+                    return _instance;
+                }
             }
-            // Créer un processus pour exécuter tshark
-            process = new Process();
-            process.StartInfo.FileName = SettingsManager.Instance.pathTShark;
-            process.StartInfo.Arguments = $"-i USBPcap1 -Y \"usb.src contains {SettingsManager.Instance.numeroUSB}\" -x -l";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
-
-            // Rediriger la sortie standard pour la lecture
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (string.IsNullOrEmpty(e.Data))
-                {
-                    return;
-                }
-                string[] split = e.Data.Split(' ');
-                if (split.Length == 0 || split[0] != "0010")
-                {
-                    return;
-                }
-
-                string param1 = split[14];
-                string param2 = split[15];
-                string param3 = split[16];
-
-                if (param1 != "90" && param1 != "b0")
-                {
-                    return;
-                }
-                buttonHercules(param1, param2, param3);
-            };
-
-            // Démarrer le processus et commencer à lire la sortie
-            process.Start();
-            process.BeginOutputReadLine();
         }
+        private HerculesDJ()
+        {
+
+        }
+        public void start()
+        {
+            try
+            {
+                midiIn = new MidiIn(SettingsManager.Instance.nbrMidi);
+                midiIn.MessageReceived += midiIn_MessageReceived;
+                midiIn.ErrorReceived += midiIn_ErrorReceived;
+                midiIn.Start();
+
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+
+            return;
+
+            
+        }
+
         public void Dispose()
         {
-            process?.Dispose();
+            if (midiIn == null) return;
+            midiIn.Stop();
+            midiIn.Dispose();
         }
 
-
-        private void buttonHercules(string param1,string param2,string param3)
+        private void midiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
-            int resultat = Convert.ToInt32(param3, 16);
+            if (midiIn == null) return;
 
-            switch (param1)
+            MidiEvent midiEvent = e.MidiEvent;
+
+            if (midiEvent is NoteEvent)
             {
-                case "90":
-                    switch (param2)
-                    {
-                        case "30":
-                            if(resultat == 127)
-                            {
-                                eventPlayPauseRight?.Invoke(this, EventArgs.Empty);
-                            }
-                            Console.WriteLine("Droite playPause " + resultat);
-                            break;
-                        case "32":
-                            if (resultat == 127)
-                            {
-                                eventCasqueRight?.Invoke(this, EventArgs.Empty);
-                            }
-                            Console.WriteLine("Droite casque "+ resultat);
-                            break;
-                        case "23":
-                            if (resultat == 127)
-                            {
-                                eventPisteRight?.Invoke(this, 1);
-                            }
-                            Console.WriteLine("Droite piste1 "+ resultat);
-                            break;
-                        case "24":
-                            if (resultat == 127)
-                            {
-                                eventPisteRight?.Invoke(this, 2);
-                            }
-                            Console.WriteLine("Droite piste2 "+ resultat);
-                            break;
-                        case "25":
-                            if (resultat == 127)
-                            {
-                                eventPisteRight?.Invoke(this, 3);
-                            }
-                            Console.WriteLine("Droite piste3 "+ resultat);
-                            break;
-                        case "26":
-                            if (resultat == 127)
-                            {
-                                eventPisteRight?.Invoke(this, 4);
-                            }
-                            Console.WriteLine("Droite piste4 "+ resultat);
-                            break;
-                        case "34":
-                            if (resultat == 127)
-                            {
-                                isPressSratchRight = true;
-                            }
-                            else
-                            {
-                                isPressSratchRight = false;
-                            }
-                            Console.WriteLine("Droite scrachbutton " + resultat);
-                            break;
-
-                        case "16":
-                            if (resultat == 127)
-                            {
-                                eventPlayPauseLeft?.Invoke(this, EventArgs.Empty);
-                            }
-                            Console.WriteLine("Gauche playPause " + resultat);
-                            break;
-                        case "18":
-                            if (resultat == 127)
-                            {
-                                eventCasqueLeft?.Invoke(this, EventArgs.Empty);
-                            }
-                            Console.WriteLine("Gauche casque " + resultat);
-                            break;
-                        case "09":
-                            if (resultat == 127)
-                            {
-                                eventPisteLeft?.Invoke(this, 1);
-                            }
-                            Console.WriteLine("Gauche piste1 " + resultat);
-                            break;
-                        case "0a":
-                            if (resultat == 127)
-                            {
-                                eventPisteLeft?.Invoke(this, 2);
-                            }
-                            Console.WriteLine("Gauche piste2 " + resultat);
-                            break;
-                        case "0b":
-                            if (resultat == 127)
-                            {
-                                eventPisteLeft?.Invoke(this, 3);
-                            }
-                            Console.WriteLine("Gauche piste3 " + resultat);
-                            break;
-                        case "0c":
-                            if (resultat == 127)
-                            {
-                                eventPisteLeft?.Invoke(this, 4);
-                            }
-                            Console.WriteLine("Gauche piste4 " + resultat);
-                            break;
-                        case "1a":
-                            if (resultat == 127)
-                            {
-                                isPressSratchLeft = true;
-                            }
-                            else
-                            {
-                                isPressSratchLeft = false;
-                            }
-                            Console.WriteLine("Gauche scrachbutton " + resultat);
-                            break;
-                    }
-                    break;
-                case "b0":
-                    switch (param2)
-                    {
-                        case "31":
-                            eventScratchRight?.Invoke(this, resultat);
-                            Console.WriteLine("Droite scrach " + resultat);
-                            break;
-                        case "3b":
-                            eventVolumeRight?.Invoke(this, resultat/127.0F);
-                            Console.WriteLine("Droite volume " + resultat / 127.0F);
-                            break;
-
-                        case "30":
-                            eventScratchLeft?.Invoke(this, resultat);
-                            Console.WriteLine("Gauche scrach " + resultat);
-                            break;
-                        case "36":
-                            eventVolumeLeft?.Invoke(this, resultat / 127.0F);
-                            Console.WriteLine("Gauche volume " + resultat / 127.0F);
-                            break;
-
-                        case "3a":
-                            eventMixe?.Invoke(this, resultat / 127.0F);
-                            Console.WriteLine("mixage " + resultat / 127.0F);
-                            break;
-                    }
-                    break;
+                NoteEvent noteOnEvent = midiEvent as NoteEvent;
+                switch (noteOnEvent.NoteNumber)
+                {
+                    case 48:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPlayPauseRight?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Droite playPause " + noteOnEvent.Velocity);
+                        break;
+                    case 22:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPlayPauseLeft?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Gauche playPause " + noteOnEvent.Velocity);
+                        break;
+                    case 50:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventCasqueRight?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Droite casque " + noteOnEvent.Velocity);
+                        break;
+                    case 24:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventCasqueLeft?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Gauche casque " + noteOnEvent.Velocity);
+                        break;
+                    case 9:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteLeft?.Invoke(this, 1);
+                        }
+                        Console.WriteLine("Gauche piste1 " + noteOnEvent.Velocity);
+                        break;
+                    case 10:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteLeft?.Invoke(this, 2);
+                        }
+                        Console.WriteLine("Gauche piste2 " + noteOnEvent.Velocity);
+                        break;
+                    case 11:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteLeft?.Invoke(this, 3);
+                        }
+                        Console.WriteLine("Gauche piste3 " + noteOnEvent.Velocity);
+                        break;
+                    case 12:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteLeft?.Invoke(this, 4);
+                        }
+                        Console.WriteLine("Gauche piste4 " + noteOnEvent.Velocity);
+                        break;
+                    case 35:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteRight?.Invoke(this, 1);
+                        }
+                        Console.WriteLine("Droite piste1 " + noteOnEvent.Velocity);
+                        break;
+                    case 36:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteRight?.Invoke(this, 2);
+                        }
+                        Console.WriteLine("Droite piste2 " + noteOnEvent.Velocity);
+                        break;
+                    case 37:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteRight?.Invoke(this, 3);
+                        }
+                        Console.WriteLine("Droite piste3 " + noteOnEvent.Velocity);
+                        break;
+                    case 38:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPisteRight?.Invoke(this, 4);
+                        }
+                        Console.WriteLine("Droite piste4 " + noteOnEvent.Velocity);
+                        break;
+                    case 26:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventScratchLeftPress?.Invoke(this, true);
+                        }
+                        else
+                        {
+                            eventScratchLeftPress?.Invoke(this, false);
+                        }
+                        Console.WriteLine("eventScratchLeftPress " + noteOnEvent.Velocity);
+                        break;
+                    case 52:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventScratchRightPress?.Invoke(this, true);
+                        }
+                        else
+                        {
+                            eventScratchRightPress?.Invoke(this, false);
+                        }
+                        Console.WriteLine("eventScratchRightPress " + noteOnEvent.Velocity);
+                        break;
+                }
             }
+            else if (midiEvent is ControlChangeEvent)
+            {
+                ControlChangeEvent controlEvent = midiEvent as ControlChangeEvent;
+                switch (((int)controlEvent.Controller))
+                {
+                    case 59:
+                        eventVolumeRight?.Invoke(this, controlEvent.ControllerValue / 127.0F);
+                        Console.WriteLine("Gauche volume " + controlEvent.ControllerValue / 127.0F);
+                        break;
+                    case 54:
+                        eventVolumeLeft?.Invoke(this, controlEvent.ControllerValue / 127.0F);
+                        Console.WriteLine("Droite volume " + controlEvent.ControllerValue / 127.0F);
+                        break;
+                    case 48:
+                        eventScratchLeft?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Gauche scrach " + controlEvent.ControllerValue);
+                        break;
+                    case 49:
+                        eventScratchRight?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Droite scrach " + controlEvent.ControllerValue);
+                        break;
+                    case 50:
+                        eventScratchLeft?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Gauche scrach " + controlEvent.ControllerValue);
+                        break;
+                    case 51:
+                        eventScratchRight?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Droite scrach " + controlEvent.ControllerValue);
+                        break;
+                    case 58:
+                        eventMixe?.Invoke(this, controlEvent.ControllerValue / 127.0F);
+                        Console.WriteLine("mixage " + controlEvent.ControllerValue / 127.0F);
+                        break;
+                }
+            }
+        }
+        private void midiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
+        {
+            int rawMessage = e.RawMessage;
+            Console.WriteLine(rawMessage);
         }
     }
 }

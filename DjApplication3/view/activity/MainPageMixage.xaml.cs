@@ -30,6 +30,8 @@ namespace DjApplication3.view.activity
         List<LecteurMusique> lecteurMusiques = new List<LecteurMusique>();
         HerculesDJ hercules;
         ExplorateurYtMusicViewModel explorateurYtMusicViewModel;
+        bool statePlayPresScratchLeft = false;
+        bool statePlayPresScratchRight = false;
         public MainPageMixage()
         {
             InitializeComponent();
@@ -59,7 +61,7 @@ namespace DjApplication3.view.activity
         void startHercule()
         {
             hercules?.Dispose();
-            hercules = new HerculesDJ();
+            hercules = HerculesDJ.Instance;
             hercules.eventPlayPauseLeft += Hercules_eventPlayPauseLeft;
             hercules.eventPlayPauseRight += Hercules_eventPlayPauseRight;
             hercules.eventCasqueLeft += Hercules_eventCasqueLeft;
@@ -73,7 +75,56 @@ namespace DjApplication3.view.activity
 
             hercules.eventScratchLeft += Hercules_eventScratchLeft;
             hercules.eventScratchRight += Hercules_eventScratchRight;
+            hercules.eventScratchLeftPress += Hercules_eventScratchLeftPress;
+            hercules.eventScratchRightPress += Hercules_eventScratchRightPress;
             hercules.start();
+        }
+
+        private void Hercules_eventScratchRightPress(object? sender, bool e)
+        {
+            if (e)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    statePlayPresScratchRight = lecteurMusiques[mixage2Pistes.nbrPisteDroite].isPlay();
+                    lecteurMusiques[mixage2Pistes.nbrPisteDroite].pause();
+                });
+
+            }
+            else
+            {
+                if (statePlayPresScratchRight)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        lecteurMusiques[mixage2Pistes.nbrPisteDroite].play();
+                    });
+                }
+
+            }
+
+        }
+
+        private void Hercules_eventScratchLeftPress(object? sender, bool e)
+        {
+            if (e)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    statePlayPresScratchLeft = lecteurMusiques[mixage2Pistes.nbrPisteGauche].isPlay();
+                    lecteurMusiques[mixage2Pistes.nbrPisteGauche].pause();
+                });
+            }
+            else
+            {
+                if (statePlayPresScratchLeft)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        lecteurMusiques[mixage2Pistes.nbrPisteGauche].play();
+                    });
+                }
+            }
         }
 
         private void Hercules_eventScratchRight(object? sender, int e)
@@ -300,17 +351,12 @@ namespace DjApplication3.view.activity
         {
             ParametresForm parametresForm = new ParametresForm();
             parametresForm.Closing += ParametresForm_Closing;
-            parametresForm.eventReloadHecules += ParametresForm_eventReloadHecules;
             parametresForm.Show();
-        }
-
-        private void ParametresForm_eventReloadHecules(object? sender, EventArgs e)
-        {
-            startHercule();
         }
 
         private void ParametresForm_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            startHercule();
             explorateurYtMusicViewModel.getPlayListe();
         }
     }

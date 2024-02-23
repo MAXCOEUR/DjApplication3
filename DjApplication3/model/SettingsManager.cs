@@ -1,4 +1,5 @@
 ﻿using CSCore.CoreAudioAPI;
+using NAudio.Midi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -18,7 +19,10 @@ namespace DjApplication3.model
         public int nbrHeadPhone { get; set; }
         public int nbrOut { get; set; }
 
+        public int nbrMidi { get; set; }
+
         public int nbrPiste { get; set; }
+        public List<MidiInCapabilities> listMidi = new List<MidiInCapabilities>();
 
         public int browser { get; set; }
         public string browserName { get; set; }
@@ -58,11 +62,13 @@ namespace DjApplication3.model
             // Initialise les paramètres par défaut ici
             timeBeforBlinkSecond = 30;
             updateMMDeviceCollection();
+            updateListMidi();
             nbrHeadPhone = 0;
             nbrOut = 0;
             nbrPiste = 2;
             browser = 0;
             browserName = "edge";
+            nbrMidi = 0;
             numeroUSB = "";
         }
 
@@ -89,6 +95,7 @@ namespace DjApplication3.model
                     else
                     {
                         _instance.updateMMDeviceCollection();
+                        _instance.updateListMidi();
                     }
                     return _instance;
                 }
@@ -99,6 +106,14 @@ namespace DjApplication3.model
         {
             enumerator = new MMDeviceEnumerator();
             dispositifsAudio = enumerator.EnumAudioEndpoints(DataFlow.Render, DeviceState.Active);
+        }
+        private void updateListMidi()
+        {
+            listMidi.Clear();
+            for (int device = 0; device < MidiIn.NumberOfDevices; device++)
+            {
+                listMidi.Add(MidiIn.DeviceInfo(device));
+            }
         }
     }
 }
