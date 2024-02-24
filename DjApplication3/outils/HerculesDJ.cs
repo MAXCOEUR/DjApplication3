@@ -22,6 +22,8 @@ namespace DjApplication3.outils
         public event EventHandler<int> eventScratchRight;
         public event EventHandler<bool> eventScratchLeftPress;
         public event EventHandler<bool> eventScratchRightPress;
+        public event EventHandler eventVolumeUpHeadPhone;
+        public event EventHandler eventVolumeDownHeadPhone;
 
         MidiIn midiIn;
 
@@ -65,10 +67,10 @@ namespace DjApplication3.outils
 
         public void Dispose()
         {
+            _instance = null;
             if (midiIn == null) return;
             midiIn.Stop();
             midiIn.Dispose();
-            _instance = null;
         }
 
         private void midiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
@@ -187,6 +189,20 @@ namespace DjApplication3.outils
                             eventScratchRightPress?.Invoke(this, false);
                         }
                         Console.WriteLine("eventScratchRightPress " + noteOnEvent.Velocity);
+                        break;
+                    case 64:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventVolumeDownHeadPhone?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventVolumeDownHeadPhone " + noteOnEvent.Velocity);
+                        break;
+                    case 65:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventVolumeUpHeadPhone?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventVolumeUpHeadPhone " + noteOnEvent.Velocity);
                         break;
                 }
             }

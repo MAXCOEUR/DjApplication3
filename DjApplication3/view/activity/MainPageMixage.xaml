@@ -20,6 +20,10 @@
                 <ComboBoxItem Content="3"/>
                 <ComboBoxItem Content="4"/>
             </ComboBox>
+            <GridSplitter HorizontalAlignment="Left" Margin="10,0,10,0" Grid.RowSpan="2" Width="5" Background="Black"/>
+            <Image Source="/DjApplication3;component/Resources/headphone.png" Width="24"/>
+            <composentPerso:TrackBarPerso x:Name="tb_volume_headPhone" Width="250" Margin="10,0,0,0"/>
+
         </ToolBar>
 
         <Grid Grid.Row="1">
@@ -56,6 +60,7 @@
                 </TabItem>
             </TabControl>
         </Grid>
+        
 
 
     </Grid>

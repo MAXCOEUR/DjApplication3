@@ -1,5 +1,6 @@
 ﻿using DjApplication3.model;
 using DjApplication3.outils;
+using DjApplication3.view.composentPerso;
 using DjApplication3.view.fragment;
 using DjApplication3.view.page;
 using DjApplication3.view.windows;
@@ -52,10 +53,20 @@ namespace DjApplication3.view.activity
             mixage2Pistes.tb_mixage.ValueChanged += Tb_mixage_ValueChanged;
             mixage2Pistes.eventSetPiste += Mixage2Pistes_eventSetPiste;
 
+            tb_volume_headPhone.ValueChanged += volume_headPhone_ValueChanged;
+
             Loaded += MainPageMixage_Loaded;
 
             
             startHercule();
+        }
+
+        private void volume_headPhone_ValueChanged(object? sender, int e)
+        {
+            foreach(LecteurMusique lecteurMusique in lecteurMusiques)
+            {
+                lecteurMusique.setVolumeHeadPhone(e);
+            }
         }
 
         void startHercule()
@@ -77,7 +88,27 @@ namespace DjApplication3.view.activity
             hercules.eventScratchRight += Hercules_eventScratchRight;
             hercules.eventScratchLeftPress += Hercules_eventScratchLeftPress;
             hercules.eventScratchRightPress += Hercules_eventScratchRightPress;
+
+            hercules.eventVolumeDownHeadPhone += Hercules_eventVolumeDownHeadPhone;
+            hercules.eventVolumeUpHeadPhone += Hercules_eventVolumeUpHeadPhone;
+
             hercules.start();
+        }
+
+        private void Hercules_eventVolumeUpHeadPhone(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                tb_volume_headPhone.Value += 5;
+            });
+        }
+
+        private void Hercules_eventVolumeDownHeadPhone(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                tb_volume_headPhone.Value -= 5;
+            });
         }
 
         private void Hercules_eventScratchRightPress(object? sender, bool e)

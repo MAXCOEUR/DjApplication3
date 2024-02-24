@@ -30,6 +30,7 @@ namespace DjApplication3.view.page
         bool isHeadPhone = false;
 
         float volumeMaster = 1;
+        float volumeHeadPhone = 100.0F;
 
         HerculesDJ hercules;
 
@@ -276,10 +277,15 @@ namespace DjApplication3.view.page
             volumeMaster = volume;
             updateVolume();
         }
+        public void setVolumeHeadPhone(float volume)
+        {
+            volumeHeadPhone = volume;
+            updateVolume();
+        }
         private void updateVolume()
         {
             if (audioPlayer.DebuggingId == -1) return;
-            audioPlayer.Volume = isHeadPhone ? tb_volume.Value / 100.0F : tb_volume.Value / 100.0F * volumeMaster;
+            audioPlayer.Volume = isHeadPhone ? volumeHeadPhone/ 100.0F : tb_volume.Value / 100.0F * volumeMaster;
         }
 
         public void setTb_volume(float volume)
