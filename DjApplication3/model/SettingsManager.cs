@@ -10,6 +10,8 @@ namespace DjApplication3.model
         private static readonly object _lockObject = new object();
 
         // Déclare ici les propriétés de tes paramètres
+
+        public string APP_NAME { get;}
         public int timeBeforBlinkSecond { get; set; }
 
         public int nbrHeadPhone { get; set; }
@@ -39,6 +41,7 @@ namespace DjApplication3.model
             browser = 0;
             browserName = "edge";
             nbrMidi = 0;
+            APP_NAME = "DjApplication 3";
         }
 
         // Méthode pour obtenir l'instance unique de la classe

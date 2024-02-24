@@ -29,7 +29,6 @@ namespace DjApplication3
         public MainWindow()
         {
 
-            
             new FFmpegGestion();
             InitializeComponent();
         }
@@ -38,6 +37,10 @@ namespace DjApplication3
         {
             mainPageMixage.Dispose();
             cleanTmp();
+        }
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Maximized;
         }
 
         void cleanTmp()
@@ -61,6 +64,12 @@ namespace DjApplication3
                 Console.WriteLine(ex.ToString());
             }
 
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Maximized;
+            Title = SettingsManager.Instance.APP_NAME;
         }
     }
 }
