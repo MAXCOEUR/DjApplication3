@@ -68,6 +68,7 @@ namespace DjApplication3.outils
             if (midiIn == null) return;
             midiIn.Stop();
             midiIn.Dispose();
+            _instance = null;
         }
 
         private void midiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
