@@ -32,6 +32,8 @@ namespace DjApplication3.view.page
         float volumeMaster = 1;
         float volumeHeadPhone = 100.0F;
 
+        int nbrPist = 0;
+
         HerculesDJ hercules;
 
         public LecteurMusique()
@@ -85,7 +87,16 @@ namespace DjApplication3.view.page
             {
                 img_PlayPause.Source = imgPause;
             }
-            
+
+            if (nbrPist == 1)
+            {
+                hercules.playLeft(true);
+            }
+            if (nbrPist == 2)
+            {
+                hercules.playRight(true);
+            }
+
         }
 
 
@@ -101,6 +112,15 @@ namespace DjApplication3.view.page
             if (img_PlayPause != null)
             {
                 img_PlayPause.Source = imgPlay;
+            }
+
+            if (nbrPist == 1)
+            {
+                hercules.playLeft(false);
+            }
+            if (nbrPist == 2)
+            {
+                hercules.playRight(false);
             }
         }
         public void stop()
@@ -173,6 +193,29 @@ namespace DjApplication3.view.page
             audioPlayer.Device = isHeadPhone ? SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrHeadPhone] : SettingsManager.Instance.dispositifsAudio[SettingsManager.Instance.nbrOut];
             if (audioPlayer.DebuggingId == -1) return;
             bt_headphone.Background = isHeadPhone ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+
+            if (isHeadPhone)
+            {
+                if (nbrPist == 1)
+                {
+                    hercules.PreviewLeft(true);
+                }
+                if (nbrPist == 2)
+                {
+                    hercules.PreviewRight(true);
+                }
+            }
+            else
+            {
+                if (nbrPist == 1)
+                {
+                    hercules.PreviewLeft(false);
+                }
+                if (nbrPist == 2)
+                {
+                    hercules.PreviewRight(false);
+                }
+            }
             
 
             // Réinitialisez le lecteur audio
@@ -270,7 +313,8 @@ namespace DjApplication3.view.page
         }
         public void setNbrPiste(int nbr)
         {
-            tv_nbrPiste.Content = $"Piste {nbr}";
+            nbrPist = nbr;
+            tv_nbrPiste.Content = $"Piste {nbrPist}";
         }
         public void setMasterVolume(float volume)
         {

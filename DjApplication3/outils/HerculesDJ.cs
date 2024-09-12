@@ -1,6 +1,7 @@
 ﻿using DjApplication3.model;
 using NAudio.Midi;
 using System;
+using System.Collections.Generic;
 
 namespace DjApplication3.outils
 {
@@ -26,6 +27,7 @@ namespace DjApplication3.outils
         public event EventHandler eventVolumeDownHeadPhone;
 
         MidiIn midiIn;
+        MidiOut midiOut;
 
         public static HerculesDJ Instance
         {
@@ -45,11 +47,39 @@ namespace DjApplication3.outils
         {
 
         }
+
+        private void initOut()
+        {
+            List<MidiInCapabilities> listMidiIn = new List<MidiInCapabilities>();
+            for (int device = 0; device < MidiIn.NumberOfDevices; device++)
+            {
+                listMidiIn.Add(MidiIn.DeviceInfo(device));
+            }
+            for (int device = 0; device < MidiOut.NumberOfDevices; device++)
+            {
+                foreach (var item in listMidiIn)
+                {
+                    if (item.ProductName == MidiOut.DeviceInfo(device).ProductName)
+                    {
+                        midiOut = new MidiOut(device);
+                    }
+                }
+            }
+
+            playLeft(false);
+            playRight(false);
+
+            PreviewLeft(false);
+            PreviewRight(false);
+        }
         public void start()
         {
             try
             {
                 midiIn = new MidiIn(SettingsManager.Instance.nbrMidi);
+
+                initOut();
+
                 midiIn.MessageReceived += midiIn_MessageReceived;
                 midiIn.ErrorReceived += midiIn_ErrorReceived;
                 midiIn.Start();
@@ -246,6 +276,60 @@ namespace DjApplication3.outils
         {
             int rawMessage = e.RawMessage;
             Console.WriteLine(rawMessage);
+        }
+
+
+        public void playLeft(bool isOn)
+        {
+            if (isOn)
+            {
+                SendNoteOn(22, 127, 1);
+            }
+            else
+            {
+                SendNoteOn(22, 0, 1);
+            }
+        }
+        public void playRight(bool isOn)
+        {
+            if (isOn)
+            {
+                SendNoteOn(48, 127, 1);
+            }
+            else
+            {
+                SendNoteOn(48, 0, 1);
+            }
+        }
+
+        public void PreviewLeft(bool isOn)
+        {
+            if (isOn)
+            {
+                SendNoteOn(24, 127, 1);
+            }
+            else
+            {
+                SendNoteOn(24, 0, 1);
+            }
+        }
+        public void PreviewRight(bool isOn)
+        {
+            if (isOn)
+            {
+                SendNoteOn(50, 127, 1);
+            }
+            else
+            {
+                SendNoteOn(50, 0, 1);
+            }
+        }
+        private void SendNoteOn(int noteNumber, int velocity, int channel)
+        {
+            if (midiOut == null) return;
+
+            midiOut.Send(MidiMessage.StartNote(noteNumber, velocity, channel).RawData);
+            Console.WriteLine($"NoteOn sent: Note {noteNumber}, Velocity {velocity}, Channel {channel}");
         }
     }
 }
