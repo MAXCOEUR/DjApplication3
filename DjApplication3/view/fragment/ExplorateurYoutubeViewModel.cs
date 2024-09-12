@@ -17,7 +17,7 @@ namespace DjApplication3.View.userControlDJ
         public async override void search(string search)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique> musiques = await musiqueRepository.GetMusiqueYoutube(search);
+            List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueYoutube(search));
             TacheSearch?.Invoke(this, musiques);
         }
         public override int? getBpm(Musique musique)
@@ -28,7 +28,7 @@ namespace DjApplication3.View.userControlDJ
         async public override void DownloadMusique(Musique musiqueyt)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            Musique musique = await musiqueRepository.DownloadMusiqueYoutube(musiqueyt);
+            Musique musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYoutube(musiqueyt));
             TacheDownload?.Invoke(this, musique);
         }
     }

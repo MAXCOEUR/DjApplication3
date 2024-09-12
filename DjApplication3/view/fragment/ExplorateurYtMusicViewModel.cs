@@ -19,7 +19,7 @@ namespace DjApplication3.view.fragment
         public async override void DownloadMusique(Musique musiqueyt)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            Musique musique = await musiqueRepository.DownloadMusiqueYtMusic(musiqueyt);
+            Musique musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
             TacheDownload?.Invoke(this, musique);
         }
 
@@ -32,20 +32,20 @@ namespace DjApplication3.view.fragment
         public async override void search(string search)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique> musiques = await musiqueRepository.GetMusiqueYtMusic(search);
+            List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueYtMusic(search));
             TacheSearch?.Invoke(this, musiques);
         }
 
         public async void getMusiqueInPlayListe(string idPlayliste)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique> musiques = await musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste);
+            List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
             TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
         }
         public async void getPlayListe()
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<PlayListe> playListe = await musiqueRepository.GetPlayListeYtMusic();
+            List<PlayListe> playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
             TacheGetPlayListe?.Invoke(this, playListe);
         }
     }
