@@ -95,6 +95,7 @@ namespace DjApplication3.view.fragment
             }
             dgv_listeMusic.ItemsSource = musiques;
             dgv_listeMusic.Items.Refresh();
+            LoadingBar.Visibility = Visibility.Hidden;
         }
 
         private void ViewModel_TacheSearch(object? sender, List<Musique> e)
@@ -114,6 +115,7 @@ namespace DjApplication3.view.fragment
             }
             dgv_listeMusic.ItemsSource = musiques;
             dgv_listeMusic.Items.Refresh();
+            LoadingBar.Visibility = Visibility.Hidden;
         }
         private void SearchTimer_Tick(object sender, EventArgs e)
         {
@@ -133,6 +135,8 @@ namespace DjApplication3.view.fragment
             var treeViewSource = (List<PlayListe>)tv_tree.ItemsSource;
             tv_tree.ItemsSource = null;
             tv_tree.ItemsSource = treeViewSource;
+
+            LoadingBar.Visibility = Visibility.Visible;
 
             searchTimer.Stop();
             searchTimer.Start();
@@ -258,6 +262,7 @@ namespace DjApplication3.view.fragment
                 var selectedItem = (PlayListe)e.NewValue;
                 viewModelYtMusic.getMusiqueInPlayListe(selectedItem.id);
                 tb_serach.Text = "";
+                LoadingBar.Visibility = Visibility.Visible;
             }
         }
 

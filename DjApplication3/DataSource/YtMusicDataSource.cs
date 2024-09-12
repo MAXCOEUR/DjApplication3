@@ -87,8 +87,12 @@ namespace DjApplication3.DataSource
                         string authorTmp = "";
                         foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
                         {
-                            authorTmp = artistElement.GetProperty("name").GetString();
-                            break;
+                            authorTmp += artistElement.GetProperty("name").GetString();
+                            authorTmp += " | ";
+                        }
+                        if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                        {
+                            authorTmp = authorTmp.Remove(authorTmp.Length - 3);
                         }
 
                         Musique musique = new Musique(
@@ -171,9 +175,14 @@ namespace DjApplication3.DataSource
                         string authorTmp = "";
                         foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
                         {
-                            authorTmp = artistElement.GetProperty("name").GetString();
-                            break;
+                            authorTmp += artistElement.GetProperty("name").GetString();
+                            authorTmp += " | ";
                         }
+                        if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                        {
+                            authorTmp = authorTmp.Remove(authorTmp.Length - 3);
+                        }
+
 
                         Musique musique = new Musique(
                             baseUrl + element.GetProperty("videoId").GetString(),

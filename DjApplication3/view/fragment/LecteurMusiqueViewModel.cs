@@ -14,7 +14,7 @@ namespace DjApplication3.View.userControlDJ
         public async void getBpm(Musique musique)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            int bpm = await Task.Run(() => musiqueRepository.getBpm(musique));
+            int bpm = musiqueRepository.getBpm(musique);
             TacheGetBPM?.Invoke(this, bpm);
         }
     }

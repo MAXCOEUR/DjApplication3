@@ -61,10 +61,12 @@
                     </Style>
                 </DataGrid.RowStyle>
             </DataGrid>
+            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
             <Grid.ContextMenu>
                 <ContextMenu x:Name="cm_PisteList">
                 </ContextMenu>
             </Grid.ContextMenu>
+
         </Grid>
 
     </Grid>
