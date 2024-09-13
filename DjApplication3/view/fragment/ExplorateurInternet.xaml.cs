@@ -65,7 +65,7 @@ namespace DjApplication3.view.fragment
 
             }
 
-            searchTimer.Interval = 500; // Délai en millisecondes (0.5 seconde)
+            searchTimer.Interval = 1000; // Délai en millisecondes (01 seconde)
             searchTimer.Tick += SearchTimer_Tick;
 
             viewModel.TacheSearch += ViewModel_TacheSearch;

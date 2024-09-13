@@ -34,13 +34,10 @@ namespace DjApplication3.view.page
 
         int nbrPist = 0;
 
-        HerculesDJ hercules;
-
         public LecteurMusique()
         {
             InitializeComponent();
             InitializeTimer();
-            hercules = HerculesDJ.Instance;
             tb_volume.ValueChanged += Tb_volume_ValueChanged;
             LecteurMusiqueViewModel.TacheGetBPM += LecteurMusiqueViewModel_TacheGetBPM;
         }
@@ -90,11 +87,11 @@ namespace DjApplication3.view.page
 
             if (nbrPist == 1)
             {
-                hercules.playLeft(true);
+                HerculesDJ.Instance.playLeft(true);
             }
             if (nbrPist == 2)
             {
-                hercules.playRight(true);
+                HerculesDJ.Instance.playRight(true);
             }
 
         }
@@ -116,11 +113,11 @@ namespace DjApplication3.view.page
 
             if (nbrPist == 1)
             {
-                hercules.playLeft(false);
+                HerculesDJ.Instance.playLeft(false);
             }
             if (nbrPist == 2)
             {
-                hercules.playRight(false);
+                HerculesDJ.Instance.playRight(false);
             }
         }
         public void stop()
@@ -198,22 +195,22 @@ namespace DjApplication3.view.page
             {
                 if (nbrPist == 1)
                 {
-                    hercules.PreviewLeft(true);
+                    HerculesDJ.Instance.PreviewLeft(true);
                 }
                 if (nbrPist == 2)
                 {
-                    hercules.PreviewRight(true);
+                    HerculesDJ.Instance.PreviewRight(true);
                 }
             }
             else
             {
                 if (nbrPist == 1)
                 {
-                    hercules.PreviewLeft(false);
+                    HerculesDJ.Instance.PreviewLeft(false);
                 }
                 if (nbrPist == 2)
                 {
-                    hercules.PreviewRight(false);
+                    HerculesDJ.Instance.PreviewRight(false);
                 }
             }
             

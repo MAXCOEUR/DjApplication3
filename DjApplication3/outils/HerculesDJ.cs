@@ -2,6 +2,7 @@
 using NAudio.Midi;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace DjApplication3.outils
 {
@@ -61,6 +62,7 @@ namespace DjApplication3.outils
                 {
                     if (item.ProductName == MidiOut.DeviceInfo(device).ProductName)
                     {
+                        Console.WriteLine(device);
                         midiOut = new MidiOut(device);
                     }
                 }
@@ -71,6 +73,8 @@ namespace DjApplication3.outils
 
             PreviewLeft(false);
             PreviewRight(false);
+
+            lightButton();
         }
         public void start()
         {
@@ -101,6 +105,12 @@ namespace DjApplication3.outils
             if (midiIn == null) return;
             midiIn.Stop();
             midiIn.Dispose();
+            midiIn = null;
+
+            if (midiOut == null) return;
+            midiOut.Close();
+            midiOut.Dispose();
+            midiOut = null;
         }
 
         private void midiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
@@ -283,22 +293,22 @@ namespace DjApplication3.outils
         {
             if (isOn)
             {
-                SendNoteOn(22, 127, 1);
+                SendNoteOn(22, 127);
             }
             else
             {
-                SendNoteOn(22, 0, 1);
+                SendNoteOn(22, 0);
             }
         }
         public void playRight(bool isOn)
         {
             if (isOn)
             {
-                SendNoteOn(48, 127, 1);
+                SendNoteOn(48, 127);
             }
             else
             {
-                SendNoteOn(48, 0, 1);
+                SendNoteOn(48, 0);
             }
         }
 
@@ -306,30 +316,46 @@ namespace DjApplication3.outils
         {
             if (isOn)
             {
-                SendNoteOn(24, 127, 1);
+                SendNoteOn(24, 127);
             }
             else
             {
-                SendNoteOn(24, 0, 1);
+                SendNoteOn(24, 0);
             }
         }
         public void PreviewRight(bool isOn)
         {
             if (isOn)
             {
-                SendNoteOn(50, 127, 1);
+                SendNoteOn(50, 127);
             }
             else
             {
-                SendNoteOn(50, 0, 1);
+                SendNoteOn(50, 0);
             }
         }
-        private void SendNoteOn(int noteNumber, int velocity, int channel)
+        private void SendNoteOn(int noteNumber, int velocity)
         {
             if (midiOut == null) return;
 
-            midiOut.Send(MidiMessage.StartNote(noteNumber, velocity, channel).RawData);
-            Console.WriteLine($"NoteOn sent: Note {noteNumber}, Velocity {velocity}, Channel {channel}");
+            midiOut.Send(MidiMessage.StartNote(noteNumber, velocity, 1).RawData);
+            Console.WriteLine($"NoteOn sent: Note {noteNumber}, Velocity {velocity}, Channel {1}");
+        }
+
+        private void lightButton()
+        {
+            if (midiOut == null) return;
+
+            midiOut.Send(MidiMessage.StartNote(13, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(14, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(15, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(16, 127, 1).RawData);
+
+
+            midiOut.Send(MidiMessage.StartNote(42, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(39, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(40, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(41, 127, 1).RawData);
         }
     }
 }

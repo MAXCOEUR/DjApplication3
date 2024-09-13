@@ -29,7 +29,6 @@ namespace DjApplication3.view.activity
     {
 
         List<LecteurMusique> lecteurMusiques = new List<LecteurMusique>();
-        HerculesDJ hercules;
         ExplorateurYtMusicViewModel explorateurYtMusicViewModel;
         bool statePlayPresScratchLeft = false;
         bool statePlayPresScratchRight = false;
@@ -71,28 +70,27 @@ namespace DjApplication3.view.activity
 
         void startHercule()
         {
-            hercules?.Dispose();
-            hercules = HerculesDJ.Instance;
-            hercules.eventPlayPauseLeft += Hercules_eventPlayPauseLeft;
-            hercules.eventPlayPauseRight += Hercules_eventPlayPauseRight;
-            hercules.eventCasqueLeft += Hercules_eventCasqueLeft;
-            hercules.eventCasqueRight += Hercules_eventCasqueRight;
-            hercules.eventMixe += Hercules_eventMixe;
-            hercules.eventVolumeLeft += Hercules_eventVolumeLeft;
-            hercules.eventVolumeRight += Hercules_eventVolumeRight;
+            HerculesDJ.Instance?.Dispose();
+            HerculesDJ.Instance.eventPlayPauseLeft += Hercules_eventPlayPauseLeft;
+            HerculesDJ.Instance.eventPlayPauseRight += Hercules_eventPlayPauseRight;
+            HerculesDJ.Instance.eventCasqueLeft += Hercules_eventCasqueLeft;
+            HerculesDJ.Instance.eventCasqueRight += Hercules_eventCasqueRight;
+            HerculesDJ.Instance.eventMixe += Hercules_eventMixe;
+            HerculesDJ.Instance.eventVolumeLeft += Hercules_eventVolumeLeft;
+            HerculesDJ.Instance.eventVolumeRight += Hercules_eventVolumeRight;
 
-            hercules.eventPisteLeft += Hercules_eventPisteLeft;
-            hercules.eventPisteRight += Hercules_eventPisteRight;
+            HerculesDJ.Instance.eventPisteLeft += Hercules_eventPisteLeft;
+            HerculesDJ.Instance.eventPisteRight += Hercules_eventPisteRight;
 
-            hercules.eventScratchLeft += Hercules_eventScratchLeft;
-            hercules.eventScratchRight += Hercules_eventScratchRight;
-            hercules.eventScratchLeftPress += Hercules_eventScratchLeftPress;
-            hercules.eventScratchRightPress += Hercules_eventScratchRightPress;
+            HerculesDJ.Instance.eventScratchLeft += Hercules_eventScratchLeft;
+            HerculesDJ.Instance.eventScratchRight += Hercules_eventScratchRight;
+            HerculesDJ.Instance.eventScratchLeftPress += Hercules_eventScratchLeftPress;
+            HerculesDJ.Instance.eventScratchRightPress += Hercules_eventScratchRightPress;
 
-            hercules.eventVolumeDownHeadPhone += Hercules_eventVolumeDownHeadPhone;
-            hercules.eventVolumeUpHeadPhone += Hercules_eventVolumeUpHeadPhone;
+            HerculesDJ.Instance.eventVolumeDownHeadPhone += Hercules_eventVolumeDownHeadPhone;
+            HerculesDJ.Instance.eventVolumeUpHeadPhone += Hercules_eventVolumeUpHeadPhone;
 
-            hercules.start();
+            HerculesDJ.Instance.start();
         }
 
         private void Hercules_eventVolumeUpHeadPhone(object? sender, EventArgs e)
@@ -261,7 +259,7 @@ namespace DjApplication3.view.activity
                 lecteur.Dispose();
             }
 
-            hercules.Dispose();
+            HerculesDJ.Instance.Dispose();
         }
 
         private void MainPageMixage_Loaded(object sender, RoutedEventArgs e)
