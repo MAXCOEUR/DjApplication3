@@ -274,8 +274,7 @@ namespace DjApplication3.view.fragment
                 viewModelYtMusic.getMusiqueInPlayListe(selectedItem.id);
                 tb_serach.Text = "";
 
-                errorMessageTree.Visibility = Visibility.Hidden;
-                LoadingBar.Visibility = Visibility.Visible;
+                displayLoadingListMusique();
             }
         }
 
