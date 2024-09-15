@@ -41,12 +41,14 @@ namespace DjApplication3.view.fragment
 
         private void initRoot(string rootFolder)
         {
+            displayLoadingTree();
             this.rootFolder = Path.GetFullPath(rootFolder);
             viewModel.GetDossierPerso(this.rootFolder);
             viewModel.getMusique(this.rootFolder);
         }
         private void ViewModel_TacheGetDossierPerso(object? sender, DossierPerso e)
         {
+            displayTree();
             tv_tree.ItemsSource = e.Children;
         }
 
@@ -82,11 +84,14 @@ namespace DjApplication3.view.fragment
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
             filtreMusique();
-            
+            displayListMusique();
+
+
         }
 
         private void filtreMusique()
         {
+            displayLoadingListMusique();
             List<MusiqueColonne> musiquesTmp = musiques.Where(m => m.musique.title.Contains(search, StringComparison.OrdinalIgnoreCase) || m.musique.author.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
             dgv_listeMusic.ItemsSource = musiquesTmp;
             dgv_listeMusic.Items.Refresh();
@@ -100,6 +105,7 @@ namespace DjApplication3.view.fragment
         {
             if (e.NewValue != null)
             {
+                displayLoadingListMusique();
                 cleatDGV();
 
                 var selectedItem = (DossierPerso)e.NewValue;
@@ -211,6 +217,29 @@ namespace DjApplication3.view.fragment
                 MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
                 eventMusiqueSlected?.Invoke(this, selectedItem.musique);
             }
+        }
+
+        private void displayLoadingTree()
+        {
+            LoadingBarTree.Visibility = Visibility.Visible;
+            tv_tree.Visibility = Visibility.Hidden;
+        }
+
+        private void displayLoadingListMusique()
+        {
+            LoadingBar.Visibility = Visibility.Visible;
+            dgv_listeMusic.Visibility = Visibility.Hidden;
+        }
+        private void displayTree()
+        {
+            tv_tree.Visibility = Visibility.Visible;
+            LoadingBarTree.Visibility = Visibility.Hidden;
+        }
+
+        private void displayListMusique()
+        {
+            dgv_listeMusic.Visibility = Visibility.Visible;
+            LoadingBar.Visibility = Visibility.Hidden;
         }
     }
 }

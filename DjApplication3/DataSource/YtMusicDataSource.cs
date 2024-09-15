@@ -9,7 +9,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Forms;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 
@@ -20,7 +20,7 @@ namespace DjApplication3.DataSource
         YoutubeClient _youtube = new YoutubeClient();
         private string baseUrl = "https://music.youtube.com/watch?v=";
         private static string oauthJson="outilsExtern/oauth.json";
-        async public Task<List<Musique>> search(string search)
+        async public Task<List<Musique>?> search(string search)
         {
             if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
             {
@@ -37,83 +37,93 @@ namespace DjApplication3.DataSource
 
             string output = "";
 
-            using (var process = new Process())
+            try
             {
-                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
-                process.StartInfo.Arguments = $"-m m -s \"{search}\"";
-                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.EnableRaisingEvents = true;
-
-                // Événement pour la sortie standard
-                process.OutputDataReceived += (sender, e) =>
+                using (var process = new Process())
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
+                    process.StartInfo.Arguments = $"-m m -s \"{search}\"";
+                    process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardInput = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.EnableRaisingEvents = true;
+
+                    // Événement pour la sortie standard
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        output += e.Data;
-                        
-                    }
-                };
-
-                // Événement pour la sortie d'erreur
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        Console.WriteLine($"Error: {e.Data}");
-                        // Traiter la sortie d'erreur ici
-                    }
-                };
-
-                // Démarrer le processus
-                process.Start();
-
-                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                // Attendre que le processus se termine
-                await Task.Run(() => process.WaitForExit());
-
-                using (JsonDocument document = JsonDocument.Parse(output))
-                {
-                    // Parcourir le tableau JSON
-                    foreach (JsonElement element in document.RootElement.EnumerateArray())
-                    {
-                        string authorTmp = "";
-                        foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
+                        if (!string.IsNullOrEmpty(e.Data))
                         {
-                            authorTmp += artistElement.GetProperty("name").GetString();
-                            authorTmp += " | ";
+                            output += e.Data;
+
                         }
-                        if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                    };
+
+                    // Événement pour la sortie d'erreur
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
                         {
-                            authorTmp = authorTmp.Remove(authorTmp.Length - 3);
+                            Console.WriteLine($"Error: {e.Data}");
+                            // Traiter la sortie d'erreur ici
                         }
+                    };
 
-                        Musique musique = new Musique(
-                            baseUrl + element.GetProperty("videoId").GetString(),
-                            CleanFileName(element.GetProperty("title").GetString()),
-                            CleanFileName(authorTmp)
-                            );
+                    // Démarrer le processus
+                    process.Start();
 
-                        // Parcourir les artistes
+                    // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Attendre que le processus se termine
+                    await Task.Run(() => process.WaitForExit());
+
+                    using (JsonDocument document = JsonDocument.Parse(output))
+                    {
+                        // Parcourir le tableau JSON
+                        foreach (JsonElement element in document.RootElement.EnumerateArray())
+                        {
+                            string authorTmp = "";
+                            foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
+                            {
+                                authorTmp += artistElement.GetProperty("name").GetString();
+                                authorTmp += " | ";
+                            }
+                            if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                            {
+                                authorTmp = authorTmp.Remove(authorTmp.Length - 3);
+                            }
+
+                            Musique musique = new Musique(
+                                baseUrl + element.GetProperty("videoId").GetString(),
+                                CleanFileName(element.GetProperty("title").GetString()),
+                                CleanFileName(authorTmp)
+                                );
+
+                            // Parcourir les artistes
 
 
-                        musiques.Add(musique);
+                            musiques.Add(musique);
+                        }
                     }
+
                 }
-
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
+            
 
             return musiques;
         }
 
-        async public Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste)
+        async public Task<List<Musique>?> getMusiqueInPlayListe(string idPlayliste)
         {
             if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe") || idPlayliste == "" || !isConnected())
             {
@@ -125,84 +135,93 @@ namespace DjApplication3.DataSource
 
             string output = "";
 
-            using (var process = new Process())
+            try
             {
-                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
-                process.StartInfo.Arguments = $"-m p -s \"{idPlayliste}\"";
-                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.EnableRaisingEvents = true;
-
-                // Événement pour la sortie standard
-                process.OutputDataReceived += (sender, e) =>
+                using (var process = new Process())
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
+                    process.StartInfo.Arguments = $"-m p -s \"{idPlayliste}\"";
+                    process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardInput = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.EnableRaisingEvents = true;
+
+                    // Événement pour la sortie standard
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        output += e.Data;
-
-                    }
-                };
-
-                // Événement pour la sortie d'erreur
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        Console.WriteLine($"Error: {e.Data}");
-                        // Traiter la sortie d'erreur ici
-                    }
-                };
-
-                // Démarrer le processus
-                process.Start();
-
-                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                // Attendre que le processus se termine
-                await Task.Run(() => process.WaitForExit());
-
-                using (JsonDocument document = JsonDocument.Parse(output))
-                {
-                    // Parcourir le tableau JSON
-                    foreach (JsonElement element in document.RootElement.EnumerateArray())
-                    {
-                        string authorTmp = "";
-                        foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
+                        if (!string.IsNullOrEmpty(e.Data))
                         {
-                            authorTmp += artistElement.GetProperty("name").GetString();
-                            authorTmp += " | ";
+                            output += e.Data;
+
                         }
-                        if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                    };
+
+                    // Événement pour la sortie d'erreur
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
                         {
-                            authorTmp = authorTmp.Remove(authorTmp.Length - 3);
+                            Console.WriteLine($"Error: {e.Data}");
+                            // Traiter la sortie d'erreur ici
                         }
+                    };
+
+                    // Démarrer le processus
+                    process.Start();
+
+                    // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Attendre que le processus se termine
+                    await Task.Run(() => process.WaitForExit());
+
+                    using (JsonDocument document = JsonDocument.Parse(output))
+                    {
+                        // Parcourir le tableau JSON
+                        foreach (JsonElement element in document.RootElement.EnumerateArray())
+                        {
+                            string authorTmp = "";
+                            foreach (JsonElement artistElement in element.GetProperty("artists").EnumerateArray())
+                            {
+                                authorTmp += artistElement.GetProperty("name").GetString();
+                                authorTmp += " | ";
+                            }
+                            if (!string.IsNullOrEmpty(authorTmp) && authorTmp.Length > 3)
+                            {
+                                authorTmp = authorTmp.Remove(authorTmp.Length - 3);
+                            }
 
 
-                        Musique musique = new Musique(
-                            baseUrl + element.GetProperty("videoId").GetString(),
-                            CleanFileName(element.GetProperty("title").GetString()),
-                            CleanFileName(authorTmp)
-                            );
+                            Musique musique = new Musique(
+                                baseUrl + element.GetProperty("videoId").GetString(),
+                                CleanFileName(element.GetProperty("title").GetString()),
+                                CleanFileName(authorTmp)
+                                );
 
-                        // Parcourir les artistes
+                            // Parcourir les artistes
 
 
-                        musiques.Add(musique);
+                            musiques.Add(musique);
+                        }
                     }
+
                 }
-
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
 
             return musiques;
         }
 
-        async public Task<List<PlayListe>> getPlayListe()
+        async public Task<List<PlayListe>?> getPlayListe()
         {
             if (!File.Exists(".\\outilsExtern\\apiYouMusic.exe"))
             {
@@ -218,69 +237,78 @@ namespace DjApplication3.DataSource
 
             string output = "";
 
-            using (var process = new Process())
+            try
             {
-                process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
-                process.StartInfo.Arguments = $"-m p";
-                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.EnableRaisingEvents = true;
-
-                // Événement pour la sortie standard
-                process.OutputDataReceived += (sender, e) =>
+                using (var process = new Process())
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    process.StartInfo.FileName = ".\\outilsExtern\\apiYouMusic.exe";
+                    process.StartInfo.Arguments = $"-m p";
+                    process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardInput = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.EnableRaisingEvents = true;
+
+                    // Événement pour la sortie standard
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        output += e.Data;
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            output += e.Data;
 
-                    }
-                };
+                        }
+                    };
 
-                // Événement pour la sortie d'erreur
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    // Événement pour la sortie d'erreur
+                    process.ErrorDataReceived += (sender, e) =>
                     {
-                        Console.WriteLine($"Error: {e.Data}");
-                        // Traiter la sortie d'erreur ici
-                    }
-                };
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            Console.WriteLine($"Error: {e.Data}");
+                            // Traiter la sortie d'erreur ici
+                        }
+                    };
 
-                // Démarrer le processus
-                process.Start();
+                    // Démarrer le processus
+                    process.Start();
 
-                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                    // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
 
-                // Attendre que le processus se termine
-                await Task.Run(() => process.WaitForExit());
+                    // Attendre que le processus se termine
+                    await Task.Run(() => process.WaitForExit());
 
-                using (JsonDocument document = JsonDocument.Parse(output))
-                {
-                    // Parcourir le tableau JSON
-                    foreach (JsonElement element in document.RootElement.EnumerateArray())
+                    using (JsonDocument document = JsonDocument.Parse(output))
                     {
-                        PlayListe playListe = new PlayListe(
-                            element.GetProperty("id").GetString(),
-                            CleanFileName(element.GetProperty("name").GetString())
-                            );
-                        playListes.Add(playListe);
+                        // Parcourir le tableau JSON
+                        foreach (JsonElement element in document.RootElement.EnumerateArray())
+                        {
+                            PlayListe playListe = new PlayListe(
+                                element.GetProperty("id").GetString(),
+                                CleanFileName(element.GetProperty("name").GetString())
+                                );
+                            playListes.Add(playListe);
+                        }
                     }
+
                 }
-
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
 
             return playListes;
         }
 
 
 
-        async public Task<Musique> DownloadMusique(Musique musiqueyt)
+        async public Task<Musique?> DownloadMusique(Musique musiqueyt)
         {
 
             //string lienMusique = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
@@ -302,7 +330,7 @@ namespace DjApplication3.DataSource
                     }
                 }catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    return null;
                 }
                 
             }
@@ -355,7 +383,6 @@ namespace DjApplication3.DataSource
                 catch (Exception ex2)
                 {
                     Console.WriteLine(ex2.Message);
-                    MessageBox.Show(ex2.Message);
                     return null;
                 }
                 
@@ -363,84 +390,93 @@ namespace DjApplication3.DataSource
 
         }
 
-        private async Task<Musique> otherdl(Musique musiqueyt)
+        private async Task<Musique?> otherdl(Musique musiqueyt)
         {
-            string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
-
-            string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string spotdlDirectory = Path.Combine(userDirectory, ".spotdl");
-            string ffmpegPath = Path.Combine(spotdlDirectory, "ffmpeg.exe");
-
-            string arguments = $"-x --audio-format mp3 -o \"{lienMusique}\" ";
-            if (File.Exists(ffmpegPath))
+            try
             {
-                arguments += " --ffmpeg-location \"" + ffmpegPath + "\"";
-            }
+                string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
 
-            if(SettingsManager.Instance.browserName.ToLower().Contains("chrome"))
-            {
-                arguments += " --cookies-from-browser chrome";
-            }
-            else if (SettingsManager.Instance.browserName.ToLower().Contains("edge"))
-            {
-                arguments += " --cookies-from-browser edge";
-            }
-            else if (SettingsManager.Instance.browserName.ToLower().Contains("firefox"))
-            {
-                arguments += " --cookies-from-browser firefox";
-            }
+                string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string spotdlDirectory = Path.Combine(userDirectory, ".spotdl");
+                string ffmpegPath = Path.Combine(spotdlDirectory, "ffmpeg.exe");
 
-
-            arguments += " " + musiqueyt.url;
-
-            using (var process = new Process())
-            {
-                process.StartInfo.FileName = ".\\outilsExtern\\yt-dlp.exe";
-                process.StartInfo.Arguments = arguments;
-                process.StartInfo.WorkingDirectory = ".\\outilsExtern";
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.EnableRaisingEvents = true;
-
-                // Événement pour la sortie standard
-                process.OutputDataReceived += (sender, e) =>
+                string arguments = $"-x --audio-format mp3 -o \"{lienMusique}\" ";
+                if (File.Exists(ffmpegPath))
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        Console.WriteLine(e.Data);
-                    }
-                };
+                    arguments += " --ffmpeg-location \"" + ffmpegPath + "\"";
+                }
 
-                // Événement pour la sortie d'erreur
-                process.ErrorDataReceived += (sender, e) =>
+                if(SettingsManager.Instance.browserName.ToLower().Contains("chrome"))
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    arguments += " --cookies-from-browser chrome";
+                }
+                else if (SettingsManager.Instance.browserName.ToLower().Contains("edge"))
+                {
+                    arguments += " --cookies-from-browser edge";
+                }
+                else if (SettingsManager.Instance.browserName.ToLower().Contains("firefox"))
+                {
+                    arguments += " --cookies-from-browser firefox";
+                }
+
+
+                arguments += " " + musiqueyt.url;
+
+                using (var process = new Process())
+                {
+                    process.StartInfo.FileName = ".\\outilsExtern\\yt-dlp.exe";
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.WorkingDirectory = ".\\outilsExtern";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.EnableRaisingEvents = true;
+
+                    // Événement pour la sortie standard
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        Console.WriteLine($"Error: {e.Data}");
-                        // Traiter la sortie d'erreur ici
-                    }
-                };
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            Console.WriteLine(e.Data);
+                        }
+                    };
 
-                // Démarrer le processus
-                process.Start();
+                    // Événement pour la sortie d'erreur
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            Console.WriteLine($"Error: {e.Data}");
+                            // Traiter la sortie d'erreur ici
+                        }
+                    };
 
-                // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                    // Démarrer le processus
+                    process.Start();
 
-                // Attendre que le processus se termine
-                await Task.Run(() => process.WaitForExit());
+                    // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
 
-                Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
+                    // Attendre que le processus se termine
+                    await Task.Run(() => process.WaitForExit());
 
-                var file = TagLib.File.Create(musique.url);
-                file.Tag.Title = musique.title;
-                file.Tag.Performers = new[] { musique.author };
-                file.Save();
-                return musique;
+                    Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
+
+                    var file = TagLib.File.Create(musique.url);
+                    file.Tag.Title = musique.title;
+                    file.Tag.Performers = new[] { musique.author };
+                    file.Save();
+                    return musique;
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
 
         }
 

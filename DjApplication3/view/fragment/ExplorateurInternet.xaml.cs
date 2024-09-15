@@ -73,19 +73,28 @@ namespace DjApplication3.view.fragment
             viewModel.search("");
         }
 
-        private void ViewModelYtMusic_TacheGetPlayListe(object? sender, List<PlayListe> e)
+        private void ViewModelYtMusic_TacheGetPlayListe(object? sender, List<PlayListe>? e)
         {
+            if (e == null)
+            {
+                displayErrorNetWorkTree();
+                return;
+            }
+            displayTree();
             tv_tree.ItemsSource = e;
         }
 
-        private void ViewModelYtMusic_TacheGetMusiqueInPlayListe(object? sender, List<Musique> e)
+        private void ViewModelYtMusic_TacheGetMusiqueInPlayListe(object? sender, List<Musique>? e)
         {
             musiques.Clear();
 
             if (e == null)
             {
+                displayErrorNetWorkListMusique();
                 return;
             }
+
+            displayListMusique();
 
             foreach (Musique musique in e)
             {
@@ -95,17 +104,19 @@ namespace DjApplication3.view.fragment
             }
             dgv_listeMusic.ItemsSource = musiques;
             dgv_listeMusic.Items.Refresh();
-            LoadingBar.Visibility = Visibility.Hidden;
         }
 
-        private void ViewModel_TacheSearch(object? sender, List<Musique> e)
+        private void ViewModel_TacheSearch(object? sender, List<Musique>? e)
         {
             musiques.Clear();
 
             if (e == null)
             {
+                displayErrorNetWorkListMusique();
                 return;
             }
+
+            displayListMusique();
 
             foreach (Musique musique in e)
             {
@@ -115,7 +126,6 @@ namespace DjApplication3.view.fragment
             }
             dgv_listeMusic.ItemsSource = musiques;
             dgv_listeMusic.Items.Refresh();
-            LoadingBar.Visibility = Visibility.Hidden;
         }
         private void SearchTimer_Tick(object sender, EventArgs e)
         {
@@ -136,7 +146,7 @@ namespace DjApplication3.view.fragment
             tv_tree.ItemsSource = null;
             tv_tree.ItemsSource = treeViewSource;
 
-            LoadingBar.Visibility = Visibility.Visible;
+            displayLoadingListMusique();
 
             searchTimer.Stop();
             searchTimer.Start();
@@ -213,7 +223,7 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.Items.Refresh();
             viewModel.DownloadMusique(musique);
         }
-        private void ViewModel_TacheDownload(object? sender, Musique musique)
+        private void ViewModel_TacheDownload(object? sender, Musique? musique)
         {
             if (musique == null)
             {
@@ -250,6 +260,7 @@ namespace DjApplication3.view.fragment
 
         private void bt_reload_Click(object sender, RoutedEventArgs e)
         {
+            displayLoadingTree();
             viewModelYtMusic.getPlayListe();
         }
 
@@ -262,6 +273,8 @@ namespace DjApplication3.view.fragment
                 var selectedItem = (PlayListe)e.NewValue;
                 viewModelYtMusic.getMusiqueInPlayListe(selectedItem.id);
                 tb_serach.Text = "";
+
+                errorMessageTree.Visibility = Visibility.Hidden;
                 LoadingBar.Visibility = Visibility.Visible;
             }
         }
@@ -289,6 +302,47 @@ namespace DjApplication3.view.fragment
                 MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
                 valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
             }
+        }
+
+        private void displayErrorNetWorkTree()
+        {
+            errorMessageTree.Visibility = Visibility.Visible;
+            tv_tree.Visibility = Visibility.Hidden;
+            LoadingBarTree.Visibility = Visibility.Hidden;
+        }
+
+        private void displayErrorNetWorkListMusique()
+        {
+            errorMessageListeMusique.Visibility = Visibility.Visible;
+            dgv_listeMusic.Visibility = Visibility.Hidden;
+            LoadingBar.Visibility = Visibility.Hidden;
+        }
+
+        private void displayLoadingTree()
+        {
+            LoadingBarTree.Visibility = Visibility.Visible;
+            errorMessageTree.Visibility = Visibility.Hidden;
+            tv_tree.Visibility = Visibility.Hidden;
+        }
+
+        private void displayLoadingListMusique()
+        {
+            LoadingBar.Visibility = Visibility.Visible;
+            errorMessageListeMusique.Visibility = Visibility.Hidden;
+            dgv_listeMusic.Visibility = Visibility.Hidden;
+        }
+        private void displayTree()
+        {
+            tv_tree.Visibility = Visibility.Visible;
+            LoadingBarTree.Visibility = Visibility.Hidden;
+            errorMessageTree.Visibility = Visibility.Hidden;
+        }
+
+        private void displayListMusique()
+        {
+            dgv_listeMusic.Visibility = Visibility.Visible;
+            LoadingBar.Visibility = Visibility.Hidden;
+            errorMessageListeMusique.Visibility = Visibility.Hidden;
         }
     }
     public class MusiqueColonne

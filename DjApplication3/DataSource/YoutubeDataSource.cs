@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using TagLib.Riff;
 using YoutubeExplode;
 using YoutubeExplode.Common;
@@ -20,31 +21,39 @@ namespace DjApplication3.DataSource
     internal class YoutubeDataSource
     {
         YoutubeClient _youtube = new YoutubeClient();
-        async public Task<List<Musique>> search(string search)
+        async public Task<List<Musique>?> search(string search)
         {
             int i = 0;
             List<Musique> musiques = new List<Musique>();
-            await foreach (var result in _youtube.Search.GetVideosAsync(search))
+            try
             {
-                // Use pattern matching to handle different results (videos, playlists, channels)
-                switch (result)
+                await foreach (var result in _youtube.Search.GetVideosAsync(search))
                 {
-                    case VideoSearchResult video:
-                        {
-                           
-                            musiques.Add(new Musique(video.Url, CleanFileName(video.Title), CleanFileName(video.Author.ChannelTitle)));
-                            break;
-                        }
+                    // Use pattern matching to handle different results (videos, playlists, channels)
+                    switch (result)
+                    {
+                        case VideoSearchResult video:
+                            {
+
+                                musiques.Add(new Musique(video.Url, CleanFileName(video.Title), CleanFileName(video.Author.ChannelTitle)));
+                                break;
+                            }
+                    }
+                    i++;
+                    if (i >= 20)
+                    {
+                        break;
+                    }
                 }
-                i++;
-                if (i >= 20)
-                {
-                    break;
-                }
+            }catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
             }
+            
             return musiques;
         }
-        async public Task<Musique> DownloadMusique(Musique musiqueyt)
+        async public Task<Musique?> DownloadMusique(Musique musiqueyt)
         {
             
             //string lienMusique = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
@@ -94,8 +103,7 @@ namespace DjApplication3.DataSource
             }catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message, "Alerte", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return new Musique("", "", "");
+                return null;
             }
             
         }

@@ -10,16 +10,16 @@ namespace DjApplication3.view.fragment
 {
     internal class ExplorateurYtMusicViewModel : ExplorateurInternetViewModel
     {
-        public override event EventHandler<List<Musique>> TacheSearch;
-        public override event EventHandler<Musique> TacheDownload;
+        public override event EventHandler<List<Musique>?> TacheSearch;
+        public override event EventHandler<Musique?> TacheDownload;
 
-        public event EventHandler<List<Musique>> TacheGetMusiqueInPlayListe;
-        public event EventHandler<List<PlayListe>> TacheGetPlayListe;
+        public event EventHandler<List<Musique>?> TacheGetMusiqueInPlayListe;
+        public event EventHandler<List<PlayListe>?> TacheGetPlayListe;
 
         public async override void DownloadMusique(Musique musiqueyt)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            Musique musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
+            Musique? musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
             TacheDownload?.Invoke(this, musique);
         }
 
@@ -32,20 +32,20 @@ namespace DjApplication3.view.fragment
         public async override void search(string search)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueYtMusic(search));
+            List<Musique>? musiques = await Task.Run(() => musiqueRepository.GetMusiqueYtMusic(search));
             TacheSearch?.Invoke(this, musiques);
         }
 
         public async void getMusiqueInPlayListe(string idPlayliste)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
+            List<Musique>? musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
             TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
         }
         public async void getPlayListe()
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<PlayListe> playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
+            List<PlayListe>? playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
             TacheGetPlayListe?.Invoke(this, playListe);
         }
     }

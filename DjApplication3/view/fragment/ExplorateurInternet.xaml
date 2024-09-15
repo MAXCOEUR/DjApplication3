@@ -34,6 +34,8 @@
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
+            <ProgressBar x:Name="LoadingBarTree" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
+            <TextBlock x:Name="errorMessageTree" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
         </Grid>
         <GridSplitter x:Name="GridSplitter" Grid.Column="1" Visibility="Collapsed" Width="5" HorizontalAlignment="Stretch" />
         <Grid Grid.Column="2">
@@ -61,7 +63,8 @@
                     </Style>
                 </DataGrid.RowStyle>
             </DataGrid>
-            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
+            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Collapsed"/>
+            <TextBlock x:Name="errorMessageListeMusique" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
             <Grid.ContextMenu>
                 <ContextMenu x:Name="cm_PisteList">
                 </ContextMenu>

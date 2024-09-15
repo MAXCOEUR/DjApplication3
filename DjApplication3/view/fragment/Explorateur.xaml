@@ -50,6 +50,7 @@
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
+            <ProgressBar x:Name="LoadingBarTree" IsIndeterminate="True" Grid.Row="1" Grid.ColumnSpan="2" Visibility="Hidden"/>
         </Grid>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
         <Grid Grid.Column="2">
@@ -76,13 +77,15 @@
                     </Style>
                 </DataGrid.RowStyle>
             </DataGrid>
+            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
+
 
             <Grid.ContextMenu>
                 <ContextMenu x:Name="cm_PisteList">
                 </ContextMenu>
             </Grid.ContextMenu>
         </Grid>
-        
+
     </Grid>
 
 
