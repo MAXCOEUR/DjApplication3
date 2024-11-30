@@ -3,7 +3,6 @@ using DjApplication3.outils;
 using DjApplication3.view.composentPerso;
 using DjApplication3.view.fragment;
 using DjApplication3.view.page;
-using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
@@ -32,6 +31,10 @@ namespace DjApplication3.view.activity
         ExplorateurYtMusicViewModel explorateurYtMusicViewModel;
         bool statePlayPresScratchLeft = false;
         bool statePlayPresScratchRight = false;
+
+        public event EventHandler eventOptionButton;
+
+
         public MainPageMixage()
         {
             InitializeComponent();
@@ -378,12 +381,10 @@ namespace DjApplication3.view.activity
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            ParametresForm parametresForm = new ParametresForm();
-            parametresForm.Closing += ParametresForm_Closing;
-            parametresForm.Show();
+            eventOptionButton?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ParametresForm_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        public void ParametresForm_Closing(object? sender, EventArgs e)
         {
             startHercule();
             explorateurYtMusicViewModel.getPlayListe();
