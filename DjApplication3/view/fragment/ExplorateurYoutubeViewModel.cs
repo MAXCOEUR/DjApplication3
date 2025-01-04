@@ -31,7 +31,6 @@ namespace DjApplication3.View.userControlDJ
             {
                 TacheSearch?.Invoke(this, musiques);
             }
-            _cancellationTokenSearch = null;
         }
         public override int? getBpm(Musique musique)
         {
