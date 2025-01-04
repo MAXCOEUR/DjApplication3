@@ -407,28 +407,13 @@ namespace DjApplication3.view.fragment
         }
         public void keyLoadLeft()
         {
-            Console.WriteLine("keyLoadLeft");
+            MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+            valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex,0);
         }
         public void keyLoadRight()
         {
-            Console.WriteLine("keyLoadRight");
-        }
-        public void keyUptest()
-        {
-            // Simuler une pression de la touche "Entrée"
-            var keyEventArgs = new System.Windows.Input.KeyEventArgs(
-                Keyboard.PrimaryDevice,
-                PresentationSource.FromVisual(tv_tree),
-                0,
-                Key.Enter
-            )
-            {
-                RoutedEvent = UIElement.KeyUpEvent
-            };
-
-            // Dispatchez l'événement pour simuler un appui sur la touche
-            tv_tree.RaiseEvent(keyEventArgs);
-
+            MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+            valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex,1);
         }
         public void keyUp()
         {
@@ -437,10 +422,6 @@ namespace DjApplication3.view.fragment
 
             dgv_listeMusic.SelectedItem = newItemSelectedItem;
             dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
-
-
-
-            Console.WriteLine("Flèche haut pressée");
         }
         public void keyDown()
         {
@@ -449,7 +430,6 @@ namespace DjApplication3.view.fragment
 
             dgv_listeMusic.SelectedItem = newItemSelectedItem;
             dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
-            Console.WriteLine("Flèche bas pressée");
         }
         public void keyLeft()
         {
@@ -468,12 +448,10 @@ namespace DjApplication3.view.fragment
             {
                 Console.WriteLine("Aucun élément sélectionné ou pas un DossierPerso.");
             }
-            Console.WriteLine("keyLeft");
         }
         public void keyRight()
         {
             dgv_listeMusic.Focus();
-            Console.WriteLine("keyRight");
         }
     }
     public class MusiqueColonne : INotifyPropertyChanged
