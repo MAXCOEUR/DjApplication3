@@ -15,6 +15,12 @@ namespace DjApplication3.outils
         public event EventHandler eventPlayPauseRight;
         public event EventHandler eventCasqueLeft;
         public event EventHandler eventCasqueRight;
+        public event EventHandler eventButtonUp;
+        public event EventHandler eventButtonDown;
+        public event EventHandler eventButtonLeft;
+        public event EventHandler eventButtonRight;
+        public event EventHandler eventButtonLoadLeft;
+        public event EventHandler eventButtonLoadRight;
         public event EventHandler<int> eventPisteLeft;
         public event EventHandler<int> eventPisteRight;
         public event EventHandler<float> eventVolumeLeft;
@@ -230,6 +236,48 @@ namespace DjApplication3.outils
                         }
                         Console.WriteLine("eventScratchRightPress " + noteOnEvent.Velocity);
                         break;
+                    case 54:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonUp?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonUp " + noteOnEvent.Velocity);
+                        break;
+                    case 55:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonDown?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonDown " + noteOnEvent.Velocity);
+                        break;
+                    case 56:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonRight?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonRight " + noteOnEvent.Velocity);
+                        break;
+                    case 57:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonLeft?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonLeft " + noteOnEvent.Velocity);
+                        break;
+                    case 25:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonLoadLeft?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonLoadLeft " + noteOnEvent.Velocity);
+                        break;
+                    case 51:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventButtonLoadRight?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventButtonLoadRight " + noteOnEvent.Velocity);
+                        break;
                     case 64:
                         if (noteOnEvent.Velocity == 127)
                         {
@@ -356,6 +404,9 @@ namespace DjApplication3.outils
             midiOut.Send(MidiMessage.StartNote(39, 127, 1).RawData);
             midiOut.Send(MidiMessage.StartNote(40, 127, 1).RawData);
             midiOut.Send(MidiMessage.StartNote(41, 127, 1).RawData);
+
+            midiOut.Send(MidiMessage.StartNote(56, 127, 1).RawData);
+            midiOut.Send(MidiMessage.StartNote(57, 127, 1).RawData);
         }
     }
 }

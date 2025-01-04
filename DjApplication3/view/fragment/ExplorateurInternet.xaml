@@ -11,7 +11,7 @@
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
-        <Grid x:Name="g_tree" Grid.Column="0" Visibility="Collapsed">
+        <Grid x:Name="g_tree" Grid.Column="0" Visibility="Collapsed" PreviewKeyDown="g_tree_PreviewKeyDown">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition/>
@@ -44,7 +44,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
-            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" KeyUp="dgv_listeMusic_KeyUp" >
+            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" KeyUp="dgv_listeMusic_KeyUp" >
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />

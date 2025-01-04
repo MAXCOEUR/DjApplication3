@@ -93,7 +93,69 @@ namespace DjApplication3.view.activity
             HerculesDJ.Instance.eventVolumeDownHeadPhone += Hercules_eventVolumeDownHeadPhone;
             HerculesDJ.Instance.eventVolumeUpHeadPhone += Hercules_eventVolumeUpHeadPhone;
 
+            HerculesDJ.Instance.eventButtonDown += Hercules_eventButtonDown;
+            HerculesDJ.Instance.eventButtonUp += Hercules_eventButtonUp;
+            HerculesDJ.Instance.eventButtonLeft += Hercules_eventButtonLeft;
+            HerculesDJ.Instance.eventButtonRight += Hercules_eventButtonRight;
+
+            HerculesDJ.Instance.eventButtonLoadLeft += Hercules_eventButtonLoadLeft;
+            HerculesDJ.Instance.eventButtonLoadRight += Hercules_eventButtonLoadRight;
+
             HerculesDJ.Instance.start();
+        }
+
+        private void Hercules_eventButtonLoadRight(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyLoadRight();
+            });
+            
+        }
+
+        private void Hercules_eventButtonLoadLeft(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyLoadLeft();
+            });
+            
+        }
+
+        private void Hercules_eventButtonRight(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyRight();
+            });
+            
+        }
+
+        private void Hercules_eventButtonLeft(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyLeft();
+            });
+            
+        }
+
+        private void Hercules_eventButtonUp(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyUp();
+            });
+            
+        }
+
+        private void Hercules_eventButtonDown(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                exploYtMusic.keyDown();
+            });
+            
         }
 
         private void Hercules_eventVolumeUpHeadPhone(object? sender, EventArgs e)

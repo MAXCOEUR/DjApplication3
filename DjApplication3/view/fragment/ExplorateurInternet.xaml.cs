@@ -103,6 +103,14 @@ namespace DjApplication3.view.fragment
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
             dgv_listeMusic.ItemsSource = musiques;
+            if (dgv_listeMusic.Items.Count > 0)
+            {
+                // Récupère le premier élément
+                var firstItem = dgv_listeMusic.Items[0];
+
+                // Sélectionne le premier élément
+                dgv_listeMusic.SelectedItem = firstItem;
+            }
             dgv_listeMusic.Items.Refresh();
         }
 
@@ -125,6 +133,14 @@ namespace DjApplication3.view.fragment
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
             dgv_listeMusic.ItemsSource = musiques;
+            if (dgv_listeMusic.Items.Count > 0)
+            {
+                // Récupère le premier élément
+                var firstItem = dgv_listeMusic.Items[0];
+
+                // Sélectionne le premier élément
+                dgv_listeMusic.SelectedItem = firstItem;
+            }
             dgv_listeMusic.Items.Refresh();
         }
         private void SearchTimer_Tick(object sender, EventArgs e)
@@ -342,6 +358,78 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.Visibility = Visibility.Visible;
             LoadingBar.Visibility = Visibility.Hidden;
             errorMessageListeMusique.Visibility = Visibility.Hidden;
+        }
+
+        private void g_tree_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            //switch (e.Key)
+            //{
+            //    case Key.Up:
+            //        keyUp();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Down:
+            //        keyDown();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Left:
+            //        keyLeft();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Right:
+            //        keyRight();
+            //        e.Handled = true;
+            //        break;
+            //}
+        }
+
+        private void dgv_listeMusic_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            //switch (e.Key)
+            //{
+            //    case Key.Up:
+            //        keyUp();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Down:
+            //        keyDown();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Left:
+            //        keyLeft();
+            //        e.Handled = true;
+            //        break;
+            //    case Key.Right:
+            //        keyRight();
+            //        e.Handled = true;
+            //        break;
+            //}
+        }
+        public void keyLoadLeft()
+        {
+            Console.WriteLine("keyLoadLeft");
+        }
+        public void keyLoadRight()
+        {
+            Console.WriteLine("keyLoadRight");
+        }
+        public void keyUp()
+        {
+            Console.WriteLine("Flèche haut pressée");
+        }
+        public void keyDown()
+        {
+            Console.WriteLine("Flèche bas pressée");
+        }
+        public void keyLeft()
+        {
+            tv_tree.Focus();
+            Console.WriteLine("keyLeft");
+        }
+        public void keyRight()
+        {
+            dgv_listeMusic.Focus();
+            Console.WriteLine("keyRight");
         }
     }
     public class MusiqueColonne
