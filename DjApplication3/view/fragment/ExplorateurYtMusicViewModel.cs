@@ -12,7 +12,7 @@ namespace DjApplication3.view.fragment
     internal class ExplorateurYtMusicViewModel : ExplorateurInternetViewModel
     {
         public override event EventHandler<List<Musique>?> TacheSearch;
-        public override event EventHandler<Musique?> TacheDownload;
+        public override event EventHandler<(Musique?, int?)> TacheDownload;
 
         public event EventHandler<List<Musique>?> TacheGetMusiqueInPlayListe;
         public event EventHandler<List<PlayListe>?> TacheGetPlayListe;
@@ -21,11 +21,11 @@ namespace DjApplication3.view.fragment
         private CancellationTokenSource _cancellationTokenGetPlaylist;
         private CancellationTokenSource _cancellationTokenGetPlaylistIn;
 
-        public async override void DownloadMusique(Musique musiqueyt)
+        public async override void DownloadMusique(Musique musiqueyt, int? numeroPisteAssocie)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
             Musique? musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
-            TacheDownload?.Invoke(this, musique);
+            TacheDownload?.Invoke(this, (musique, numeroPisteAssocie));
         }
 
         public override int? getBpm(Musique musique)

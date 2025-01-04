@@ -3,6 +3,7 @@ using DjApplication3.model;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,7 +35,6 @@ namespace DjApplication3.view.fragment
         private ExplorateurYtMusicViewModel viewModelYtMusic;
         private System.Windows.Forms.Timer searchTimer = new System.Windows.Forms.Timer();
         static public string rootFolder = System.IO.Path.GetFullPath("musique/tmp");
-        private List<(Musique, int)> listeMusiqueSelectedPiste = new List<(Musique, int)>();
         public ExplorateurInternet()
         {
             InitializeComponent();
@@ -111,7 +111,7 @@ namespace DjApplication3.view.fragment
                 // Sélectionne le premier élément
                 dgv_listeMusic.SelectedItem = firstItem;
             }
-            dgv_listeMusic.Items.Refresh();
+            
         }
 
         private void ViewModel_TacheSearch(object? sender, List<Musique>? e)
@@ -141,7 +141,7 @@ namespace DjApplication3.view.fragment
                 // Sélectionne le premier élément
                 dgv_listeMusic.SelectedItem = firstItem;
             }
-            dgv_listeMusic.Items.Refresh();
+            
         }
         private void SearchTimer_Tick(object sender, EventArgs e)
         {
@@ -197,8 +197,7 @@ namespace DjApplication3.view.fragment
             // Code à exécuter lorsqu'une option du menu est cliquée
             MenuItem menuItem = (MenuItem)sender;
             var tuple = ((ValueTuple<Musique, int>)menuItem.Tag);
-            listeMusiqueSelectedPiste.Add(tuple);
-            valideRow(tuple.Item1, dgv_listeMusic.SelectedIndex);
+            valideRow(tuple.Item1, dgv_listeMusic.SelectedIndex, tuple.Item2);
         }
 
         private void dgv_listeMusic_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -231,34 +230,41 @@ namespace DjApplication3.view.fragment
             }
             return null;
         }
-        private void valideRow(Musique musique, int rowIndex)
+        private void valideRow(Musique musique, int rowIndex, int? numeroPisteAssocie = null)
         {
             MusiqueColonne tmp = (MusiqueColonne)dgv_listeMusic.Items[rowIndex];
 
             tmp.Dl = "...";
-            dgv_listeMusic.Items.Refresh();
-            viewModel.DownloadMusique(musique);
+            viewModel.DownloadMusique(musique, numeroPisteAssocie);
         }
-        private void ViewModel_TacheDownload(object? sender, Musique? musique)
+        private void ViewModel_TacheDownload(object? sender, (Musique?,int?) TupleMusiqueNumeroPiste)
         {
-            if (musique == null)
+            if (TupleMusiqueNumeroPiste.Item1 == null)
             {
                 return;
             }
-            var resultatRecherche = listeMusiqueSelectedPiste.Find(tuple => tuple.Item1.title == musique.title && tuple.Item1.author == musique.author);
-            if (resultatRecherche != default)
+
+            string url = System.IO.Path.Combine(ExplorateurInternet.rootFolder, $"{TupleMusiqueNumeroPiste.Item1.title} ({TupleMusiqueNumeroPiste.Item1.author}).mp3");
+            if (File.Exists(url))
             {
-                listeMusiqueSelectedPiste.Remove(resultatRecherche);
-                int numeroPisteAssocie = resultatRecherche.Item2;
+                for (int i = 0; i < dgv_listeMusic.Items.Count; i++)
+                {
+                    MusiqueColonne MusiqueColonne = (MusiqueColonne)dgv_listeMusic.Items[i];
+                    if (MusiqueColonne.musique == TupleMusiqueNumeroPiste.Item1)
+                    {
+                        MusiqueColonne.Dl = "✔️";
+                    }
+                }
+            }
 
-                eventMusiqueSlectedWithPiste?.Invoke(this, (musique, numeroPisteAssocie));
-
+            if (TupleMusiqueNumeroPiste.Item2.HasValue)
+            {
+                eventMusiqueSlectedWithPiste?.Invoke(this, (TupleMusiqueNumeroPiste.Item1, TupleMusiqueNumeroPiste.Item2.Value));
             }
             else
             {
-                eventMusiqueSlected?.Invoke(this, musique);
+                eventMusiqueSlected?.Invoke(this, TupleMusiqueNumeroPiste.Item1);
             }
-            dgv_listeMusic.Items.Refresh();
         }
         public void updateBPM()
         {
@@ -271,7 +277,7 @@ namespace DjApplication3.view.fragment
                 int? bpm = viewModel.getBpm(musiqueTmp);
                 musiqueColonne.Bpm = bpm;
             }
-            dgv_listeMusic.Items.Refresh();
+            
         }
 
         private void bt_reload_Click(object sender, RoutedEventArgs e)
@@ -303,20 +309,7 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.Items.Clear();
 
             // Actualiser le contrôle
-            dgv_listeMusic.Items.Refresh();
-        }
-
-        private void dgv_listeMusic_KeyUp(object sender, KeyEventArgs e)
-        {
-            if(e.Key == Key.Enter)
-            {
-                if (dgv_listeMusic.SelectedIndex < dgv_listeMusic.Items.Count - 1)
-                {
-                    dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
-                }
-                MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
-                valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
-            }
+            
         }
 
         private void displayErrorNetWorkTree()
@@ -385,25 +378,30 @@ namespace DjApplication3.view.fragment
 
         private void dgv_listeMusic_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            //switch (e.Key)
-            //{
-            //    case Key.Up:
-            //        keyUp();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Down:
-            //        keyDown();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Left:
-            //        keyLeft();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Right:
-            //        keyRight();
-            //        e.Handled = true;
-            //        break;
-            //}
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+                    valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
+                    e.Handled = true;
+                    break;
+                //case Key.Up:
+                //    keyUp();
+                //    e.Handled = true;
+                //    break;
+                //case Key.Down:
+                //    keyDown();
+                //    e.Handled = true;
+                //    break;
+                //case Key.Left:
+                //    keyLeft();
+                //    e.Handled = true;
+                //    break;
+                //case Key.Right:
+                //    keyRight();
+                //    e.Handled = true;
+                //    break;
+            }
         }
         public void keyLoadLeft()
         {
@@ -432,31 +430,50 @@ namespace DjApplication3.view.fragment
             Console.WriteLine("keyRight");
         }
     }
-    public class MusiqueColonne
+    public class MusiqueColonne : INotifyPropertyChanged
     {
-        public Musique musique;
-        public int? Bpm;
-        private string dl;
+        public Musique musique { get; set; }
+
+        private int? bpm;
+        private string bpmString="";
+
+        public int? Bpm
+        {
+            get => bpm;
+            set
+            {
+                if (bpm != value)
+                {
+                    bpm = value;
+                    BpmString = bpm?.ToString() ?? ""; // Met à jour BpmString automatiquement
+                    OnPropertyChanged(nameof(Bpm));   // Notifie la vue que Bpm a changé
+                }
+            }
+        }
+
+        public string BpmString
+        {
+            get => bpmString;
+            set
+            {
+                if (bpmString != value)
+                {
+                    bpmString = value;
+                    OnPropertyChanged(nameof(BpmString)); // Notifie la vue que BpmString a changé
+                }
+            }
+        }
+
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Title => musique.title;
         public string Author => musique.author;
 
-        public string getBpm
-        {
-            get
-            {
-                string v = "";
-                if (Bpm != null)
-                {
-                    v = Bpm?.ToString();
-                }
-                return v;
-            }
-        }
-
+        private string dl;
         public string Dl
         {
-            set { dl = value; }
             get
             {
                 string url = System.IO.Path.Combine(ExplorateurInternet.rootFolder, $"{musique.title} ({musique.author}).mp3");
@@ -466,14 +483,27 @@ namespace DjApplication3.view.fragment
                 }
                 return dl;
             }
+            set
+            {
+                if (dl != value)
+                {
+                    dl = value;
+                    OnPropertyChanged(nameof(Dl));
+                }
+            }
         }
 
-        //public string dl => (Bpm == null) ? "" : "✔️";
         public MusiqueColonne(Musique musique, int? bpm)
         {
             this.musique = musique;
             Bpm = bpm;
             dl = "";
         }
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
+
 }

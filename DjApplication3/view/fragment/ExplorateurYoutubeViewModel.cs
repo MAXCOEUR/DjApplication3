@@ -13,7 +13,7 @@ namespace DjApplication3.View.userControlDJ
     internal class ExplorateurYoutubeViewModel : ExplorateurInternetViewModel
     {
         public override event EventHandler<List<Musique>?> TacheSearch;
-        public override event EventHandler<Musique?> TacheDownload;
+        public override event EventHandler<(Musique?, int?)> TacheDownload;
 
         private CancellationTokenSource _cancellationTokenSearch;
 
@@ -37,11 +37,11 @@ namespace DjApplication3.View.userControlDJ
             MusiqueRepository musiqueRepository = new MusiqueRepository();
             return musiqueRepository.getBpmHistory(musique);
         }
-        async public override void DownloadMusique(Musique musiqueyt)
+        async public override void DownloadMusique(Musique musiqueyt, int? numeroPisteAssocie)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();
             Musique? musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYoutube(musiqueyt));
-            TacheDownload?.Invoke(this, musique);
+            TacheDownload?.Invoke(this, (musique, numeroPisteAssocie));
         }
     }
 }

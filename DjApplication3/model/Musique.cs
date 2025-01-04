@@ -29,9 +29,8 @@ namespace DjApplication3.model
             if (musique1 is null || musique2 is null)
                 return false;
 
-            // Comparaison des propriétés url, title et author
-            return musique1.url == musique2.url &&
-                   musique1.title == musique2.title &&
+            // Comparaison des propriétés title et author
+            return musique1.title == musique2.title &&
                    musique1.author == musique2.author;
         }
 
