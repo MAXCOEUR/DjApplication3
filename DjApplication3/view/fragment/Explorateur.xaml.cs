@@ -85,16 +85,22 @@ namespace DjApplication3.view.fragment
             }
             filtreMusique();
             displayListMusique();
+            if (dgv_listeMusic.Items.Count > 0)
+            {
+                // Récupère le premier élément
+                var firstItem = dgv_listeMusic.Items[0];
 
+                // Sélectionne le premier élément
+                dgv_listeMusic.SelectedItem = firstItem;
+            }
 
         }
 
         private void filtreMusique()
         {
-            displayLoadingListMusique();
             List<MusiqueColonne> musiquesTmp = musiques.Where(m => m.musique.title.Contains(search, StringComparison.OrdinalIgnoreCase) || m.musique.author.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
             dgv_listeMusic.ItemsSource = musiquesTmp;
-            //dgv_listeMusic.Items.Refresh();
+            
         }
 
         public void updateData()
@@ -205,17 +211,75 @@ namespace DjApplication3.view.fragment
             //dgv_listeMusic.Items.Refresh();
         }
 
-        private void dgv_listeMusic_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void dgv_listeMusic_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            switch (e.Key)
             {
-                if(dgv_listeMusic.SelectedIndex < dgv_listeMusic.Items.Count - 1)
-                {
-                    dgv_listeMusic.SelectedIndex = dgv_listeMusic.SelectedIndex - 1;
-                }
-                MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
-                eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+                case Key.Enter:
+                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+                    eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+                    e.Handled = true;
+                    break;
+                case Key.Up:
+                    keyUp();
+                    e.Handled = true;
+                    break;
+                case Key.Down:
+                    keyDown();
+                    e.Handled = true;
+                    break;
+                case Key.Left:
+                    keyLeft();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    keyRight();
+                    e.Handled = true;
+                    break;
             }
+        }
+
+        public void keyUp()
+        {
+            int indexCurrent = dgv_listeMusic.SelectedIndex;
+            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent <= 0) ? 0 : --indexCurrent];
+
+            dgv_listeMusic.SelectedItem = newItemSelectedItem;
+            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+            Console.WriteLine("Flèche haut pressée");
+        }
+        public void keyDown()
+        {
+            int indexCurrent = dgv_listeMusic.SelectedIndex;
+            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count - 1) ? dgv_listeMusic.Items.Count - 1 : ++indexCurrent];
+
+            dgv_listeMusic.SelectedItem = newItemSelectedItem;
+            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+            Console.WriteLine("Flèche bas pressée");
+        }
+        public void keyLeft()
+        {
+            tv_tree.Focus();
+            if (tv_tree.SelectedItem is DossierPerso selectedDossier)
+            {
+                // Si l'élément a des enfants et est déplié, on le plie
+                TreeViewItem? selectedItem = tv_tree.ItemContainerGenerator.ContainerFromItem(selectedDossier) as TreeViewItem;
+                if(selectedItem == null)
+                {
+                    return;
+                }
+                selectedItem.IsExpanded = !selectedItem.IsExpanded;
+            }
+            else
+            {
+                Console.WriteLine("Aucun élément sélectionné ou pas un DossierPerso.");
+            }
+            Console.WriteLine("keyLeft");
+        }
+        public void keyRight()
+        {
+            dgv_listeMusic.Focus();
+            Console.WriteLine("keyRight");
         }
 
         private void displayLoadingTree()
@@ -239,6 +303,29 @@ namespace DjApplication3.view.fragment
         {
             dgv_listeMusic.Visibility = Visibility.Visible;
             LoadingBar.Visibility = Visibility.Hidden;
+        }
+
+        private void tv_tree_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                //    case Key.Up:
+                //        keyUp();
+                //        e.Handled = true;
+                //        break;
+                //    case Key.Down:
+                //        keyDown();
+                //        e.Handled = true;
+                //        break;
+                case Key.Left:
+                    keyLeft();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    keyRight();
+                    e.Handled = true;
+                    break;
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DjApplication3.View.userControlDJ
@@ -12,11 +13,24 @@ namespace DjApplication3.View.userControlDJ
     {
         public event EventHandler<List<Musique>> TacheGetMusique;
         public event EventHandler<DossierPerso> TacheGetDossierPerso;
+
+        private CancellationTokenSource _cancellationTokenGet;
+
         public async void getMusique(string folderPath)
         {
+            // Annule la recherche précédente si elle est en cours
+            _cancellationTokenGet?.Cancel();
+            _cancellationTokenGet = new CancellationTokenSource();
+            var token = _cancellationTokenGet.Token;
+
             MusiqueRepository musiqueRepository = new MusiqueRepository();
             List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMp3Files(folderPath));
-            TacheGetMusique?.Invoke(this, musiques);
+
+            if (!token.IsCancellationRequested)
+            {
+                TacheGetMusique?.Invoke(this, musiques);
+            }
+            
         }
 
         public async void GetDossierPerso(string rootFolder)

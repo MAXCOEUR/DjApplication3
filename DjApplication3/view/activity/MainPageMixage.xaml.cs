@@ -144,7 +144,7 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyUp();
+                exploYtMusic.keyUptest();
             });
             
         }

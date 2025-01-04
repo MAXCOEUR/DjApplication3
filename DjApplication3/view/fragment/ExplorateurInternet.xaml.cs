@@ -12,18 +12,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DjApplication3.view.fragment
 {
     /// <summary>
     /// Logique d'interaction pour ExplorateurInternet.xaml
     /// </summary>
-    public partial class ExplorateurInternet : UserControl
+    public partial class ExplorateurInternet : System.Windows.Controls.UserControl
     {
         public event EventHandler<Musique> eventMusiqueSlected;
         public event EventHandler<(Musique, int)> eventMusiqueSlectedWithPiste;
@@ -353,38 +355,10 @@ namespace DjApplication3.view.fragment
             errorMessageListeMusique.Visibility = Visibility.Hidden;
         }
 
-        private void g_tree_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            //switch (e.Key)
-            //{
-            //    case Key.Up:
-            //        keyUp();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Down:
-            //        keyDown();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Left:
-            //        keyLeft();
-            //        e.Handled = true;
-            //        break;
-            //    case Key.Right:
-            //        keyRight();
-            //        e.Handled = true;
-            //        break;
-            //}
-        }
-
-        private void dgv_listeMusic_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void g_tree_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
-                case Key.Enter:
-                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
-                    valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
-                    e.Handled = true;
-                    break;
                 //case Key.Up:
                 //    keyUp();
                 //    e.Handled = true;
@@ -393,14 +367,42 @@ namespace DjApplication3.view.fragment
                 //    keyDown();
                 //    e.Handled = true;
                 //    break;
-                //case Key.Left:
-                //    keyLeft();
-                //    e.Handled = true;
-                //    break;
-                //case Key.Right:
-                //    keyRight();
-                //    e.Handled = true;
-                //    break;
+                case Key.Left:
+                    keyLeft();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    keyRight();
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void dgv_listeMusic_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+                    valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
+                    e.Handled = true;
+                    break;
+                case Key.Up:
+                    keyUp();
+                    e.Handled = true;
+                    break;
+                case Key.Down:
+                    keyDown();
+                    e.Handled = true;
+                    break;
+                case Key.Left:
+                    keyLeft();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    keyRight();
+                    e.Handled = true;
+                    break;
             }
         }
         public void keyLoadLeft()
@@ -411,17 +413,61 @@ namespace DjApplication3.view.fragment
         {
             Console.WriteLine("keyLoadRight");
         }
+        public void keyUptest()
+        {
+            // Simuler une pression de la touche "Entrée"
+            var keyEventArgs = new System.Windows.Input.KeyEventArgs(
+                Keyboard.PrimaryDevice,
+                PresentationSource.FromVisual(tv_tree),
+                0,
+                Key.Enter
+            )
+            {
+                RoutedEvent = UIElement.KeyUpEvent
+            };
+
+            // Dispatchez l'événement pour simuler un appui sur la touche
+            tv_tree.RaiseEvent(keyEventArgs);
+
+        }
         public void keyUp()
         {
+            int indexCurrent = dgv_listeMusic.SelectedIndex;
+            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent<=0)?0:--indexCurrent];
+
+            dgv_listeMusic.SelectedItem = newItemSelectedItem;
+            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+
+
+
             Console.WriteLine("Flèche haut pressée");
         }
         public void keyDown()
         {
+            int indexCurrent = dgv_listeMusic.SelectedIndex;
+            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count-1) ? dgv_listeMusic.Items.Count-1 : ++indexCurrent];
+
+            dgv_listeMusic.SelectedItem = newItemSelectedItem;
+            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
             Console.WriteLine("Flèche bas pressée");
         }
         public void keyLeft()
         {
             tv_tree.Focus();
+            if (tv_tree.SelectedItem is DossierPerso selectedDossier)
+            {
+                // Si l'élément a des enfants et est déplié, on le plie
+                TreeViewItem? selectedItem = tv_tree.ItemContainerGenerator.ContainerFromItem(selectedDossier) as TreeViewItem;
+                if (selectedItem == null)
+                {
+                    return;
+                }
+                selectedItem.IsExpanded = !selectedItem.IsExpanded;
+            }
+            else
+            {
+                Console.WriteLine("Aucun élément sélectionné ou pas un DossierPerso.");
+            }
             Console.WriteLine("keyLeft");
         }
         public void keyRight()

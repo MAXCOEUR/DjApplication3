@@ -43,7 +43,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <TreeView x:Name="tv_tree" Grid.Row="1" Grid.ColumnSpan="2" SelectedItemChanged="tv_tree_SelectedItemChanged">
+            <TreeView x:Name="tv_tree" Grid.Row="1" Grid.ColumnSpan="2" SelectedItemChanged="tv_tree_SelectedItemChanged" PreviewKeyDown="tv_tree_PreviewKeyDown">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                         <TextBlock Text="{Binding Text}" />
@@ -59,7 +59,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <TextBox Grid.Row="0" x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
-            <DataGrid Grid.Row="1" x:Name="dgv_listeMusic" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" KeyUp="dgv_listeMusic_KeyUp">
+            <DataGrid Grid.Row="1" x:Name="dgv_listeMusic" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown">
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
