@@ -94,7 +94,7 @@ namespace DjApplication3.view.fragment
             displayLoadingListMusique();
             List<MusiqueColonne> musiquesTmp = musiques.Where(m => m.musique.title.Contains(search, StringComparison.OrdinalIgnoreCase) || m.musique.author.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
             dgv_listeMusic.ItemsSource = musiquesTmp;
-            dgv_listeMusic.Items.Refresh();
+            //dgv_listeMusic.Items.Refresh();
         }
 
         public void updateData()
@@ -185,7 +185,6 @@ namespace DjApplication3.view.fragment
                 int? bpm = viewModel.getBpm(musiqueColonne.musique);
                 musiqueColonne.Bpm = bpm;
             }
-            dgv_listeMusic.Items.Refresh();
         }
 
         private void tb_serach_TextChanged(object sender, TextChangedEventArgs e)
@@ -203,7 +202,7 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.Items.Clear();
 
             // Actualiser le contrôle
-            dgv_listeMusic.Items.Refresh();
+            //dgv_listeMusic.Items.Refresh();
         }
 
         private void dgv_listeMusic_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
