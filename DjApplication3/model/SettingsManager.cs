@@ -1,5 +1,7 @@
 ﻿using CSCore.CoreAudioAPI;
+using Microsoft.Win32;
 using NAudio.Midi;
+using System;
 using System.Collections.Generic;
 
 namespace DjApplication3.model
@@ -22,8 +24,8 @@ namespace DjApplication3.model
         public int nbrPiste { get; set; }
         public List<MidiInCapabilities> listMidi = new List<MidiInCapabilities>();
 
-        public int browser { get; set; }
-        public string browserName { get; set; }
+        public int browserIndice { get; set; }
+        public List<string> browsers {  get; }
 
         MMDeviceEnumerator enumerator;
         public MMDeviceCollection dispositifsAudio;
@@ -38,10 +40,56 @@ namespace DjApplication3.model
             nbrHeadPhone = 0;
             nbrOut = 0;
             nbrPiste = 2;
-            browser = 0;
-            browserName = "edge";
             nbrMidi = 0;
+            browsers = GetInstalledBrowsers();
+            browserIndice = 0;
             APP_NAME = "DjApplication 3";
+
+
+        }
+        private List<string> GetInstalledBrowsers()
+        {
+            List<string> browsers = new List<string>();
+
+            // Les navigateurs sont souvent enregistrés dans le registre
+            // Sous la clé "SOFTWARE\Clients\StartMenuInternet"
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Clients\StartMenuInternet"))
+            {
+                if (key != null)
+                {
+                    // Obtenez les noms des sous-clés (qui représentent les navigateurs)
+                    string[] browserNames = key.GetSubKeyNames();
+
+                    foreach (string browserName in browserNames)
+                    {
+                        // Ajoutez le nom du navigateur à la liste
+                        browsers.Add(browserName);
+                    }
+                }
+            }
+
+            return browsers;
+        }
+        private string GetDefaultBrowser()
+        {
+            string defaultBrowser = string.Empty;
+
+            // Accédez à la clé du registre qui stocke l'application par défaut pour HTTP
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice"))
+            {
+                if (key != null)
+                {
+                    // Obtenez le nom de l'application par défaut
+                    object progId = key.GetValue("Progid");
+
+                    if (progId != null)
+                    {
+                        defaultBrowser = progId.ToString();
+                    }
+                }
+            }
+
+            return defaultBrowser;
         }
 
         // Méthode pour obtenir l'instance unique de la classe

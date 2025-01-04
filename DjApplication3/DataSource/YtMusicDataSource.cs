@@ -406,15 +406,15 @@ namespace DjApplication3.DataSource
                     arguments += " --ffmpeg-location \"" + ffmpegPath + "\"";
                 }
 
-                if(SettingsManager.Instance.browserName.ToLower().Contains("chrome"))
+                if (SettingsManager.Instance.browsers[SettingsManager.Instance.browserIndice].ToLower().Contains("chrome"))
                 {
                     arguments += " --cookies-from-browser chrome";
                 }
-                else if (SettingsManager.Instance.browserName.ToLower().Contains("edge"))
+                else if (SettingsManager.Instance.browsers[SettingsManager.Instance.browserIndice].ToLower().Contains("edge"))
                 {
                     arguments += " --cookies-from-browser edge";
                 }
-                else if (SettingsManager.Instance.browserName.ToLower().Contains("firefox"))
+                else if (SettingsManager.Instance.browsers[SettingsManager.Instance.browserIndice].ToLower().Contains("firefox"))
                 {
                     arguments += " --cookies-from-browser firefox";
                 }
@@ -554,20 +554,7 @@ namespace DjApplication3.DataSource
         {
             if (File.Exists(oauthJson))
             {
-                string json = File.ReadAllText(oauthJson);
-                JObject googleAuth = JObject.Parse(json);
-                long expiresAt = (long)googleAuth["expires_at"];
-                DateTime expiryDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(expiresAt);
-                if (expiryDate <= DateTime.UtcNow)
-                {
-                    //Console.WriteLine("Le jeton est expiré");
-                    return false;
-                }
-                else
-                {
-                    //Console.WriteLine("Le jeton n'est pas encore expiré");
-                    return true;
-                }
+                return true;
             }
             return false;
         }

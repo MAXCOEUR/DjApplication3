@@ -44,8 +44,8 @@
     <None Update="outilsExtern\apiYouMusicOAuth.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="outilsExtern\BPM_Detect.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="outilsExtern\oauth.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="outilsExtern\spotdl.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
