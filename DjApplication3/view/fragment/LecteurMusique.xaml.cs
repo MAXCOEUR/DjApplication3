@@ -149,6 +149,10 @@ namespace DjApplication3.view.page
 
                 // Exécutez ces opérations dans un thread séparé
                 fichierAudio = CodecFactory.Instance.GetCodec(musique.url);
+                if (audioPlayer.WaveSource != null)
+                {
+                    audioPlayer.WaveSource.Position = 0;
+                }
 
                 this.musique = musique;
 
@@ -236,12 +240,6 @@ namespace DjApplication3.view.page
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-            }
-
-            if (audioPlayer.WaveSource != null)
-            {
-                audioPlayer.WaveSource.Position = 0;
-                audioPlayer.WaveSource.Dispose();
             }
 
             audioPlayer.Initialize(fichierAudio);
