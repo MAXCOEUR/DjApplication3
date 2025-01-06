@@ -1,5 +1,6 @@
 ﻿using DjApplication3.DataSource;
 using DjApplication3.model;
+using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
@@ -37,9 +38,12 @@ namespace DjApplication3.view.fragment
         private ExplorateurYtMusicViewModel viewModelYtMusic;
         private System.Windows.Forms.Timer searchTimer = new System.Windows.Forms.Timer();
         static public string rootFolder = System.IO.Path.GetFullPath("musique/tmp");
+
+        FrameworkElement CurrentVisualSelected;
         public ExplorateurInternet()
         {
             InitializeComponent();
+            CurrentVisualSelected = Pn_navigation;
         }
 
         public void setViewModel(ExplorateurInternetViewModel model)
@@ -66,6 +70,12 @@ namespace DjApplication3.view.fragment
                 viewModelYtMusic.getPlayListe();
 
             }
+            if(model is ExplorateurYoutubeViewModel)
+            {
+                CurrentVisualSelected = dgv_listeMusic;
+            }
+
+            Pn_navigation.SelectionChanged += Pn_navigation_SelectionChanged;
 
             searchTimer.Interval = 1000; // Délai en millisecondes (01 seconde)
             searchTimer.Tick += SearchTimer_Tick;
@@ -75,6 +85,8 @@ namespace DjApplication3.view.fragment
             viewModel.search("");
         }
 
+        
+
         private void ViewModelYtMusic_TacheGetPlayListe(object? sender, List<PlayListe>? e)
         {
             if (e == null)
@@ -83,7 +95,7 @@ namespace DjApplication3.view.fragment
                 return;
             }
             displayTree();
-            tv_tree.ItemsSource = e;
+            Pn_navigation.setPlayLists(e);
         }
 
         private void ViewModelYtMusic_TacheGetMusiqueInPlayListe(object? sender, List<Musique>? e)
@@ -160,9 +172,9 @@ namespace DjApplication3.view.fragment
         {
             cleatDGV();
 
-            var treeViewSource = (List<PlayListe>)tv_tree.ItemsSource;
-            tv_tree.ItemsSource = null;
-            tv_tree.ItemsSource = treeViewSource;
+            //var treeViewSource = (List<PlayListe>)tv_tree.ItemsSource;
+            //tv_tree.ItemsSource = null;
+            //tv_tree.ItemsSource = treeViewSource;
 
             displayLoadingListMusique();
 
@@ -204,6 +216,8 @@ namespace DjApplication3.view.fragment
 
         private void dgv_listeMusic_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            CurrentVisualSelected = dgv_listeMusic;
+
             // Assurez-vous que l'élément source est une cellule du DataGrid
             var source = e.OriginalSource as FrameworkElement;
             if (source != null && source.Parent is DataGridCell)
@@ -288,20 +302,6 @@ namespace DjApplication3.view.fragment
             viewModelYtMusic.getPlayListe();
         }
 
-        private void tv_tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (e.NewValue != null)
-            {
-                cleatDGV();
-
-                var selectedItem = (PlayListe)e.NewValue;
-                viewModelYtMusic.getMusiqueInPlayListe(selectedItem.id);
-                tb_serach.Text = "";
-
-                displayLoadingListMusique();
-            }
-        }
-
         private void cleatDGV()
         {
             // Définir la source de données à null
@@ -317,7 +317,7 @@ namespace DjApplication3.view.fragment
         private void displayErrorNetWorkTree()
         {
             errorMessageTree.Visibility = Visibility.Visible;
-            tv_tree.Visibility = Visibility.Hidden;
+            Pn_navigation.Visibility = Visibility.Hidden;
             LoadingBarTree.Visibility = Visibility.Hidden;
         }
 
@@ -332,7 +332,7 @@ namespace DjApplication3.view.fragment
         {
             LoadingBarTree.Visibility = Visibility.Visible;
             errorMessageTree.Visibility = Visibility.Hidden;
-            tv_tree.Visibility = Visibility.Hidden;
+            Pn_navigation.Visibility = Visibility.Hidden;
         }
 
         private void displayLoadingListMusique()
@@ -343,7 +343,7 @@ namespace DjApplication3.view.fragment
         }
         private void displayTree()
         {
-            tv_tree.Visibility = Visibility.Visible;
+            Pn_navigation.Visibility = Visibility.Visible;
             LoadingBarTree.Visibility = Visibility.Hidden;
             errorMessageTree.Visibility = Visibility.Hidden;
         }
@@ -355,27 +355,10 @@ namespace DjApplication3.view.fragment
             errorMessageListeMusique.Visibility = Visibility.Hidden;
         }
 
-        private void g_tree_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        public void EnterSelected(int? piste=null)
         {
-            switch (e.Key)
-            {
-                //case Key.Up:
-                //    keyUp();
-                //    e.Handled = true;
-                //    break;
-                //case Key.Down:
-                //    keyDown();
-                //    e.Handled = true;
-                //    break;
-                case Key.Left:
-                    keyLeft();
-                    e.Handled = true;
-                    break;
-                case Key.Right:
-                    keyRight();
-                    e.Handled = true;
-                    break;
-            }
+            MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+            valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex, piste);
         }
 
         private void dgv_listeMusic_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -383,8 +366,7 @@ namespace DjApplication3.view.fragment
             switch (e.Key)
             {
                 case Key.Enter:
-                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
-                    valideRow(selectedItem.musique, dgv_listeMusic.SelectedIndex);
+                    EnterSelected();
                     e.Handled = true;
                     break;
                 case Key.Up:
@@ -417,41 +399,82 @@ namespace DjApplication3.view.fragment
         }
         public void keyUp()
         {
-            int indexCurrent = dgv_listeMusic.SelectedIndex;
-            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent<=0)?0:--indexCurrent];
+            if (CurrentVisualSelected is DataGrid)
+            {
+                int indexCurrent = dgv_listeMusic.SelectedIndex;
+                if (indexCurrent != -1)
+                {
+                    var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent <= 0) ? 0 : --indexCurrent];
 
-            dgv_listeMusic.SelectedItem = newItemSelectedItem;
-            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                    dgv_listeMusic.SelectedItem = newItemSelectedItem;
+                    dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                }
+            }
+            if (CurrentVisualSelected is PlayListNavigation)
+            {
+                Pn_navigation.Up();
+            }
         }
         public void keyDown()
         {
-            int indexCurrent = dgv_listeMusic.SelectedIndex;
-            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count-1) ? dgv_listeMusic.Items.Count-1 : ++indexCurrent];
+            if (CurrentVisualSelected is DataGrid)
+            {
+                int indexCurrent = dgv_listeMusic.SelectedIndex;
+                if (indexCurrent != -1)
+                {
 
-            dgv_listeMusic.SelectedItem = newItemSelectedItem;
-            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                    var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count - 1) ? dgv_listeMusic.Items.Count - 1 : ++indexCurrent];
+
+                    dgv_listeMusic.SelectedItem = newItemSelectedItem;
+                    dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                }
+            }
+            else if (CurrentVisualSelected is PlayListNavigation)
+            {
+                Pn_navigation.Down();
+            }
         }
         public void keyLeft()
         {
-            tv_tree.Focus();
-            if (tv_tree.SelectedItem is DossierPerso selectedDossier)
-            {
-                // Si l'élément a des enfants et est déplié, on le plie
-                TreeViewItem? selectedItem = tv_tree.ItemContainerGenerator.ContainerFromItem(selectedDossier) as TreeViewItem;
-                if (selectedItem == null)
-                {
-                    return;
-                }
-                selectedItem.IsExpanded = !selectedItem.IsExpanded;
-            }
-            else
-            {
-                Console.WriteLine("Aucun élément sélectionné ou pas un DossierPerso.");
-            }
+            Pn_navigation.FocusItemListBox();
+            CurrentVisualSelected = Pn_navigation;
+            Console.WriteLine("keyLeft");
         }
         public void keyRight()
         {
             dgv_listeMusic.Focus();
+            CurrentVisualSelected = dgv_listeMusic;
+            Console.WriteLine("keyRight");
+        }
+
+        private void Pn_navigation_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+           switch (e.Key)
+            {
+                case Key.Left:
+                    keyLeft();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    keyRight();
+                    e.Handled = true;
+                    break;
+            }
+        }
+        private void Pn_navigation_SelectionChanged(object? sender, PlayListe e)
+        {
+            if (e == null) return;
+            cleatDGV();
+
+            viewModelYtMusic.getMusiqueInPlayListe(e.id);
+            tb_serach.Text = "";
+
+            displayLoadingListMusique();
+        }
+
+        private void Pn_navigation_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CurrentVisualSelected = Pn_navigation;
         }
     }
     public class MusiqueColonne : INotifyPropertyChanged

@@ -1,9 +1,10 @@
-﻿<UserControl x:Class="DjApplication3.view.fragment.Explorateur"
+﻿<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DjApplication3.view.fragment"
+             xmlns:windows="clr-namespace:DjApplication3.view.windows" x:Class="DjApplication3.view.fragment.Explorateur"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -23,7 +24,7 @@
             </Grid.RowDefinitions>
             <Button x:Name="bt_changeRoot" Click="bt_changeRoot_Click">
                 <Button.Template>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="{x:Type Button}">
                         <Grid>
                             <Rectangle Fill="{TemplateBinding Background}"/>
                             <Image Source="/DjApplication3;component/Resources/folder.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
@@ -34,7 +35,7 @@
             </Button>
             <Button x:Name="bt_reload" Grid.Column="1" Click="bt_reload_Click">
                 <Button.Template>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="{x:Type Button}">
                         <Grid>
                             <Rectangle Fill="{TemplateBinding Background}"/>
                             <Image Source="/DjApplication3;component/Resources/reload.png" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5"/>
@@ -43,14 +44,8 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <TreeView x:Name="tv_tree" Grid.Row="1" Grid.ColumnSpan="2" SelectedItemChanged="tv_tree_SelectedItemChanged" PreviewKeyDown="tv_tree_PreviewKeyDown">
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Text}" />
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
             <ProgressBar x:Name="LoadingBarTree" IsIndeterminate="True" Grid.Row="1" Grid.ColumnSpan="2" Visibility="Hidden"/>
+            <windows:FolderNavigation x:Name="Fn_navigation" Grid.Row="1" Grid.ColumnSpan="2" PreviewKeyDown="Fn_navigation_PreviewKeyDown" PreviewMouseLeftButtonDown="Fn_navigation_PreviewMouseLeftButtonDown"/>
         </Grid>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
         <Grid Grid.Column="2">
@@ -58,16 +53,21 @@
                 <RowDefinition Height="30"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
+
+
+            <Grid.ContextMenu>
+                <ContextMenu x:Name="cm_PisteList"/>
+            </Grid.ContextMenu>
             <TextBox Grid.Row="0" x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
             <DataGrid Grid.Row="1" x:Name="dgv_listeMusic" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown">
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
-                    <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
+                    <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding Author}" IsReadOnly="True" />
                     <DataGridTextColumn Width="40" Header="Bpm" Binding="{Binding BpmString}" IsReadOnly="True" />
                     <DataGridTextColumn Header="musique" Binding="{Binding musique}" Visibility="Hidden" IsReadOnly="True" />
                 </DataGrid.Columns>
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
+                    <Style TargetType="{x:Type DataGridRow}">
                         <Setter Property="Background" Value="Yellow" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding BpmString}" Value="">
@@ -80,10 +80,6 @@
             <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
 
 
-            <Grid.ContextMenu>
-                <ContextMenu x:Name="cm_PisteList">
-                </ContextMenu>
-            </Grid.ContextMenu>
         </Grid>
 
     </Grid>

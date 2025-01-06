@@ -4,6 +4,7 @@ using DjApplication3.outils;
 using DjApplication3.repository;
 using DjApplication3.view.activity;
 using DjApplication3.view.fragment;
+using DjApplication3.view.windows;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +31,8 @@ namespace DjApplication3
         private MainPageMixage mainPageMixage = new MainPageMixage();
         public MainWindow()
         {
-
+            //test treeViewExample = new test();
+            //treeViewExample.ShowDialog();
             new FFmpegGestion();
             InitializeComponent();
             MainContent.Content = mainPageMixage;

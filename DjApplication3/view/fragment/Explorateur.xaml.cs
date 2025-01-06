@@ -1,5 +1,6 @@
 ﻿using CSCore.XAudio2.X3DAudio;
 using DjApplication3.model;
+using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
@@ -28,14 +29,17 @@ namespace DjApplication3.view.fragment
 
         string search = "";
 
+        FrameworkElement CurrentVisualSelected;
+
         public Explorateur()
         {
             InitializeComponent();
 
-            viewModel.TacheGetDossierPerso += ViewModel_TacheGetDossierPerso;
             viewModel.TacheGetMusique += ModelView_TacheGetMusique;
+            Fn_navigation.SelectionChanged += Fn_navigation_SelectionChanged;
 
-            
+            CurrentVisualSelected = Fn_navigation;
+
             initRoot("musique");
         }
 
@@ -43,13 +47,11 @@ namespace DjApplication3.view.fragment
         {
             displayLoadingTree();
             this.rootFolder = Path.GetFullPath(rootFolder);
-            viewModel.GetDossierPerso(this.rootFolder);
             viewModel.getMusique(this.rootFolder);
-        }
-        private void ViewModel_TacheGetDossierPerso(object? sender, DossierPerso e)
-        {
+
+            Fn_navigation.setRootPath(this.rootFolder);
             displayTree();
-            tv_tree.ItemsSource = e.Children;
+
         }
 
         private void bt_changeRoot_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -107,18 +109,6 @@ namespace DjApplication3.view.fragment
         {
             dgv_listeMusic.Items.Refresh();
         }
-        private void tv_tree_SelectedItemChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (e.NewValue != null)
-            {
-                displayLoadingListMusique();
-                cleatDGV();
-
-                var selectedItem = (DossierPerso)e.NewValue;
-                string path = Path.Combine(Path.GetDirectoryName(rootFolder), selectedItem.getPath());
-                viewModel.getMusique(path);
-            }
-        }
 
         private void dgv_listeMusic_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -126,7 +116,7 @@ namespace DjApplication3.view.fragment
 
             if (selectedItem != null)
             {
-                eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+                valideRow(selectedItem.musique);
             }
         }
 
@@ -149,26 +139,26 @@ namespace DjApplication3.view.fragment
             // Code à exécuter lorsqu'une option du menu est cliquée
             MenuItem menuItem = (MenuItem)sender;
             (Musique m, int p) = ((ValueTuple<Musique, int>)menuItem.Tag);
-            eventMusiqueSlectedWithPiste?.Invoke(this, (m, p));
+            valideRow(m, p);
+        }
+
+        private void valideRow(Musique musique,  int? numeroPisteAssocie = null)
+        {
+            if (numeroPisteAssocie.HasValue)
+            {
+                eventMusiqueSlectedWithPiste?.Invoke(this, (musique, numeroPisteAssocie.Value));
+            }
+            else
+            {
+                eventMusiqueSlected?.Invoke(this, musique);
+            }
+            
         }
 
 
         private void dgv_listeMusic_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Assurez-vous que l'élément source est une cellule du DataGrid
-            var source = e.OriginalSource as FrameworkElement;
-            if (source != null && source.Parent is DataGridCell)
-            {
-                // Sélectionnez la ligne associée au clic
-                DataGridCell cell = (DataGridCell)source.Parent;
-                DataGridRow row = FindVisualParent<DataGridRow>(cell);
-
-                // Assurez-vous que la ligne est valide
-                if (row != null)
-                {
-                    dgv_listeMusic.SelectedItem = row.Item;
-                }
-            }
+            CurrentVisualSelected = dgv_listeMusic;
         }
         public static T FindVisualParent<T>(UIElement element) where T : UIElement
         {
@@ -207,8 +197,12 @@ namespace DjApplication3.view.fragment
             // Nettoyer les éléments du contrôle
             dgv_listeMusic.Items.Clear();
 
-            // Actualiser le contrôle
-            //dgv_listeMusic.Items.Refresh();
+        }
+
+        public void EnterSelected(int? piste = null)
+        {
+            MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
+            valideRow(selectedItem.musique, piste);
         }
 
         private void dgv_listeMusic_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -216,8 +210,7 @@ namespace DjApplication3.view.fragment
             switch (e.Key)
             {
                 case Key.Enter:
-                    MusiqueColonne selectedItem = (MusiqueColonne)dgv_listeMusic.SelectedItem;
-                    eventMusiqueSlected?.Invoke(this, selectedItem.musique);
+                    EnterSelected();
                     e.Handled = true;
                     break;
                 case Key.Up:
@@ -241,51 +234,66 @@ namespace DjApplication3.view.fragment
 
         public void keyUp()
         {
-            int indexCurrent = dgv_listeMusic.SelectedIndex;
-            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent <= 0) ? 0 : --indexCurrent];
+            if(CurrentVisualSelected is DataGrid)
+            {
+                int indexCurrent = dgv_listeMusic.SelectedIndex;
+                if(indexCurrent != -1)
+                {
+                    var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent <= 0) ? 0 : --indexCurrent];
 
-            dgv_listeMusic.SelectedItem = newItemSelectedItem;
-            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                    dgv_listeMusic.SelectedItem = newItemSelectedItem;
+                    dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                }
+            }
+            if (CurrentVisualSelected is FolderNavigation)
+            {
+                Fn_navigation.Up();
+            }
+
             Console.WriteLine("Flèche haut pressée");
         }
         public void keyDown()
         {
-            int indexCurrent = dgv_listeMusic.SelectedIndex;
-            var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count - 1) ? dgv_listeMusic.Items.Count - 1 : ++indexCurrent];
+            if (CurrentVisualSelected is DataGrid)
+            {
+                int indexCurrent = dgv_listeMusic.SelectedIndex;
+                if (indexCurrent != -1)
+                {
+                    
+                    var newItemSelectedItem = dgv_listeMusic.Items[(indexCurrent >= dgv_listeMusic.Items.Count - 1) ? dgv_listeMusic.Items.Count - 1 : ++indexCurrent];
 
-            dgv_listeMusic.SelectedItem = newItemSelectedItem;
-            dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                    dgv_listeMusic.SelectedItem = newItemSelectedItem;
+                    dgv_listeMusic.ScrollIntoView(newItemSelectedItem);
+                }
+            }
+            else if (CurrentVisualSelected is FolderNavigation)
+            {
+                Fn_navigation.Down();
+            }
+            
             Console.WriteLine("Flèche bas pressée");
         }
         public void keyLeft()
         {
-            tv_tree.Focus();
-            if (tv_tree.SelectedItem is DossierPerso selectedDossier)
+            if (CurrentVisualSelected is FolderNavigation)
             {
-                // Si l'élément a des enfants et est déplié, on le plie
-                TreeViewItem? selectedItem = tv_tree.ItemContainerGenerator.ContainerFromItem(selectedDossier) as TreeViewItem;
-                if(selectedItem == null)
-                {
-                    return;
-                }
-                selectedItem.IsExpanded = !selectedItem.IsExpanded;
+                Fn_navigation.EnterFolder();
             }
-            else
-            {
-                Console.WriteLine("Aucun élément sélectionné ou pas un DossierPerso.");
-            }
+            Fn_navigation.FocusItemListBox();
+            CurrentVisualSelected = Fn_navigation;
             Console.WriteLine("keyLeft");
         }
         public void keyRight()
         {
             dgv_listeMusic.Focus();
+            CurrentVisualSelected = dgv_listeMusic;
             Console.WriteLine("keyRight");
         }
 
         private void displayLoadingTree()
         {
             LoadingBarTree.Visibility = Visibility.Visible;
-            tv_tree.Visibility = Visibility.Hidden;
+            Fn_navigation.Visibility = Visibility.Hidden;
         }
 
         private void displayLoadingListMusique()
@@ -295,7 +303,7 @@ namespace DjApplication3.view.fragment
         }
         private void displayTree()
         {
-            tv_tree.Visibility = Visibility.Visible;
+            Fn_navigation.Visibility = Visibility.Visible;
             LoadingBarTree.Visibility = Visibility.Hidden;
         }
 
@@ -305,18 +313,29 @@ namespace DjApplication3.view.fragment
             LoadingBar.Visibility = Visibility.Hidden;
         }
 
-        private void tv_tree_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Fn_navigation_SelectionChanged(object sender, FileSystemNode e)
+        {
+            if (e != null)
+            {
+                displayLoadingListMusique();
+                cleatDGV();
+
+                if(e.Name =="<= Retour")
+                {
+                    viewModel.getMusique(Fn_navigation.CurrentItems.FullPath);
+                }
+                else
+                {
+                    viewModel.getMusique(e.FullPath);
+                }
+                
+            }
+        }
+
+        private void Fn_navigation_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
-                //    case Key.Up:
-                //        keyUp();
-                //        e.Handled = true;
-                //        break;
-                //    case Key.Down:
-                //        keyDown();
-                //        e.Handled = true;
-                //        break;
                 case Key.Left:
                     keyLeft();
                     e.Handled = true;
@@ -326,6 +345,11 @@ namespace DjApplication3.view.fragment
                     e.Handled = true;
                     break;
             }
+        }
+
+        private void Fn_navigation_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CurrentVisualSelected = Fn_navigation;
         }
     }
 }

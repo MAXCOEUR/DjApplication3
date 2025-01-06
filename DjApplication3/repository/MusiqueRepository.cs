@@ -62,11 +62,7 @@ namespace DjApplication3.repository
 
 
 
-        public DossierPerso GetDossierPerso(string rootFolder)
-        {
-            LocalDataSource dataSource = new LocalDataSource();
-            return dataSource.GetDossierPerso(rootFolder);
-        }
+        
         public async Task<List<PlayListe>?> GetPlayListeYtMusic()
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();

@@ -72,37 +72,5 @@ namespace DjApplication3.DataSource
                 return null;
             }
         }
-
-        public DossierPerso GetDossierPerso(string rootFolder)
-        {
-            rootFolder = rootFolder.TrimEnd('\\');
-            DossierPerso rootDossier= new DossierPerso(Path.GetFileName(rootFolder));
-            GenerateSubfolders(rootFolder, rootDossier);
-            return rootDossier;
-        }
-        private void GenerateSubfolders(string folderPath, DossierPerso parentDossier)
-        {
-            try
-            {
-                string[] subfolders = Directory.GetDirectories(folderPath);
-
-                foreach (string subfolder in subfolders)
-                {
-                    var subfolderNode = new DossierPerso(parentDossier,Path.GetFileName(subfolder));
-
-                    parentDossier.Children.Add(subfolderNode);
-
-                    GenerateSubfolders(subfolder, subfolderNode);
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Gérer les erreurs d'accès non autorisé
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Une erreur s'est produite lors de la génération de l'arborescence des dossiers : " + ex.Message);
-            }
-        }
     }
 }

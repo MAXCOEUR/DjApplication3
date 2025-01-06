@@ -48,7 +48,7 @@
 
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
-            <TabControl Grid.Column="2">
+            <TabControl x:Name="tab_navigation" Grid.Column="2">
                 <TabItem Header="Local">
                     <local1:Explorateur x:Name="exploLocal"/>
                 </TabItem>

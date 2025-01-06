@@ -12,7 +12,6 @@ namespace DjApplication3.View.userControlDJ
     internal class ExplorateurViewModel
     {
         public event EventHandler<List<Musique>> TacheGetMusique;
-        public event EventHandler<DossierPerso> TacheGetDossierPerso;
 
         private CancellationTokenSource _cancellationTokenGet;
 
@@ -33,12 +32,6 @@ namespace DjApplication3.View.userControlDJ
             
         }
 
-        public async void GetDossierPerso(string rootFolder)
-        {
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            DossierPerso dossier = await Task.Run(() => musiqueRepository.GetDossierPerso(rootFolder));
-            TacheGetDossierPerso?.Invoke(this, dossier);
-        }
         public int? getBpm(Musique musique)
         {
             MusiqueRepository musiqueRepository = new MusiqueRepository();

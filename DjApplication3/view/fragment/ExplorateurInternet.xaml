@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DjApplication3.view.fragment.ExplorateurInternet"
+﻿<UserControl xmlns:windows="clr-namespace:DjApplication3.view.windows"  x:Class="DjApplication3.view.fragment.ExplorateurInternet"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -11,7 +11,7 @@
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
-        <Grid x:Name="g_tree" Grid.Column="0" Visibility="Collapsed" PreviewKeyDown="g_tree_PreviewKeyDown">
+        <Grid x:Name="g_tree" Grid.Column="0" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition/>
@@ -27,13 +27,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <TreeView x:Name="tv_tree" Grid.Row="1" SelectedItemChanged="tv_tree_SelectedItemChanged">
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding children}">
-                        <TextBlock Text="{Binding name}" />
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+            <windows:PlayListNavigation x:Name="Pn_navigation" Grid.Row="1" Grid.ColumnSpan="2" PreviewKeyDown="Pn_navigation_PreviewKeyDown" PreviewMouseLeftButtonDown="Pn_navigation_PreviewMouseLeftButtonDown"/>
             <ProgressBar x:Name="LoadingBarTree" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Hidden"/>
             <TextBlock x:Name="errorMessageTree" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
         </Grid>
@@ -44,7 +38,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
-            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" >
+            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" >
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />

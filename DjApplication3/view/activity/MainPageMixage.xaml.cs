@@ -108,7 +108,19 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyLoadRight();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.EnterSelected(1);
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.EnterSelected(1);
+                }
+                else if (selectedIndex == 2)
+                {
+                    exploYoutube.EnterSelected(1);
+                }
             });
             
         }
@@ -117,7 +129,19 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyLoadLeft();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.EnterSelected(0);
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.EnterSelected(0);
+                }
+                else if (selectedIndex == 2)
+                {
+                    exploYoutube.EnterSelected(0);
+                }
             });
             
         }
@@ -126,7 +150,15 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyRight();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.keyRight();
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.keyRight();
+                }
             });
             
         }
@@ -135,7 +167,15 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyLeft();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.keyLeft();
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.keyLeft();
+                }
             });
             
         }
@@ -144,7 +184,19 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyUp();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.keyUp();
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.keyUp();
+                }
+                else if (selectedIndex == 2)
+                {
+                    exploYoutube.keyUp();
+                }
             });
             
         }
@@ -153,7 +205,19 @@ namespace DjApplication3.view.activity
         {
             Dispatcher.Invoke(() =>
             {
-                exploYtMusic.keyDown();
+                int selectedIndex = tab_navigation.SelectedIndex;
+                if (selectedIndex == 0)
+                {
+                    exploLocal.keyDown();
+                }
+                else if (selectedIndex == 1)
+                {
+                    exploYtMusic.keyDown();
+                }
+                else if (selectedIndex == 2)
+                {
+                    exploYoutube.keyDown();
+                }
             });
             
         }
@@ -359,7 +423,7 @@ namespace DjApplication3.view.activity
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    System.Windows.MessageBox.Show(ex.Message);
                 }
                 
 
