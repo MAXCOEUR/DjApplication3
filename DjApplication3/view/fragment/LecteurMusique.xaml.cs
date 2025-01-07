@@ -235,6 +235,7 @@ namespace DjApplication3.view.page
                 if (audioPlayer.WaveSource != null)
                 {
                     positionActuelle = (float)audioPlayer.WaveSource.Position / audioPlayer.WaveSource.Length;
+                    audioPlayer.WaveSource.Dispose();
                 }
             }
             catch (Exception e)
