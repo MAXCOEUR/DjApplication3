@@ -15,13 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_11A67DBBD3934D59B30B56C2154B312D"
+        "MsmKey" = "8:_B14AB381A37C4D8AB466F2EF036F46FF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_1FDCB89F04454B90A400DC1511004DC8"
+        "MsmKey" = "8:_E0CBAAA253634281A9636AD15231EE51"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -33,7 +33,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\Setup.msi"
+        "OutputFilename" = "8:Debug\\DjApplication3.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -82,6 +82,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -114,7 +122,7 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1FDCB89F04454B90A400DC1511004DC8"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E0CBAAA253634281A9636AD15231EE51"
             {
             "SourcePath" = "8:..\\DjApplication3\\Resources\\logo.ico"
             "TargetName" = "8:logo.ico"
@@ -153,7 +161,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_44D03B985F9C41C5A531575A6BE7901E"
             {
-            "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[LocalAppDataFolder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -190,15 +198,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DjApplication3"
-        "ProductCode" = "8:{32B0BEC6-A716-4DDF-A0B5-CD0F091E0378}"
-        "PackageCode" = "8:{4166DB19-2766-4B0C-B558-8EF5EF4EF0B0}"
+        "ProductCode" = "8:{86C3987A-2B8B-489C-B1E6-5F4B9D7BD64B}"
+        "PackageCode" = "8:{B0D4126B-D369-496C-826A-0F9E66E230EF}"
         "UpgradeCode" = "8:{38A1749A-C9F2-4E09-A2C4-2154B8F942FC}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.12.2"
+        "ProductVersion" = "8:1.13.6"
         "Manufacturer" = "8:MaxenceCOEUR"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -311,7 +319,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5B77D56BC0EF418EBBE6712110F188E2"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_855216EDD0444B6F805FC91D3EE92DEF"
             {
             "Name" = "8:DjApplication3"
             "Arguments" = "8:"
@@ -319,13 +327,13 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_11A67DBBD3934D59B30B56C2154B312D"
+            "Target" = "8:_B14AB381A37C4D8AB466F2EF036F46FF"
             "Folder" = "8:_38215B69412243F4A651067323BA8445"
             "WorkingFolder" = "8:_44D03B985F9C41C5A531575A6BE7901E"
-            "Icon" = "8:_1FDCB89F04454B90A400DC1511004DC8"
+            "Icon" = "8:_E0CBAAA253634281A9636AD15231EE51"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_7EE587B6C9C142F8AA1C2163E6A21207"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_9E881CE7439E4978B438603BEFED0205"
             {
             "Name" = "8:DjApplication3"
             "Arguments" = "8:"
@@ -333,10 +341,10 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_11A67DBBD3934D59B30B56C2154B312D"
+            "Target" = "8:_B14AB381A37C4D8AB466F2EF036F46FF"
             "Folder" = "8:_999E9A4CE27A4D39A170A44AE2F727D6"
             "WorkingFolder" = "8:_44D03B985F9C41C5A531575A6BE7901E"
-            "Icon" = "8:_1FDCB89F04454B90A400DC1511004DC8"
+            "Icon" = "8:_E0CBAAA253634281A9636AD15231EE51"
             "Feature" = "8:"
             }
         }
@@ -738,7 +746,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_11A67DBBD3934D59B30B56C2154B312D"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B14AB381A37C4D8AB466F2EF036F46FF"
             {
             "SourcePath" = "8:..\\DjApplication3\\obj\\Debug\\net6.0-windows10.0.17763.0\\apphost.exe"
             "TargetName" = "8:"

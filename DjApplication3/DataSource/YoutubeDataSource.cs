@@ -4,16 +4,10 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
-using TagLib.Riff;
 using YoutubeExplode;
-using YoutubeExplode.Common;
 using YoutubeExplode.Search;
-using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 namespace DjApplication3.DataSource
