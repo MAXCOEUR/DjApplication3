@@ -33,7 +33,7 @@
         <Label Grid.Row="2" Grid.Column="0" Content="navigateur YoutubeMusic" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cb_browser" VerticalAlignment="Center" SelectionChanged="cb_browser_SelectionChanged" Grid.ColumnSpan="2"/>
 
-        <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="3" Click="bt_connectYtMusic_Click" Margin="10,0,10,0" IsEnabled="False"/>
+        <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="3" Click="bt_connectYtMusic_Click" Margin="10,0,10,0"/>
 
 
         <Label Content="appareil Midi" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center"/>

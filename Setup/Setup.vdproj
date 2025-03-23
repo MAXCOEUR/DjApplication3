@@ -80,6 +80,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -187,15 +195,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DjApplication3"
-        "ProductCode" = "8:{3B722E9F-A458-4A22-8481-61D2ECDE891A}"
-        "PackageCode" = "8:{9A958F30-0988-48BA-9525-95795C88F599}"
+        "ProductCode" = "8:{28D427AD-A503-4424-AB4B-4EC0A29D68D0}"
+        "PackageCode" = "8:{E12111FB-EA31-46FD-AF6D-835842AC2D00}"
         "UpgradeCode" = "8:{2667066C-BA24-4720-B936-910937B3213E}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.13.11"
+        "ProductVersion" = "8:1.13.12"
         "Manufacturer" = "8:MaxenceCOEUR"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
