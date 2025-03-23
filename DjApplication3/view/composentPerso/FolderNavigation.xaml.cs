@@ -148,22 +148,31 @@ namespace DjApplication3.view.windows
 
         private void DisplayFileSystemNote(FileSystemNode selectedItem)
         {
-            if (RootItems != selectedItem)
+            if (selectedItem != RootItems)
             {
-                selectedItem.Children.Insert(0, new FileSystemNode
+                var parentDir = Directory.GetParent(selectedItem.FullPath);
+                if (parentDir != null)
                 {
-                    Name = "<= Retour", // Nom du dossier parent (bouton de retour)
-                    FullPath = Directory.GetParent(selectedItem.FullPath).FullName, // Obtention du chemin du dossier parent
-                    Children = new ObservableCollection<FileSystemNode>() // Liste vide d'enfants pour le moment
-                });
+                    selectedItem.Children.Insert(0, new FileSystemNode
+                    {
+                        Name = "<= Retour",
+                        FullPath = parentDir.FullName,
+                        Children = new ObservableCollection<FileSystemNode>()
+                    });
+                }
             }
-            string relativePath = selectedItem.FullPath.Replace(Directory.GetParent(RootItems.FullPath).FullName, "").TrimStart(System.IO.Path.DirectorySeparatorChar);
+
+            string rootPath = RootItems.FullPath;
+            string relativePath = selectedItem.FullPath == rootPath
+                ? ""
+                : selectedItem.FullPath.Replace(Directory.GetParent(rootPath)?.FullName ?? rootPath, "").TrimStart(System.IO.Path.DirectorySeparatorChar);
 
             tv_path.Content = relativePath;
             CurrentItems = selectedItem;
             ItemListBox.ItemsSource = CurrentItems.Children;
             setSelectedIndex(0);
         }
+
 
         private void ItemListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
