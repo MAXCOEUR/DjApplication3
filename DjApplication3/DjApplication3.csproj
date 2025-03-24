@@ -17,6 +17,7 @@
     <None Remove="Resources\play.png" />
     <None Remove="Resources\reload.png" />
     <None Remove="Resources\stop.png" />
+    <None Remove="view\fragment\ExplorateurInternet.xaml~RF3e086643.TMP" />
   </ItemGroup>
 
   <ItemGroup>

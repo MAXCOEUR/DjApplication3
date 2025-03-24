@@ -44,17 +44,17 @@ namespace DjApplication3.repository
             LocalDataSource dataSource = new LocalDataSource();
             return dataSource.GetMp3Files(folderPath);
         }
-        public async Task<List<Musique>?> GetMusiqueYoutube(string search)
+        public async Task<List<Musique>> GetMusiqueYoutube(string search)
         {
             YoutubeDataSource dataSource = new YoutubeDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>?> GetMusiqueYtMusic(string search)
+        public async Task<List<Musique>> GetMusiqueYtMusic(string search)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>?> GetMusiqueInPlayListeYtMusic(string idPlayliste)
+        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.getMusiqueInPlayListe(idPlayliste);
@@ -63,7 +63,7 @@ namespace DjApplication3.repository
 
 
         
-        public async Task<List<PlayListe>?> GetPlayListeYtMusic()
+        public async Task<List<PlayListe>> GetPlayListeYtMusic()
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.getPlayListe();
@@ -73,12 +73,12 @@ namespace DjApplication3.repository
 
 
 
-        async public Task<Musique?> DownloadMusiqueYoutube(Musique musiqueyt)
+        async public Task<Musique> DownloadMusiqueYoutube(Musique musiqueyt)
         {
             YoutubeDataSource dataSource = new YoutubeDataSource();
             return await dataSource.DownloadMusique(musiqueyt);
         }
-        async public Task<Musique?> DownloadMusiqueYtMusic(Musique musiqueyt)
+        async public Task<Musique> DownloadMusiqueYtMusic(Musique musiqueyt)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.DownloadMusique(musiqueyt);

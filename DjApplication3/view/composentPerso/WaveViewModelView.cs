@@ -1,5 +1,6 @@
 ﻿using DjApplication3.model;
 using DjApplication3.repository;
+using DjApplication3.view.windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,17 @@ namespace DjApplication3.view.composentPerso
         public event EventHandler<sbyte[]> TacheGetWave;
         public async void getWave(Musique musique)
         {
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            sbyte[] wave = await Task.Run(() => musiqueRepository.getWave(musique));
-            TacheGetWave?.Invoke(this, wave);
+            try
+            {
+                MusiqueRepository musiqueRepository = new MusiqueRepository();
+                sbyte[] wave = await Task.Run(() => musiqueRepository.getWave(musique));
+                TacheGetWave?.Invoke(this, wave);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+            }
         }
     }
 }

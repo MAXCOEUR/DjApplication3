@@ -3,6 +3,7 @@ using CSCore.Codecs;
 using CSCore.SoundOut;
 using DjApplication3.model;
 using DjApplication3.outils;
+using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Drawing;
@@ -170,6 +171,7 @@ namespace DjApplication3.view.page
                 return 0;
             }catch(Exception e)
             {
+                new ToastMessage(e.Message, ToastMessage.ToastType.Error).Show();
                 return 2;
             }
 

@@ -14,40 +14,32 @@ namespace DjApplication3.DataSource
     {
         public List<Musique> GetMp3Files(string pathfull)
         {
-            try
+            // Vérifiez si le dossier existe
+            if (Directory.Exists(pathfull))
             {
-                // Vérifiez si le dossier existe
-                if (Directory.Exists(pathfull))
-                {
-                    // Obtenez tous les fichiers dans le dossier
-                    string[] allFiles = Directory.GetFiles(pathfull);
+                // Obtenez tous les fichiers dans le dossier
+                string[] allFiles = Directory.GetFiles(pathfull);
 
-                    // Filtrer les fichiers avec l'extension .mp3
-                    List<string> mp3Files = allFiles
-                        .Where(file => Path.GetExtension(file).Equals(".mp3", StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                // Filtrer les fichiers avec l'extension .mp3
+                List<string> mp3Files = allFiles
+                    .Where(file => Path.GetExtension(file).Equals(".mp3", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-                    // Créer une liste de Musique à partir des fichiers MP3
-                    List<Musique> musiqueList = mp3Files
-                        .Select(GetMusiqueFromFilePath)
-                        .Where(musique => musique != null) // Filtrer les éventuels objets null
-                        .ToList();
+                // Créer une liste de Musique à partir des fichiers MP3
+                List<Musique> musiqueList = mp3Files
+                    .Select(GetMusiqueFromFilePath)
+                    .Where(musique => musique != null) // Filtrer les éventuels objets null
+                    .ToList();
 
-                    return musiqueList;
-                }
-                else
-                {
-                    Console.WriteLine("Le dossier spécifié n'existe pas.");
-                    return new List<Musique>();
-                }
+                return musiqueList;
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Erreur lors de la récupération des fichiers : {ex.Message}");
-                return new List<Musique>();
+                Console.WriteLine("Le dossier spécifié n'existe pas.");
+                throw new Exception("Le dossier spécifié n'existe pas.");
             }
         }
-        private Musique GetMusiqueFromFilePath(string filePath)
+        private Musique? GetMusiqueFromFilePath(string filePath)
         {
             try
             {
@@ -56,7 +48,7 @@ namespace DjApplication3.DataSource
                 if (file != null && file.Tag != null)
                 {
                     string title = file.Tag.Title ?? Path.GetFileNameWithoutExtension(filePath);
-                    string author = string.Join(", ",file.Tag.Artists) ?? "";
+                    string author = string.Join(", ", file.Tag.Artists) ?? "";
 
                     return new Musique(filePath, title, author);
                 }
@@ -70,6 +62,7 @@ namespace DjApplication3.DataSource
             {
                 Console.WriteLine($"Erreur lors de la récupération des métadonnées : {ex.Message}");
                 return null;
+
             }
         }
     }

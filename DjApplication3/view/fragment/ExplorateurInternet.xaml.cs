@@ -1,25 +1,14 @@
-﻿using DjApplication3.DataSource;
-using DjApplication3.model;
+﻿using DjApplication3.model;
 using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DjApplication3.view.fragment
 {
@@ -475,6 +464,11 @@ namespace DjApplication3.view.fragment
         private void Pn_navigation_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             CurrentVisualSelected = Pn_navigation;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            new ToastMessage("Une erreur s'est produite !", ToastMessage.ToastType.Error).Show();
         }
     }
     public class MusiqueColonne : INotifyPropertyChanged

@@ -1,5 +1,8 @@
-﻿using DjApplication3.model;
+﻿using DjApplication3.DataSource;
+using DjApplication3.model;
 using DjApplication3.repository;
+using DjApplication3.view.windows;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +26,17 @@ namespace DjApplication3.view.fragment
 
         public async override void DownloadMusique(Musique musiqueyt, int? numeroPisteAssocie)
         {
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            Musique? musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
-            TacheDownload?.Invoke(this, (musique, numeroPisteAssocie));
+            try
+            {
+                MusiqueRepository musiqueRepository = new MusiqueRepository();
+                Musique musique = await Task.Run(() => musiqueRepository.DownloadMusiqueYtMusic(musiqueyt));
+                TacheDownload?.Invoke(this, (musique, numeroPisteAssocie));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+            }
         }
 
         public override int? getBpm(Musique musique)
@@ -36,48 +47,82 @@ namespace DjApplication3.view.fragment
 
         public async override void search(string search)
         {
-            // Annule la recherche précédente si elle est en cours
-            _cancellationTokenSearch?.Cancel();
-            _cancellationTokenSearch = new CancellationTokenSource();
-            var token = _cancellationTokenSearch.Token;
-
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique>? musiques = await Task.Run(() => musiqueRepository.GetMusiqueYtMusic(search));
-
-            if (!token.IsCancellationRequested)
+            try
             {
-                TacheSearch?.Invoke(this, musiques);
+                // Annule la recherche précédente si elle est en cours
+                _cancellationTokenSearch?.Cancel();
+                _cancellationTokenSearch = new CancellationTokenSource();
+                var token = _cancellationTokenSearch.Token;
+
+                MusiqueRepository musiqueRepository = new MusiqueRepository();
+                List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueYtMusic(search));
+
+                if (!token.IsCancellationRequested)
+                {
+                    TacheSearch?.Invoke(this, musiques);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
             }
         }
 
         public async void getMusiqueInPlayListe(string idPlayliste)
         {
-            // Annule la recherche précédente si elle est en cours
-            _cancellationTokenGetPlaylistIn?.Cancel();
-            _cancellationTokenGetPlaylistIn = new CancellationTokenSource();
-            var token = _cancellationTokenGetPlaylistIn.Token;
-
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<Musique>? musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
-
-            if (!token.IsCancellationRequested)
+            try
             {
-                TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
+                // Annule la recherche précédente si elle est en cours
+                _cancellationTokenGetPlaylistIn?.Cancel();
+                _cancellationTokenGetPlaylistIn = new CancellationTokenSource();
+                var token = _cancellationTokenGetPlaylistIn.Token;
+
+                MusiqueRepository musiqueRepository = new MusiqueRepository();
+                List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
+
+                if (!token.IsCancellationRequested)
+                {
+                    TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
+                }
+            }
+            catch (NotConnectedException ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Info).Show();
+                TacheGetMusiqueInPlayListe?.Invoke(this, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
             }
         }
         public async void getPlayListe()
         {
-            // Annule la recherche précédente si elle est en cours
-            _cancellationTokenGetPlaylist?.Cancel();
-            _cancellationTokenGetPlaylist = new CancellationTokenSource();
-            var token = _cancellationTokenGetPlaylist.Token;
-
-            MusiqueRepository musiqueRepository = new MusiqueRepository();
-            List<PlayListe>? playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
-
-            if (!token.IsCancellationRequested)
+            try
             {
-                TacheGetPlayListe?.Invoke(this, playListe);
+                // Annule la recherche précédente si elle est en cours
+                _cancellationTokenGetPlaylist?.Cancel();
+                _cancellationTokenGetPlaylist = new CancellationTokenSource();
+                var token = _cancellationTokenGetPlaylist.Token;
+                MusiqueRepository musiqueRepository = new MusiqueRepository();
+                List<PlayListe> playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
+                if (!token.IsCancellationRequested)
+                {
+                    TacheGetPlayListe?.Invoke(this, playListe);
+                }
+            }
+            catch (NotConnectedException ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Info).Show();
+                TacheGetPlayListe?.Invoke(this, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
             }
         }
     }

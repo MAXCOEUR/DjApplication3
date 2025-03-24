@@ -3,6 +3,7 @@ using DjApplication3.outils;
 using DjApplication3.view.composentPerso;
 using DjApplication3.view.fragment;
 using DjApplication3.view.page;
+using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
 using System.Collections.Generic;
@@ -403,7 +404,7 @@ namespace DjApplication3.view.activity
                 int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
             }catch(Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
             }
             
         }
@@ -423,7 +424,7 @@ namespace DjApplication3.view.activity
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show(ex.Message);
+                    new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
                 }
                 
 
