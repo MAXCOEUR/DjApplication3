@@ -10,88 +10,59 @@ namespace DjApplication3.outils
 {
     internal class FFmpegGestion
     {
-        public FFmpegGestion()
+        static public string ffmpegPath = Path.GetFullPath("outilsExtern/ffmpeg/ffmpeg.exe");
+
+        public static async Task ConvertWebmToMp3(string inputWebm, string outputMp3)
         {
-            bool ffmpegInstalled = IsFFmpegAccessible();
-
-            if (ffmpegInstalled)
+            if (!File.Exists(inputWebm))
             {
-                Console.WriteLine($"FFmpeg is installed");
+                throw new FileNotFoundException("Le fichier WEBM n'existe pas.", inputWebm);
             }
-            else
-            {
-                Console.WriteLine("FFmpeg is not installed. Downloading FFmpeg...");
 
-                // Exécuter la commande pour télécharger FFmpeg
-                DownloadFFmpeg();
-            }
-        }
-
-        bool IsFFmpegAccessible()
-        {
-            // Vérifier si la commande "ffmpeg" est accessible dans le terminal
-            ProcessStartInfo startInfo = new ProcessStartInfo
+            var process = new Process
             {
-                FileName = "ffmpeg",
-                Arguments = "-version",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                using (Process process = new Process())
+                StartInfo = new ProcessStartInfo
                 {
-                    process.StartInfo = startInfo;
-                    process.Start();
-                    process.BeginErrorReadLine();
-                    process.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
-                    process.WaitForExit();
-
-
-                    if (process.ExitCode == 0)
-                    {
-                        return true;
-                    }
+                    FileName = ffmpegPath,
+                    Arguments = $"-y -i \"{inputWebm}\" -acodec libmp3lame -b:a 192k \"{outputMp3}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
                 }
-            }
-            catch { }
-
-
-            // Vérifier si le fichier "ffmpeg.exe" existe dans le répertoire ".spotdl" de l'utilisateur
-            string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string spotdlDirectory = Path.Combine(userDirectory, ".spotdl");
-            string ffmpegPath = Path.Combine(spotdlDirectory, "ffmpeg.exe");
-
-            return File.Exists(ffmpegPath);
-        }
-
-        void DownloadFFmpeg()
-        {
-            string spotdlPath = "./outilsExtern/spotdl.exe";
-            string arguments = "--download-ffmpeg";
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = spotdlPath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
             };
 
-            using (Process process = new Process())
+            // Événement pour la sortie standard
+            process.OutputDataReceived += (sender, e) =>
             {
-                process.StartInfo = startInfo;
-                process.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-                process.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    Console.WriteLine(e.Data);
+                }
+            };
+
+            // Événement pour la sortie d'erreur
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    Console.WriteLine($"Error: {e.Data}");
+                    // Traiter la sortie d'erreur ici
+                }
+            };
+
+            process.Start();
+
+            // Commencer la redirection de la sortie standard et d'erreur de manière asynchrone
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            // Attendre que le processus se termine
+            await Task.Run(() => process.WaitForExit());
+
+            if (!File.Exists(outputMp3))
+            {
+                throw new IOException("La conversion a échoué, fichier MP3 non créé.");
             }
         }
     }

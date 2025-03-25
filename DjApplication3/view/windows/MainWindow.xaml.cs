@@ -31,9 +31,6 @@ namespace DjApplication3
         private MainPageMixage mainPageMixage = new MainPageMixage();
         public MainWindow()
         {
-            //test treeViewExample = new test();
-            //treeViewExample.ShowDialog();
-            new FFmpegGestion();
             InitializeComponent();
             MainContent.Content = mainPageMixage;
             mainPageMixage.eventOptionButton += eventOptionButton;

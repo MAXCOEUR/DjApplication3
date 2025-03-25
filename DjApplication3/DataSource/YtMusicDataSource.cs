@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.outils;
 using DjApplication3.view.fragment;
 using NAudio.Wave;
 using Newtonsoft.Json.Linq;
@@ -308,7 +309,7 @@ namespace DjApplication3.DataSource
             string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
             string lienMusiqueTmp="";
 
-            if (System.IO.File.Exists(lienMusique))
+            if (File.Exists(lienMusique))
             {
                 TagLib.File chemain = TagLib.File.Create(lienMusique);
 
@@ -325,7 +326,6 @@ namespace DjApplication3.DataSource
             {
                 var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
                 var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
                 lienMusiqueTmp = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
                 Console.WriteLine("start download :" + musiqueyt.title + " " + musiqueyt.url);
@@ -335,17 +335,15 @@ namespace DjApplication3.DataSource
 
                 Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
 
-                using (var reader = new MediaFoundationReader(lienMusiqueTmp))
-                {
-                    MediaFoundationEncoder.EncodeToMp3(reader, lienMusique);
-                }
+                await FFmpegGestion.ConvertWebmToMp3(lienMusiqueTmp, lienMusique);
+
                 var file = TagLib.File.Create(musique.url);
                 file.Tag.Title = musique.title;
                 file.Tag.Performers = new[] { musique.author };
                 file.Save();
                 Console.WriteLine("end mp3");
 
-                System.IO.File.Delete(lienMusiqueTmp);
+                File.Delete(lienMusiqueTmp);
                 Console.WriteLine("delete tmp file");
 
                 return musique;
@@ -375,14 +373,10 @@ namespace DjApplication3.DataSource
             
             string lienMusique = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
 
-            string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string spotdlDirectory = Path.Combine(userDirectory, ".spotdl");
-            string ffmpegPath = Path.Combine(spotdlDirectory, "ffmpeg.exe");
-
             string arguments = $"-x --audio-format mp3 -o \"{lienMusique}\" ";
-            if (File.Exists(ffmpegPath))
+            if (File.Exists(FFmpegGestion.ffmpegPath))
             {
-                arguments += " --ffmpeg-location \"" + ffmpegPath + "\"";
+                arguments += " --ffmpeg-location \"" + FFmpegGestion.ffmpegPath + "\"";
             }
 
             if (SettingsManager.Instance.browsers[SettingsManager.Instance.browserIndice].ToLower().Contains("chrome"))

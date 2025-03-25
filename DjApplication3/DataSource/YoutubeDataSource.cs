@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.outils;
 using DjApplication3.view.fragment;
 using NAudio.Wave;
 using System;
@@ -61,27 +62,25 @@ namespace DjApplication3.DataSource
             }
             var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
             var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-            //string lienMusiqueTmp = Path.Combine(ExplorateurYoutube.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
             string lienMusiqueTmp = Path.Combine(ExplorateurInternet.rootFolder, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
 
             Console.WriteLine("start download :" + musiqueyt.title + " " + musiqueyt.url);
             await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);
+
             Console.WriteLine("end download");
             Console.WriteLine("start mp3");
 
             Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
 
-            using (var reader = new MediaFoundationReader(lienMusiqueTmp))
-            {
-                MediaFoundationEncoder.EncodeToMp3(reader, lienMusique);
-            }
+            await FFmpegGestion.ConvertWebmToMp3(lienMusiqueTmp, lienMusique);
+
             var file = TagLib.File.Create(musique.url);
             file.Tag.Title = musique.title;
             file.Tag.Performers = new[] { musique.author };
             file.Save();
             Console.WriteLine("end mp3");
 
-            System.IO.File.Delete(lienMusiqueTmp);
+            File.Delete(lienMusiqueTmp);
             Console.WriteLine("delete tmp file");
 
             return musique;
