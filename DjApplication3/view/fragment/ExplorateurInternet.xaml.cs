@@ -25,7 +25,6 @@ namespace DjApplication3.view.fragment
 
         private ExplorateurInternetViewModel viewModel;
         private ExplorateurYtMusicViewModel viewModelYtMusic;
-        private System.Windows.Forms.Timer searchTimer = new System.Windows.Forms.Timer();
         static public string rootFolder = System.IO.Path.GetFullPath("musique/tmp");
 
         FrameworkElement CurrentVisualSelected;
@@ -65,9 +64,6 @@ namespace DjApplication3.view.fragment
             }
 
             Pn_navigation.SelectionChanged += Pn_navigation_SelectionChanged;
-
-            searchTimer.Interval = 1000; // Délai en millisecondes (01 seconde)
-            searchTimer.Tick += SearchTimer_Tick;
 
             viewModel.TacheSearch += ViewModel_TacheSearch;
             viewModel.TacheDownload += ViewModel_TacheDownload;
@@ -145,30 +141,6 @@ namespace DjApplication3.view.fragment
                 dgv_listeMusic.SelectedItem = firstItem;
             }
             
-        }
-        private void SearchTimer_Tick(object sender, EventArgs e)
-        {
-            // Le minuteur a expiré, déclencher la recherche
-            searchTimer.Stop();
-            PerformSearch(tb_serach.Text);
-        }
-        private void PerformSearch(string searchText)
-        {
-            viewModel.search(searchText);
-        }
-
-        private void tb_serach_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            cleatDGV();
-
-            //var treeViewSource = (List<PlayListe>)tv_tree.ItemsSource;
-            //tv_tree.ItemsSource = null;
-            //tv_tree.ItemsSource = treeViewSource;
-
-            displayLoadingListMusique();
-
-            searchTimer.Stop();
-            searchTimer.Start();
         }
 
         private void dgv_listeMusic_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -442,7 +414,7 @@ namespace DjApplication3.view.fragment
             {
                 case Key.Left:
                     keyLeft();
-                    e.Handled = true;
+                    e.Handled = true; 
                     break;
                 case Key.Right:
                     keyRight();
@@ -466,9 +438,25 @@ namespace DjApplication3.view.fragment
             CurrentVisualSelected = Pn_navigation;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
-            new ToastMessage("Une erreur s'est produite !", ToastMessage.ToastType.Error).Show();
+            searchYtMusic();
+        }
+
+        private void searchYtMusic()
+        {
+            cleatDGV();
+
+            displayLoadingListMusique();
+            viewModel.search(tb_serach.Text);
+        }
+
+        private void tb_serach_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                searchYtMusic();
+            }
         }
     }
     public class MusiqueColonne : INotifyPropertyChanged

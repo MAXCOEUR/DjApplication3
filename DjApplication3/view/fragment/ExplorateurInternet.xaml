@@ -37,8 +37,12 @@
                 <RowDefinition Height="40"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5,5,5,5" TextChanged="tb_serach_TextChanged"/>
-            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5" KeyDown="tb_serach_KeyDown"/>
+            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" Grid.ColumnSpan="2" >
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
@@ -59,6 +63,11 @@
             </DataGrid>
             <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Collapsed"/>
             <TextBlock x:Name="errorMessageListeMusique" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
+            <Button Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="SearchButton_Click" >
+                <Image Source="/DjApplication3;component/Resources/recherche.png" Margin="5"/>
+            </Button>
+
+
             <Grid.ContextMenu>
                 <ContextMenu x:Name="cm_PisteList">
                 </ContextMenu>

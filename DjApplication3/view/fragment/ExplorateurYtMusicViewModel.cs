@@ -96,6 +96,7 @@ namespace DjApplication3.view.fragment
             {
                 Console.WriteLine(ex.Message);
                 new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                TacheGetMusiqueInPlayListe?.Invoke(this, null);
             }
         }
         public async void getPlayListe()
@@ -123,6 +124,7 @@ namespace DjApplication3.view.fragment
             {
                 Console.WriteLine(ex.Message);
                 new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                TacheGetPlayListe?.Invoke(this, null);
             }
         }
     }
