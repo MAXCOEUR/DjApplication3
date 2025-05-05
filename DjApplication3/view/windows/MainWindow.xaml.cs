@@ -7,6 +7,7 @@ using DjApplication3.view.fragment;
 using DjApplication3.view.windows;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,8 @@ namespace DjApplication3
             InitializeComponent();
             MainContent.Content = mainPageMixage;
             mainPageMixage.eventOptionButton += eventOptionButton;
+
+            Title = SettingsManager.Instance.APP_NAME + " " + GetAppVersion();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -82,11 +85,10 @@ namespace DjApplication3
             }
 
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private string GetAppVersion()
         {
-            WindowState = WindowState.Maximized;
-            Title = SettingsManager.Instance.APP_NAME;
+            var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion;
+            return version != null ? $"v{version}" : "v1.0";
         }
     }
 }
