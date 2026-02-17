@@ -25,9 +25,14 @@ namespace DjApplication3.view.fragment
 
         private ExplorateurInternetViewModel viewModel;
         private ExplorateurYtMusicViewModel viewModelYtMusic;
-        static public string rootFolder = System.IO.Path.GetFullPath("musique/tmp");
+        static public string rootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "musique", "tmp");
 
         FrameworkElement CurrentVisualSelected;
+
+        private string currentPlaylistId;
+        private int currentOffset = 0;
+        private const int PageSize = 100;
+        private bool isLoadingMore = false;
         public ExplorateurInternet()
         {
             InitializeComponent();
@@ -85,7 +90,7 @@ namespace DjApplication3.view.fragment
 
         private void ViewModelYtMusic_TacheGetMusiqueInPlayListe(object? sender, List<Musique>? e)
         {
-            musiques.Clear();
+            if (currentOffset == 0) musiques.Clear();
 
             if (e == null)
             {
@@ -101,16 +106,32 @@ namespace DjApplication3.view.fragment
                 int? bpm = viewModel.getBpm(musiqueTmp);
                 musiques.Add(new MusiqueColonne(musique, bpm));
             }
+            dgv_listeMusic.ItemsSource = null;
             dgv_listeMusic.ItemsSource = musiques;
-            if (dgv_listeMusic.Items.Count > 0)
-            {
-                // Récupère le premier élément
-                var firstItem = dgv_listeMusic.Items[0];
 
-                // Sélectionne le premier élément
-                dgv_listeMusic.SelectedItem = firstItem;
+            isLoadingMore = false;
+
+        }
+
+        private void dgv_listeMusic_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            // Si on descend à plus de 80% de la liste et qu'on n'est pas déjà en train de charger
+            if (e.VerticalOffset > 0 && e.VerticalChange > 0)
+            {
+                if (!isLoadingMore && e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight * 0.8)
+                {
+                    if (musiques.Count > 0 && musiques.Count % 100 != 0)
+                    {
+                        return;
+                    }
+                    if (viewModelYtMusic != null && !string.IsNullOrEmpty(currentPlaylistId))
+                    {
+                        isLoadingMore = true;
+                        currentOffset += PageSize; // On passe à la page suivante
+                        viewModelYtMusic.getMusiqueInPlayListe(currentPlaylistId, currentOffset);
+                    }
+                }
             }
-            
         }
 
         private void ViewModel_TacheSearch(object? sender, List<Musique>? e)
@@ -425,12 +446,14 @@ namespace DjApplication3.view.fragment
         private void Pn_navigation_SelectionChanged(object? sender, PlayListe e)
         {
             if (e == null) return;
-            cleatDGV();
 
-            viewModelYtMusic.getMusiqueInPlayListe(e.id);
-            tb_serach.Text = "";
+            cleatDGV();
+            currentPlaylistId = e.id;
+            currentOffset = 0;
 
             displayLoadingListMusique();
+            viewModelYtMusic.getMusiqueInPlayListe(currentPlaylistId, currentOffset);
+            tb_serach.Text = "";
         }
 
         private void Pn_navigation_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

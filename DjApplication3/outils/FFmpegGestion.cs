@@ -10,7 +10,7 @@ namespace DjApplication3.outils
 {
     internal class FFmpegGestion
     {
-        static public string ffmpegPath = Path.GetFullPath("outilsExtern/ffmpeg/ffmpeg.exe");
+        static public string ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "outilsExtern", "ffmpeg", "ffmpeg.exe");
 
         public static async Task ConvertWebmToMp3(string inputWebm, string outputMp3)
         {

@@ -30,6 +30,7 @@ namespace DjApplication3
     public partial class MainWindow : Window
     {
         private MainPageMixage mainPageMixage = new MainPageMixage();
+        MusiqueRepository _musiqueRepository = new MusiqueRepository();
         public MainWindow()
         {
             InitializeComponent();
@@ -37,6 +38,7 @@ namespace DjApplication3
             mainPageMixage.eventOptionButton += eventOptionButton;
 
             Title = SettingsManager.Instance.APP_NAME + " " + GetAppVersion();
+            this.Loaded += MainWindow_Loaded;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -44,10 +46,31 @@ namespace DjApplication3
             mainPageMixage.Dispose();
             cleanTmp();
         }
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState.Maximized;
-            
+            await RunAutoUpdate();
+        }
+        private async Task RunAutoUpdate()
+        {
+            try
+            {
+                // 1. Afficher l'overlay et bloquer l'interface
+                UpdateOverlay.Visibility = Visibility.Visible;
+
+                // 2. Lancer la mise à jour (sur un thread séparé pour ne pas figer la barre de chargement)
+                await Task.Run(async () => {
+                    await _musiqueRepository.UpdateYtDlp();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur lors de la mise à jour : {ex.Message}");
+            }
+            finally
+            {
+                // 3. Cacher l'overlay et libérer l'utilisateur
+                UpdateOverlay.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void eventOptionButton(object? sender, EventArgs e)

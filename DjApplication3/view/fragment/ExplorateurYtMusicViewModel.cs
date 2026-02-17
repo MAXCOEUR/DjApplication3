@@ -69,7 +69,7 @@ namespace DjApplication3.view.fragment
             }
         }
 
-        public async void getMusiqueInPlayListe(string idPlayliste)
+        public async void getMusiqueInPlayListe(string idPlayliste, int offset)
         {
             try
             {
@@ -79,7 +79,16 @@ namespace DjApplication3.view.fragment
                 var token = _cancellationTokenGetPlaylistIn.Token;
 
                 MusiqueRepository musiqueRepository = new MusiqueRepository();
-                List<Musique> musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste));
+                List<Musique> musiques = [];
+                if (idPlayliste == "LM")
+                {
+                    musiques = await Task.Run(() => musiqueRepository.GetMusiqueLikeYtMusic());
+                }
+                else
+                {
+                    musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste, offset));
+                }
+                    
 
                 if (!token.IsCancellationRequested)
                 {
@@ -109,6 +118,7 @@ namespace DjApplication3.view.fragment
                 var token = _cancellationTokenGetPlaylist.Token;
                 MusiqueRepository musiqueRepository = new MusiqueRepository();
                 List<PlayListe> playListe = await Task.Run(() => musiqueRepository.GetPlayListeYtMusic());
+                playListe.Insert(0, new PlayListe("LM", "Titres likés"));
                 if (!token.IsCancellationRequested)
                 {
                     TacheGetPlayListe?.Invoke(this, playListe);
@@ -122,7 +132,7 @@ namespace DjApplication3.view.fragment
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
                 new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
                 TacheGetPlayListe?.Invoke(this, null);
             }

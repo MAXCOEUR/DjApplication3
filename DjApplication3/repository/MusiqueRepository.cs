@@ -54,15 +54,20 @@ namespace DjApplication3.repository
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste)
+        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste, int offset)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
-            return await dataSource.getMusiqueInPlayListe(idPlayliste);
+            return await dataSource.getMusiqueInPlayListe(idPlayliste, offset);
+        }
+        public async Task<List<Musique>> GetMusiqueLikeYtMusic()
+        {
+            YtMusicDataSource dataSource = new YtMusicDataSource();
+            return await dataSource.getMusiqueLike();
         }
 
 
 
-        
+
         public async Task<List<PlayListe>> GetPlayListeYtMusic()
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
@@ -70,7 +75,11 @@ namespace DjApplication3.repository
         }
 
 
-
+        async public Task UpdateYtDlp()
+        {
+            YtMusicDataSource dataSource = new YtMusicDataSource();
+            await dataSource.UpdateYtDlp();
+        }
 
 
         async public Task<Musique> DownloadMusiqueYoutube(Musique musiqueyt)

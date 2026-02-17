@@ -8,5 +8,15 @@
         Title="MainWindow" Height="450" Width="800" Background="#FF404040" Closing="Window_Closing" WindowState="Maximized">
     <Grid>
         <ContentControl x:Name="MainContent"/>
+
+        <Grid x:Name="UpdateOverlay" Grid.RowSpan="2" Background="#CC000000" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="20" Margin="0,0,0,10"/>
+                <TextBlock Text="Mise à jour des composants..." 
+                    Foreground="White" FontSize="18" HorizontalAlignment="Center"/>
+                <TextBlock Text="Veuillez patienter quelques instants." 
+                    Foreground="LightGray" FontSize="12" HorizontalAlignment="Center"/>      
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

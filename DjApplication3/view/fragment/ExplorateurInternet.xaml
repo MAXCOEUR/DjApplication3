@@ -42,7 +42,7 @@
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5" KeyDown="tb_serach_KeyDown"/>
-            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" Grid.ColumnSpan="2" >
+            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" ScrollViewer.ScrollChanged="dgv_listeMusic_ScrollChanged" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" Grid.ColumnSpan="2" >
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
