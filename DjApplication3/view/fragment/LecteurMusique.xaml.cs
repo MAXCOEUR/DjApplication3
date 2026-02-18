@@ -171,7 +171,7 @@ namespace DjApplication3.view.page
                 return 0;
             }catch(Exception e)
             {
-                new ToastMessage(e.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(e.Message, ToastMessage.ToastType.Error, e).Show();
                 return 2;
             }
 

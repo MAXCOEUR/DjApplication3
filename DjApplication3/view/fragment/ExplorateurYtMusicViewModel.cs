@@ -35,7 +35,7 @@ namespace DjApplication3.view.fragment
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
             }
         }
 
@@ -65,7 +65,7 @@ namespace DjApplication3.view.fragment
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
             }
         }
 
@@ -98,13 +98,13 @@ namespace DjApplication3.view.fragment
             catch (NotConnectedException ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Info).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Info, ex).Show();
                 TacheGetMusiqueInPlayListe?.Invoke(this, null);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
                 TacheGetMusiqueInPlayListe?.Invoke(this, null);
             }
         }
@@ -127,13 +127,13 @@ namespace DjApplication3.view.fragment
             catch (NotConnectedException ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Info).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Info, ex).Show();
                 TacheGetPlayListe?.Invoke(this, null);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
                 TacheGetPlayListe?.Invoke(this, null);
             }
         }

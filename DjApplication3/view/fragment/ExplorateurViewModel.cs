@@ -36,7 +36,7 @@ namespace DjApplication3.View.userControlDJ
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                new ToastMessage(e.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(e.Message, ToastMessage.ToastType.Error,e).Show();
             }
 
         }

@@ -404,7 +404,7 @@ namespace DjApplication3.view.activity
                 int code = lecteurMusiques[e.Item2].setMusique(e.Item1);
             }catch(Exception ex)
             {
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error,ex).Show();
             }
             
         }
@@ -424,7 +424,7 @@ namespace DjApplication3.view.activity
                 }
                 catch (Exception ex)
                 {
-                    new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                    new ToastMessage(ex.Message, ToastMessage.ToastType.Error,ex).Show();
                 }
                 
 

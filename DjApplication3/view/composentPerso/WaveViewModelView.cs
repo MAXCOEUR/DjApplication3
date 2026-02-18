@@ -23,7 +23,7 @@ namespace DjApplication3.view.composentPerso
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new ToastMessage(ex.Message, ToastMessage.ToastType.Error).Show();
+                new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
             }
         }
     }
