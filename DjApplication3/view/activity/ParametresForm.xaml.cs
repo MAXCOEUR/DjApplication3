@@ -41,9 +41,6 @@ namespace DjApplication3.view.activity
                 cb_audioHeadPhone.SelectedItem = cb_audioHeadPhone.Items[settingsManager.nbrHeadPhone];
             }
 
-            cb_browser.ItemsSource = settingsManager.browsers;
-            cb_browser.SelectedIndex = settingsManager.browserIndice;
-
             foreach (var midi in settingsManager.listMidi)
             {
                 cb_midi.Items.Add(midi.ProductName);
@@ -74,14 +71,6 @@ namespace DjApplication3.view.activity
         private void cb_audioStandard_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             settingsManager.nbrOut = cb_audioStandard.SelectedIndex;
-        }
-
-
-        
-
-        private void cb_browser_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            settingsManager.browserIndice = cb_browser.SelectedIndex;
         }
 
 

@@ -45,8 +45,9 @@ namespace DjApplication3.DataSource
 
         // Fichier pour stocker tes cookies/session
         private static string appPath = AppDomain.CurrentDomain.BaseDirectory;
-        private static string sessionFile = Path.Combine(appPath, "outilsExtern", "session_cookies.txt");
         private static string pathOutilsExtern = Path.Combine(appPath, "outilsExtern");
+        public static string sessionFile = Path.Combine(pathOutilsExtern, "session_cookies.txt");
+        public static string ytdlpCookieFile = Path.Combine(pathOutilsExtern, "ytdlp_cookies.txt");
 
         public YtMusicDataSource()
         {
@@ -245,9 +246,13 @@ namespace DjApplication3.DataSource
             // On garde ta structure d'arguments mais avec les fix de contournement YouTube
             string arguments = $"-x --audio-format mp3 --no-check-certificate " +
                                $"--js-runtimes \"quickjs:{qjsPath}\" " +
-                               $"--extractor-args \"youtube:player-client=android,web;po_token=web+generated\" " +
+                               $"--extractor-args \"youtube:player-client=ios,android,web;player-skip=web_music\" " +
                                $"-o \"{outputTemplate}\" ";
-
+            if (File.Exists(ytdlpCookieFile))
+            {
+                // C'est cet argument qui va débloquer le Premium pour yt-dlp
+                arguments += $"--cookies \"{ytdlpCookieFile}\" ";
+            }
             // Ajout de ffmpeg si trouvé via ta classe FFmpegGestion
             if (File.Exists(FFmpegGestion.ffmpegPath))
             {
@@ -354,13 +359,17 @@ namespace DjApplication3.DataSource
         public static bool isConnected()
         {
             // Vérifie si le fichier de cookies existe et contient quelque chose
-            return File.Exists(sessionFile) && new FileInfo(sessionFile).Length > 0;
+            return File.Exists(sessionFile) && new FileInfo(sessionFile).Length > 0 && File.Exists(ytdlpCookieFile) && new FileInfo(ytdlpCookieFile).Length > 0;
         }
         public static void removeConnect()
         {
             if (File.Exists(sessionFile))
             {
                 File.Delete(sessionFile);
+            }
+            if (File.Exists(ytdlpCookieFile))
+            {
+                File.Delete(ytdlpCookieFile);
             }
         }
     }

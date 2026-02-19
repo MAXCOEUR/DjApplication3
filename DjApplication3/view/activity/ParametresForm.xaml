@@ -30,14 +30,11 @@
         <Label Grid.Row="1" Grid.Column="0" Content="Sortie audio casque : " HorizontalAlignment="Center" VerticalAlignment="Center" />
         <ComboBox Grid.Row="1" Grid.Column="1" x:Name="cb_audioHeadPhone" VerticalAlignment="Center" SelectionChanged="cb_audioHeadPhone_SelectionChanged" Grid.ColumnSpan="2"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Content="navigateur YoutubeMusic" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cb_browser" VerticalAlignment="Center" SelectionChanged="cb_browser_SelectionChanged" Grid.ColumnSpan="2"/>
-
         <Button x:Name="bt_connectYtMusic" Content="Connexion Youtube Music" Height="30" Grid.Row="3" Grid.ColumnSpan="3" Click="bt_connectYtMusic_Click" Margin="10,0,10,0"/>
 
 
-        <Label Content="appareil Midi" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center"/>
-        <ComboBox Grid.Row="4" Grid.Column="1" x:Name="cb_midi" VerticalAlignment="Center" Grid.ColumnSpan="2" SelectionChanged="cb_midi_SelectionChanged"/>
+        <Label Content="appareil Midi" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cb_midi" VerticalAlignment="Center" Grid.ColumnSpan="2" SelectionChanged="cb_midi_SelectionChanged"/>
 
         <!-- Button -->
         <Button x:Name="bt_close" Background="Lime" Content="Fermer" Height="30" Grid.Row="6" Grid.ColumnSpan="3" Click="bt_close_Click" Margin="10,0,10,0"/>
