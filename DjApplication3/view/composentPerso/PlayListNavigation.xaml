@@ -12,9 +12,11 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <ListBox x:Name="ItemListBox" 
-     ItemsSource="{Binding PlayLists}" PreviewKeyDown="ItemListBox_PreviewKeyDown" Grid.Row="1" SelectionChanged="ItemListBox_SelectionChanged">
+     ItemsSource="{Binding PlayLists}" PreviewKeyDown="ItemListBox_PreviewKeyDown" Grid.Row="1">
             <ListBox.Resources>
                 <Style TargetType="ListBoxItem">
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" />
+                    
                     <Setter Property="Background" Value="Transparent" />
                     <Setter Property="Foreground" Value="Black" />
                     <Setter Property="Padding" Value="5" />

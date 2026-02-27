@@ -32,8 +32,9 @@
             <TextBlock x:Name="errorMessageTree" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
         </Grid>
         <GridSplitter x:Name="GridSplitter" Grid.Column="1" Visibility="Collapsed" Width="5" HorizontalAlignment="Stretch" />
-        <Grid Grid.Column="2">
+        <Grid x:Name="grid_principal"  Grid.Column="2" Background="White">
             <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="40"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -42,7 +43,12 @@
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="tb_serach" TextWrapping="Wrap" Margin="5" KeyDown="tb_serach_KeyDown"/>
-            <DataGrid x:Name="dgv_listeMusic" Grid.Row="1" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" ScrollViewer.ScrollChanged="dgv_listeMusic_ScrollChanged" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" Grid.ColumnSpan="2" >
+            <Label x:Name="lb_recherche" Content="Mode Recherche" Grid.Row="1" Visibility="Hidden"/>
+            <TextBlock x:Name="lb_playlist" Grid.Row="1" Margin="5">
+                <Run Text="Mode Playlist : " FontWeight="Bold"/>
+                <Run x:Name="lb_run_playliste" />
+            </TextBlock>
+            <DataGrid x:Name="dgv_listeMusic" Grid.Row="2" AutoGenerateColumns="false" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" MouseDoubleClick="dgv_listeMusic_MouseDoubleClick" ScrollViewer.ScrollChanged="dgv_listeMusic_ScrollChanged" MouseUp="dgv_listeMusic_MouseUp" PreviewKeyDown="dgv_listeMusic_PreviewKeyDown" PreviewMouseDown="dgv_listeMusic_PreviewMouseDown" Grid.ColumnSpan="2" >
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="Titre" Binding="{Binding Title}" IsReadOnly="True" />
                     <DataGridTextColumn Width="*" Header="Auteur" Binding="{Binding  Author}" IsReadOnly="True" />
@@ -61,12 +67,17 @@
                     </Style>
                 </DataGrid.RowStyle>
             </DataGrid>
-            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="1" Visibility="Collapsed"/>
+            <ProgressBar x:Name="BottomLoadingBar" 
+             Grid.Row="2" 
+             Height="20" 
+             VerticalAlignment="Bottom" 
+             IsIndeterminate="True" 
+             Visibility="Collapsed"/>
+            <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Margin="0,25,0,0" Grid.Row="2" Visibility="Collapsed"/>
             <TextBlock x:Name="errorMessageListeMusique" TextWrapping="Wrap" Text="Problème lors du chargement des données, vérifiez votre connexion Internet" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Red" Visibility="Hidden"/>
             <Button Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="SearchButton_Click" >
                 <Image Source="/DjApplication3;component/Resources/recherche.png" Margin="5"/>
             </Button>
-
 
             <Grid.ContextMenu>
                 <ContextMenu x:Name="cm_PisteList">

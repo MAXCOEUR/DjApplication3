@@ -87,11 +87,19 @@ namespace DjApplication3.view.windows
             ItemListBox.ItemsSource = PlayLists;
             setSelectedIndex(0);
         }
-
-        private void ItemListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListBoxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            PlayListe selectedItem = (PlayListe)ItemListBox.SelectedItem;
-            SelectionChanged?.Invoke(this, selectedItem);
+            var listBoxItem = sender as ListBoxItem;
+
+            if (listBoxItem != null)
+            {
+                if (listBoxItem.DataContext is PlayListe selectedItem)
+                {
+                    listBoxItem.IsSelected = true;
+
+                    SelectionChanged?.Invoke(this, selectedItem);
+                }
+            }
         }
     }
 }

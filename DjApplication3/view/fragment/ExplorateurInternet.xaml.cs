@@ -109,26 +109,32 @@ namespace DjApplication3.view.fragment
             dgv_listeMusic.ItemsSource = null;
             dgv_listeMusic.ItemsSource = musiques;
 
+            BottomLoadingBar.Visibility = Visibility.Collapsed;
+
             isLoadingMore = false;
 
         }
 
         private void dgv_listeMusic_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            // Si on descend à plus de 80% de la liste et qu'on n'est pas déjà en train de charger
             if (e.VerticalOffset > 0 && e.VerticalChange > 0)
             {
+                // Si on arrive à 80% de la liste
                 if (!isLoadingMore && e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight * 0.8)
                 {
-                    if (musiques.Count > 0 && musiques.Count % 100 != 0)
+                    // Sécurité : on ne charge que si la liste est pleine (multiple de 100)
+                    if (musiques.Count > 0 && musiques.Count % 100 == 0)
                     {
-                        return;
-                    }
-                    if (viewModelYtMusic != null && !string.IsNullOrEmpty(currentPlaylistId))
-                    {
-                        isLoadingMore = true;
-                        currentOffset += PageSize; // On passe à la page suivante
-                        viewModelYtMusic.getMusiqueInPlayListe(currentPlaylistId, currentOffset);
+                        if (viewModelYtMusic != null && !string.IsNullOrEmpty(currentPlaylistId))
+                        {
+                            isLoadingMore = true;
+
+                            // --- ACTION VISUELLE ---
+                            BottomLoadingBar.Visibility = Visibility.Visible;
+
+                            currentOffset += PageSize;
+                            viewModelYtMusic.getMusiqueInPlayListe(currentPlaylistId, currentOffset);
+                        }
                     }
                 }
             }
@@ -447,6 +453,12 @@ namespace DjApplication3.view.fragment
         {
             if (e == null) return;
 
+            lb_playlist.Visibility = Visibility.Visible;
+            lb_recherche.Visibility = Visibility.Hidden;
+            grid_principal.Background = Brushes.White;
+
+            lb_run_playliste.Text = e.name;
+
             cleatDGV();
             currentPlaylistId = e.id;
             currentOffset = 0;
@@ -468,6 +480,9 @@ namespace DjApplication3.view.fragment
 
         private void searchYtMusic()
         {
+            lb_playlist.Visibility = Visibility.Hidden;
+            lb_recherche.Visibility = Visibility.Visible;
+            grid_principal.Background = Brushes.LightSkyBlue;
             cleatDGV();
 
             displayLoadingListMusique();
