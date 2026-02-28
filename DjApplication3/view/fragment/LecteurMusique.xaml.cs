@@ -3,16 +3,40 @@ using CSCore.Codecs;
 using CSCore.SoundOut;
 using DjApplication3.model;
 using DjApplication3.outils;
+using DjApplication3.view.fragment;
 using DjApplication3.view.windows;
 using DjApplication3.View.userControlDJ;
 using System;
+using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Timers;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace DjApplication3.view.page
 {
+
+    public static class ListExtensions
+    {
+        private static Random rng = new Random();
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+    }
     /// <summary>
     /// Logique d'interaction pour LecteurMusique.xaml
     /// </summary>
@@ -33,7 +57,12 @@ namespace DjApplication3.view.page
         float volumeMaster = 1;
         float volumeHeadPhone = 100.0F;
 
+        Musique? nextMusiqueDl = null;
+
         int nbrPist = 0;
+
+        private ExplorateurInternetViewModel viewModel;
+        static public string rootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "musique", "tmp");
 
         public LecteurMusique()
         {
@@ -41,6 +70,27 @@ namespace DjApplication3.view.page
             InitializeTimer();
             tb_volume.ValueChanged += Tb_volume_ValueChanged;
             LecteurMusiqueViewModel.TacheGetBPM += LecteurMusiqueViewModel_TacheGetBPM;
+        }
+
+        public void setViewModel(ExplorateurInternetViewModel model)
+        {
+            viewModel = model;
+            viewModel.TacheDownload += ViewModel_TacheDownload;
+        }
+
+        private void ViewModel_TacheDownload(object? sender, (Musique?, int?) e)
+        {
+            var musiqueTelechargee = e.Item1;
+
+            if (musiqueTelechargee != null)
+            {
+                musiqueTelechargee.musiquesInPlayliste = musique?.musiquesInPlayliste;
+
+                nextMusiqueDl = musiqueTelechargee;
+
+                Console.WriteLine($"Prêt pour l'enchaînement : {musiqueTelechargee.title}");
+            }
+            Console.WriteLine("TacheDownload received in LecteurMusique");
         }
 
         private void LecteurMusiqueViewModel_TacheGetBPM(object? sender, int bpm)
@@ -51,6 +101,14 @@ namespace DjApplication3.view.page
         private void Tb_volume_ValueChanged(object? sender, int e)
         {
             updateVolume();
+        }
+
+        private void btn_AutoNext_Click(object sender, RoutedEventArgs e)
+        {
+            // Logique optionnelle au moment du clic
+            bool isAuto = btn_AutoNext.IsChecked ?? false;
+            Console.WriteLine($"Mode automatique : {isAuto}");
+            downloadNextMusique();
         }
 
         private void InitializeTimer()
@@ -168,6 +226,15 @@ namespace DjApplication3.view.page
 
                 Console.WriteLine("setMusique end");
 
+                if (btn_AutoNext.IsChecked ?? false)
+                {
+                    play();
+                }
+
+
+                downloadNextMusique();
+
+
                 return 0;
             }catch(Exception e)
             {
@@ -176,6 +243,41 @@ namespace DjApplication3.view.page
             }
 
             
+        }
+
+        private Musique? getMusiqueNext()
+        {
+            if(musique?.musiquesInPlayliste == null)
+            {
+                return null;
+            }
+            int currentIndex = musique.musiquesInPlayliste.IndexOf(musique);
+
+            // On vérifie s'il y a un élément après
+            if (currentIndex != -1 && currentIndex < musique.musiquesInPlayliste.Count - 1)
+            {
+                return musique.musiquesInPlayliste[currentIndex + 1];
+            }
+            return null;
+        }
+        private void downloadNextMusique()
+        {
+            if (musique?.musiquesInPlayliste != null && (btn_AutoNext.IsChecked ?? false))
+            {
+                Console.WriteLine("start download next musique");
+                Musique nextMusique = getMusiqueNext();                
+
+                if (nextMusique != null)
+                {
+                    // On lance le téléchargement/lecture de la SUIVANTE
+                    viewModel.DownloadMusique(nextMusique);
+                }
+                else
+                {
+                    // Soit on est à la fin, soit la liste n'est pas chargée
+                    Console.WriteLine("Pas de musique suivante trouvée.");
+                }
+            }
         }
         private void updateOutAudio()
         {
@@ -284,6 +386,10 @@ namespace DjApplication3.view.page
             {
                 waveForme.setEndColorBack();
                 pause();
+                if(musique?.musiquesInPlayliste != null && (btn_AutoNext.IsChecked ?? false))
+                {
+                    setMusique(nextMusiqueDl);
+                }
             }
 
         }
@@ -402,6 +508,46 @@ namespace DjApplication3.view.page
         {
             if (audioPlayer.DebuggingId == -1) return false;
             return audioPlayer.PlaybackState == PlaybackState.Playing;
+        }
+
+        private void bt_random_Click(object sender, RoutedEventArgs e)
+        {
+            musique?.musiquesInPlayliste?.Shuffle();
+        }
+
+        private void bt_random_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (musique?.musiquesInPlayliste == null || musique.musiquesInPlayliste.Count == 0)
+            {
+                bt_random.ToolTip = "Aucune playlist chargée";
+                return;
+            }
+
+            int currentIndex = musique.musiquesInPlayliste.IndexOf(musique);
+
+            // On récupère par exemple les 10 prochaines musiques
+            var suivantes = musique.musiquesInPlayliste
+                .Skip(currentIndex + 1) // On saute celles déjà passées
+                .Take(10)               // On en prend 10 max pour ne pas avoir une bulle géante
+                .ToList();
+
+            if (suivantes.Count > 0)
+            {
+                string listeTexte = "Prochainement :\n";
+                foreach (var m in suivantes)
+                {
+                    listeTexte += $"• {m.title} - {m.author}\n";
+                }
+
+                if (musique.musiquesInPlayliste.Count > currentIndex + 11)
+                    listeTexte += "... et plus encore";
+
+                bt_random.ToolTip = listeTexte;
+            }
+            else
+            {
+                bt_random.ToolTip = "Fin de la playlist";
+            }
         }
     }
 }

@@ -106,26 +106,50 @@ namespace DjApplication3.DataSource
             return musiques;
         }
 
-        public async Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste, int offset, int limit = 100)
+        public async Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste, IProgress<List<Musique>> progress = null)
         {
             if (string.IsNullOrEmpty(idPlayliste)) throw new Exception("Aucune playlist sélectionnée");
 
-            // 1. Obtenir le BrowseId (pour les playlists normales)
-            // Note : Si idPlayliste est "LM", cette étape peut varier selon la version de ta lib
             string browseId = _ytMusicClient.GetCommunityPlaylistBrowseId(idPlayliste);
-
-            // 2. Récupérer l'énumérateur
             var playlistSongsEnum = _ytMusicClient.GetCommunityPlaylistSongsAsync(browseId);
 
-            // 3. Utiliser l'offset et la limite fournis
-            // FetchItemsAsync(index de départ, nombre d'items à prendre)
-            var bufferedSongs = await playlistSongsEnum.FetchItemsAsync(offset, limit);
+            List<Musique> allMusiques = new List<Musique>();
+            int offset = 0;
+            int limit = 100;
+            bool hasMore = true;
 
-            return bufferedSongs.Select(t => new Musique(
-                baseUrl + t.Id,
-                CleanFileName(t.Name),
-                CleanFileName(string.Join(", ", t.Artists.Select(a => a.Name)) ?? "Artiste Inconnu")
-            )).ToList();
+            while (hasMore)
+            {
+                // On récupère un paquet de 100
+                var bufferedSongs = await playlistSongsEnum.FetchItemsAsync(offset, limit);
+
+                if (bufferedSongs.Count == 0)
+                {
+                    hasMore = false;
+                    break;
+                }
+
+                // Conversion en tes objets Musique
+                var currentBatch = bufferedSongs.Select(t => new Musique(
+                    baseUrl + t.Id,
+                    CleanFileName(t.Name),
+                    CleanFileName(string.Join(", ", t.Artists.Select(a => a.Name)) ?? "Artiste Inconnu")
+                )).ToList();
+
+                allMusiques.AddRange(currentBatch);
+
+                // --- C'est ici que la magie opère ---
+                // On notifie l'UI qu'on a un nouveau paquet de musiques
+                progress?.Report(currentBatch);
+
+                // Si on a reçu moins que la limite, c'est qu'on est à la fin
+                if (bufferedSongs.Count < limit)
+                    hasMore = false;
+                else
+                    offset += limit;
+            }
+
+            return allMusiques;
         }
         public async Task<List<Musique>> getMusiqueLike()
         {

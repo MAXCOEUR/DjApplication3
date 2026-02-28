@@ -18,6 +18,7 @@ namespace DjApplication3.view.fragment
         public override event EventHandler<(Musique?, int?)> TacheDownload;
 
         public event EventHandler<List<Musique>?> TacheGetMusiqueInPlayListe;
+        public event EventHandler<bool> TacheEndGetMusiqueInPlayListe;
         public event EventHandler<List<PlayListe>?> TacheGetPlayListe;
 
         private CancellationTokenSource _cancellationTokenSearch;
@@ -69,41 +70,53 @@ namespace DjApplication3.view.fragment
             }
         }
 
-        public async void getMusiqueInPlayListe(string idPlayliste, int offset)
+        public async void getMusiqueInPlayListe(string idPlayliste)
         {
             try
             {
-                // Annule la recherche précédente si elle est en cours
                 _cancellationTokenGetPlaylistIn?.Cancel();
                 _cancellationTokenGetPlaylistIn = new CancellationTokenSource();
                 var token = _cancellationTokenGetPlaylistIn.Token;
 
                 MusiqueRepository musiqueRepository = new MusiqueRepository();
-                List<Musique> musiques = [];
+
+                var progress = new Progress<List<Musique>>(batch =>
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        TacheGetMusiqueInPlayListe?.Invoke(this, batch);
+                    }
+                });
+
                 if (idPlayliste == "LM")
                 {
-                    musiques = await Task.Run(() => musiqueRepository.GetMusiqueLikeYtMusic());
+                    // Pour les Likes, on peut aussi implémenter le progressif si nécessaire
+                    var musiques = await Task.Run(() => musiqueRepository.GetMusiqueLikeYtMusic());
+                    if (!token.IsCancellationRequested)
+                        TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
                 }
                 else
                 {
-                    musiques = await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste, offset));
-                }
-                    
+                    await Task.Run(() => musiqueRepository.GetMusiqueInPlayListeYtMusic(idPlayliste, progress), token);
 
-                if (!token.IsCancellationRequested)
-                {
-                    TacheGetMusiqueInPlayListe?.Invoke(this, musiques);
+                    if (!token.IsCancellationRequested)
+                    {
+                        // Option A : Envoyer une liste vide pour signaler la fin
+                        TacheEndGetMusiqueInPlayListe?.Invoke(this, true);
+
+                        // Ou un message de log
+                        Console.WriteLine("Toutes les musiques sont chargées.");
+                    }
                 }
             }
+            catch (OperationCanceledException) { /* Annulation normale, on ne fait rien */ }
             catch (NotConnectedException ex)
             {
-                Console.WriteLine(ex.Message);
                 new ToastMessage(ex.Message, ToastMessage.ToastType.Info, ex).Show();
                 TacheGetMusiqueInPlayListe?.Invoke(this, null);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 new ToastMessage(ex.Message, ToastMessage.ToastType.Error, ex).Show();
                 TacheGetMusiqueInPlayListe?.Invoke(this, null);
             }

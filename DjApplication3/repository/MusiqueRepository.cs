@@ -54,10 +54,11 @@ namespace DjApplication3.repository
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste, int offset)
+        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste, IProgress<List<Musique>> progress = null)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
-            return await dataSource.getMusiqueInPlayListe(idPlayliste, offset);
+
+            return await dataSource.getMusiqueInPlayListe(idPlayliste, progress);
         }
         public async Task<List<Musique>> GetMusiqueLikeYtMusic()
         {

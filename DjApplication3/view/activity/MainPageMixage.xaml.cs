@@ -468,6 +468,7 @@ namespace DjApplication3.view.activity
 
                 LecteurMusique lecteurMusique = new LecteurMusique();
                 lecteurMusique.setNbrPiste(i + 1);
+                lecteurMusique.setViewModel(new ExplorateurYtMusicViewModel());
 
                 lecteurMusique.LecteurMusiqueViewModel.TacheGetBPM += LecteurMusiqueViewModel_TacheGetBPM;
                 lecteurMusiques.Add(lecteurMusique);

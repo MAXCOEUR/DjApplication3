@@ -11,11 +11,13 @@ namespace DjApplication3.model
         public string url;
         public string title;
         public string author;
-        public Musique(string url, string title, string author)
+        public List<Musique>? musiquesInPlayliste;
+        public Musique(string url, string title, string author, List<Musique>? musiquesInPlayliste = null)
         {
             this.url = url;
             this.title = title;
             this.author = author;
+            this.musiquesInPlayliste = musiquesInPlayliste;
         }
 
         // Surcharge de l'opérateur ==
