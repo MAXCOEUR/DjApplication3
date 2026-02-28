@@ -512,7 +512,36 @@ namespace DjApplication3.view.page
 
         private void bt_random_Click(object sender, RoutedEventArgs e)
         {
-            musique?.musiquesInPlayliste?.Shuffle();
+            if (musique?.musiquesInPlayliste == null) return;
+
+            var liste = musique.musiquesInPlayliste;
+
+            liste.Shuffle();
+
+            if (musique != null)
+            {
+                liste.Remove(musique);
+            }
+
+            if (nextMusiqueDl != null)
+            {
+                liste.Remove(nextMusiqueDl);
+            }
+            
+            if (nextMusiqueDl != null)
+            {
+                liste.Insert(0, nextMusiqueDl);
+            }
+
+            if (musique != null)
+            {
+                liste.Insert(0, musique);
+            }
+
+            // 5. Facultatif : On informe l'utilisateur
+            new ToastMessage("Playlist mélangée (Lecture actuelle préservée)", ToastMessage.ToastType.Info).Show();
+
+            Console.WriteLine($"Ordre rétabli : 1. {musique?.title} | 2. {nextMusiqueDl?.title}");
         }
 
         private void bt_random_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
