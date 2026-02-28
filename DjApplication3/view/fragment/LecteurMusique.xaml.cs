@@ -269,8 +269,15 @@ namespace DjApplication3.view.page
 
                 if (nextMusique != null)
                 {
-                    // On lance le téléchargement/lecture de la SUIVANTE
-                    viewModel.DownloadMusique(nextMusique);
+                    if (Path.Exists(nextMusique.url))
+                    {
+                        nextMusiqueDl = nextMusique;
+                        nextMusiqueDl.musiquesInPlayliste = musique.musiquesInPlayliste;
+                    }
+                    else
+                    {
+                        viewModel.DownloadMusique(nextMusique);
+                    }                    
                 }
                 else
                 {

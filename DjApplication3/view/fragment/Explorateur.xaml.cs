@@ -144,6 +144,12 @@ namespace DjApplication3.view.fragment
 
         private void valideRow(Musique musique,  int? numeroPisteAssocie = null)
         {
+            List<Musique> musiqueListe = [];
+            foreach (MusiqueColonne musiqueColonne in musiques)
+            {
+                musiqueListe.Add(musiqueColonne.musique);
+            }
+            musique.musiquesInPlayliste = musiqueListe;
             if (numeroPisteAssocie.HasValue)
             {
                 eventMusiqueSlectedWithPiste?.Invoke(this, (musique, numeroPisteAssocie.Value));
