@@ -3,26 +3,41 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $projectPath = Join-Path $repoRoot "DjApplication3.WinUI\DjApplication3.WinUI.csproj"
 $issPath = Join-Path $PSScriptRoot "DjApplication3.iss"
-$publishPath = Join-Path $repoRoot "DjApplication3.WinUI\bin\Release\net8.0-windows10.0.19041.0\publish"
+$publishPath = Join-Path $repoRoot "DjApplication3.WinUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+$repoFullPath = [System.IO.Path]::GetFullPath($repoRoot)
+$publishFullPath = [System.IO.Path]::GetFullPath($publishPath)
 
 Get-Process -Name "DjApplication3.WinUI" -ErrorAction SilentlyContinue | Stop-Process -Force
 
-dotnet publish $projectPath -c Release --no-restore
+if ($publishFullPath.StartsWith($repoFullPath, [System.StringComparison]::OrdinalIgnoreCase) -and (Split-Path $publishFullPath -Leaf) -eq "publish") {
+    Remove-Item -LiteralPath $publishFullPath -Recurse -Force -ErrorAction SilentlyContinue
+}
+else {
+    throw "Chemin publish refuse par securite: $publishFullPath"
+}
+
+dotnet publish $projectPath -c Release -r win-x64 --self-contained false
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish a echoue."
+}
 
 $requiredFiles = @(
+    "DjApplication3.WinUI.exe",
+    "DjApplication3.WinUI.dll",
+    "DjApplication3.WinUI.pri",
     "App.xbf",
     "MainWindow.xbf",
-    "DjApplication3.WinUI.pri",
     "Views\MainView.xbf",
     "Controls\DeckControl.xbf",
     "Controls\TrackBarPerso.xbf",
-    "Controls\WaveformControl.xbf"
+    "Controls\WaveformControl.xbf",
+    "WebView2Loader.dll"
 )
 
 foreach ($file in $requiredFiles) {
-    $fullPath = Join-Path $publishPath $file
+    $fullPath = Join-Path $publishFullPath $file
     if (-not (Test-Path $fullPath)) {
-        throw "Fichier WinUI manquant dans le publish: $file"
+        throw "Publish incomplet: fichier manquant '$file'"
     }
 }
 
