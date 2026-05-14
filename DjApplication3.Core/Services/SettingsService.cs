@@ -16,12 +16,30 @@ namespace DjApplication3.Services
         public int HeadphoneDeviceIndex
         {
             get => SettingsManager.Instance.nbrHeadPhone;
-            set => SettingsManager.Instance.nbrHeadPhone = value;
+            set
+            {
+                SettingsManager.Instance.nbrHeadPhone = value;
+                SettingsManager.Instance.HeadphoneDeviceId = SettingsManager.Instance.GetAudioDeviceId(value);
+            }
         }
         public int OutputDeviceIndex
         {
             get => SettingsManager.Instance.nbrOut;
-            set => SettingsManager.Instance.nbrOut = value;
+            set
+            {
+                SettingsManager.Instance.nbrOut = value;
+                SettingsManager.Instance.OutputDeviceId = SettingsManager.Instance.GetAudioDeviceId(value);
+            }
+        }
+        public string? HeadphoneDeviceId
+        {
+            get => SettingsManager.Instance.HeadphoneDeviceId;
+            set => SettingsManager.Instance.HeadphoneDeviceId = value;
+        }
+        public string? OutputDeviceId
+        {
+            get => SettingsManager.Instance.OutputDeviceId;
+            set => SettingsManager.Instance.OutputDeviceId = value;
         }
         public int MidiDeviceIndex
         {

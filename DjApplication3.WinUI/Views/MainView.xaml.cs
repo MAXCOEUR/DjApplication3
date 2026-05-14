@@ -15,6 +15,10 @@ using System.Text;
 using System.Text.Json;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using Microsoft.UI;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
+using System.Threading;
 
 namespace DjApplication3.WinUI.Views
 {
@@ -22,6 +26,9 @@ namespace DjApplication3.WinUI.Views
     {
         public MainViewModel ViewModel { get; }
         private WebView2? _loginWebView;
+        private CancellationTokenSource? _libraryActionCancellation;
+        private object? _selectedLibraryItem;
+        private object? _openedLibraryItem;
 
         public MainView()
         {
@@ -32,9 +39,52 @@ namespace DjApplication3.WinUI.Views
             Loaded += MainView_Loaded;
             Unloaded += (_, _) =>
             {
+                _libraryActionCancellation?.Cancel();
+                _libraryActionCancellation?.Dispose();
+                _libraryActionCancellation = null;
                 ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 ViewModel.Dispose();
             };
+        }
+
+        public void SetSelectedLibraryItem(object? item)
+        {
+            if (_selectedLibraryItem == item)
+            {
+                return;
+            }
+
+            if (_selectedLibraryItem is ILibrarySelectableItem previousSelected)
+            {
+                previousSelected.IsSelected = false;
+            }
+
+            _selectedLibraryItem = item;
+
+            if (_selectedLibraryItem is ILibrarySelectableItem newSelected)
+            {
+                newSelected.IsSelected = true;
+            }
+        }
+
+        public void SetOpenedLibraryItem(object? item)
+        {
+            if (_openedLibraryItem == item)
+            {
+                return;
+            }
+
+            if (_openedLibraryItem is ILibrarySelectableItem previousOpened)
+            {
+                previousOpened.IsOpened = false;
+            }
+
+            _openedLibraryItem = item;
+
+            if (_openedLibraryItem is ILibrarySelectableItem newOpened)
+            {
+                newOpened.IsOpened = true;
+            }
         }
 
         private async void MainView_Loaded(object sender, RoutedEventArgs e)
@@ -45,6 +95,7 @@ namespace DjApplication3.WinUI.Views
                 PopulateSettings();
                 UpdateSettingsVisibility();
                 UpdateLibraryModeVisibility();
+                UpdateMusicLoadingUi();
                 UpdateYtMusicButton();
             }
             catch (Exception ex)
@@ -53,29 +104,41 @@ namespace DjApplication3.WinUI.Views
             }
         }
 
-        private async void SearchButton_Click(object sender, RoutedEventArgs e) => await ViewModel.SearchAsync();
+        private async void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RunUiActionAsync(
+                () => RunLibraryActionAsync(
+                    token => ViewModel.SearchAsync(token),
+                    "Recherche des musiques..."),
+                "Recherche impossible");
+        }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedSource == "Local")
-            {
-                await ViewModel.RefreshLocalAsync();
-            }
-            else if (ViewModel.SelectedSource == "Youtube Music")
-            {
-                await ViewModel.LoadPlaylistsAsync();
-            }
-            else
-            {
-                await ViewModel.SearchAsync();
-            }
+            await RunUiActionAsync(
+                () => RunLibraryActionAsync(async token =>
+                {
+                    if (ViewModel.SelectedSource == "Local")
+                    {
+                        await ViewModel.RefreshLocalAsync(token);
+                    }
+                    else if (ViewModel.SelectedSource == "Youtube Music")
+                    {
+                        await ViewModel.LoadPlaylistsAsync(token);
+                    }
+                    else
+                    {
+                        await ViewModel.SearchAsync(token);
+                    }
+                }, "Chargement..."),
+                "Rechargement impossible");
         }
 
         private async void MusicList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (MusicList.SelectedItem is MusicRowViewModel row)
             {
-                await ViewModel.LoadMusicAsync(row);
+                await RunUiActionAsync(() => ViewModel.LoadMusicAsync(row), "Chargement impossible");
             }
         }
 
@@ -83,7 +146,7 @@ namespace DjApplication3.WinUI.Views
         {
             if ((sender as Button)?.Tag is MusicRowViewModel row)
             {
-                await ViewModel.LoadMusicAsync(row, ViewModel.LeftDeckIndex);
+                await RunUiActionAsync(() => ViewModel.LoadMusicAsync(row, ViewModel.LeftDeckIndex), "Chargement gauche impossible");
             }
         }
 
@@ -91,15 +154,21 @@ namespace DjApplication3.WinUI.Views
         {
             if ((sender as Button)?.Tag is MusicRowViewModel row)
             {
-                await ViewModel.LoadMusicAsync(row, ViewModel.RightDeckIndex);
+                await RunUiActionAsync(() => ViewModel.LoadMusicAsync(row, ViewModel.RightDeckIndex), "Chargement droite impossible");
             }
         }
 
         private async void PlaylistList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (PlaylistList.SelectedItem is PlayListe playlist)
+            if (PlaylistList.SelectedItem is PlaylistRowViewModel playlistRow)
             {
-                await ViewModel.LoadPlaylistAsync(playlist);
+                SetOpenedLibraryItem(playlistRow);
+
+                await RunUiActionAsync(
+                    () => RunLibraryActionAsync(
+                        token => ViewModel.LoadPlaylistAsync(playlistRow.Playlist, token),
+                        "Chargement de la playlist..."),
+                    "Playlist impossible");
             }
         }
 
@@ -133,7 +202,7 @@ namespace DjApplication3.WinUI.Views
         {
             if ((sender as MenuFlyoutItem)?.Tag is ValueTuple<MusicRowViewModel, int> selection)
             {
-                await ViewModel.LoadMusicAsync(selection.Item1, selection.Item2);
+                await RunUiActionAsync(() => ViewModel.LoadMusicAsync(selection.Item1, selection.Item2), "Chargement piste impossible");
             }
         }
 
@@ -141,15 +210,27 @@ namespace DjApplication3.WinUI.Views
         {
             if (FolderList.SelectedItem is LocalFolderViewModel folder)
             {
-                await ViewModel.OpenLocalFolderAsync(folder.Path);
+                SetOpenedLibraryItem(folder);
+
+                await RunUiActionAsync(
+                    () => RunLibraryActionAsync(
+                        token => ViewModel.OpenLocalFolderAsync(folder.Path, token),
+                        "Chargement du dossier..."),
+                    "Dossier impossible");
             }
         }
 
-        private async void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private async void SearchBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                await ViewModel.SearchAsync();
+                e.Handled = true;
+
+                await RunUiActionAsync(
+                    () => RunLibraryActionAsync(
+                        token => ViewModel.SearchAsync(token),
+                        "Recherche des musiques..."),
+                    "Recherche impossible");
             }
         }
 
@@ -157,7 +238,13 @@ namespace DjApplication3.WinUI.Views
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                await ViewModel.RefreshLocalAsync();
+                e.Handled = true;
+
+                await RunUiActionAsync(
+                    () => RunLibraryActionAsync(
+                        token => ViewModel.RefreshLocalAsync(token),
+                        "Scan du dossier local..."),
+                    "Scan local impossible");
             }
         }
 
@@ -176,7 +263,9 @@ namespace DjApplication3.WinUI.Views
                 var folder = await picker.PickSingleFolderAsync();
                 if (folder != null)
                 {
-                    await ViewModel.OpenLocalFolderAsync(folder.Path);
+                    await RunLibraryActionAsync(
+                        token => ViewModel.SetLocalRootAsync(folder.Path, token),
+                        "Scan du dossier local...");
                 }
             }
             catch (Exception ex)
@@ -193,11 +282,13 @@ namespace DjApplication3.WinUI.Views
         private void FolderList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ViewModel.SelectedFolderIndex = FolderList.SelectedIndex;
+            SetSelectedLibraryItem(FolderList.SelectedItem);
         }
 
         private void PlaylistList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ViewModel.SelectedPlaylistIndex = PlaylistList.SelectedIndex;
+            SetSelectedLibraryItem(PlaylistList.SelectedItem);
         }
 
         private void DeckScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -238,6 +329,11 @@ namespace DjApplication3.WinUI.Views
             {
                 UpdateLibraryModeVisibility();
             }
+            else if (e.PropertyName == nameof(MainViewModel.IsLibraryLoading)
+                || e.PropertyName == nameof(MainViewModel.LibraryLoadingText))
+            {
+                UpdateMusicLoadingUi();
+            }
         }
 
         private void TrackCountCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -261,12 +357,19 @@ namespace DjApplication3.WinUI.Views
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.ToggleSettings();
-            if (ViewModel.IsSettingsOpen)
+            try
             {
-                PopulateSettings(refreshDevices: true);
+                ViewModel.ToggleSettings();
+                if (ViewModel.IsSettingsOpen)
+                {
+                    PopulateSettings(refreshDevices: true);
+                }
+                UpdateSettingsVisibility();
             }
-            UpdateSettingsVisibility();
+            catch (Exception ex)
+            {
+                ViewModel.Status = $"Options indisponibles: {ex.Message}";
+            }
         }
 
         private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -281,6 +384,7 @@ namespace DjApplication3.WinUI.Views
         private void UpdateLibraryModeVisibility()
         {
             LocalRootPanel.Visibility = ViewModel.IsLocalMode ? Visibility.Visible : Visibility.Collapsed;
+            PlaylistTitlePanel.Visibility = ViewModel.IsYtMusicMode ? Visibility.Visible : Visibility.Collapsed;
             LocalFolderPanel.Visibility = ViewModel.IsLocalMode ? Visibility.Visible : Visibility.Collapsed;
             PlaylistPanel.Visibility = ViewModel.IsYtMusicMode ? Visibility.Visible : Visibility.Collapsed;
             NavigationColumn.Width = ViewModel.IsLocalMode || ViewModel.IsYtMusicMode
@@ -392,7 +496,13 @@ namespace DjApplication3.WinUI.Views
                     await _loginWebView.EnsureCoreWebView2Async();
                 }
 
-                _loginWebView.CoreWebView2.Navigate("https://accounts.google.com/ServiceLogin?continue=https://music.youtube.com/");
+                var coreWebView = _loginWebView.CoreWebView2;
+                if (coreWebView == null)
+                {
+                    throw new InvalidOperationException("WebView2 n'est pas pret.");
+                }
+
+                coreWebView.Navigate("https://accounts.google.com/ServiceLogin?continue=https://music.youtube.com/");
             }
             catch (COMException ex)
             {
@@ -453,6 +563,74 @@ namespace DjApplication3.WinUI.Views
             {
                 ViewModel.Status = $"Connexion Youtube Music impossible: {ex.Message}";
             }
+        }
+        private async System.Threading.Tasks.Task RunLibraryActionAsync(
+            Func<CancellationToken, System.Threading.Tasks.Task> action,
+            string loadingText)
+        {
+            _libraryActionCancellation?.Cancel();
+            _libraryActionCancellation?.Dispose();
+            var currentCancellation = new CancellationTokenSource();
+            _libraryActionCancellation = currentCancellation;
+            var cancellationToken = currentCancellation.Token;
+
+            try
+            {
+                ViewModel.Status = $"{loadingText} (annulable...)";
+
+                await System.Threading.Tasks.Task.Yield();
+
+                cancellationToken.ThrowIfCancellationRequested();
+                await action(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                ViewModel.Status = "Chargement annulé";
+            }
+            catch (Exception ex)
+            {
+                ViewModel.Status = $"Erreur: {ex.Message}";
+            }
+            finally
+            {
+                if (ReferenceEquals(_libraryActionCancellation, currentCancellation))
+                {
+                    _libraryActionCancellation?.Dispose();
+                    _libraryActionCancellation = null;
+                }
+            }
+        }
+
+        private async System.Threading.Tasks.Task RunUiActionAsync(
+            Func<System.Threading.Tasks.Task> action,
+            string errorPrefix)
+        {
+            try
+            {
+                await action();
+            }
+            catch (OperationCanceledException)
+            {
+                ViewModel.Status = "Operation annulee";
+            }
+            catch (Exception ex)
+            {
+                ViewModel.Status = $"{errorPrefix}: {ex.Message}";
+            }
+        }
+
+        private void UpdateMusicLoadingUi()
+        {
+            if (MusicLoadingPanel == null || MusicLoadingRing == null || MusicLoadingText == null)
+            {
+                return;
+            }
+
+            MusicLoadingPanel.Visibility = ViewModel.IsLibraryLoading ? Visibility.Visible : Visibility.Collapsed;
+            MusicLoadingRing.IsActive = ViewModel.IsLibraryLoading;
+            MusicLoadingText.Text = string.IsNullOrWhiteSpace(ViewModel.LibraryLoadingText)
+                ? "Chargement..."
+                : ViewModel.LibraryLoadingText;
         }
 
         private void UpdateYtMusicButton()

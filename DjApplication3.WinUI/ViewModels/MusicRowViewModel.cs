@@ -1,6 +1,4 @@
 using DjApplication3.model;
-using Microsoft.UI;
-using Microsoft.UI.Xaml.Media;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -78,16 +76,12 @@ namespace DjApplication3.WinUI.ViewModels
                 if (SetProperty(ref _played, value))
                 {
                     OnPropertyChanged(nameof(PlayedText));
-                    OnPropertyChanged(nameof(RowBackground));
                 }
             }
         }
 
         public string DownloadText => IsDownloading ? "..." : Downloaded ? "OK" : "";
         public string PlayedText => Played ? "Oui" : "";
-        public SolidColorBrush RowBackground => Played
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 42, 58, 45))
-            : new SolidColorBrush(Colors.Transparent);
 
         public void UseResolvedMusic(Musique musique)
         {

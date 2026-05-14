@@ -53,9 +53,16 @@ namespace DjApplication3.WinUI.Controls
 
         private async void RandomButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel != null)
+            try
             {
-                await ViewModel.ShufflePlaylistAsync();
+                if (ViewModel != null)
+                {
+                    await ViewModel.ShufflePlaylistAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Shuffle impossible: {ex}");
             }
         }
 

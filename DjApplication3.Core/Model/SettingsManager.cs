@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using NAudio.Midi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DjApplication3.model
 {
@@ -18,6 +19,8 @@ namespace DjApplication3.model
 
         public int nbrHeadPhone { get; set; }
         public int nbrOut { get; set; }
+        public string? HeadphoneDeviceId { get; set; }
+        public string? OutputDeviceId { get; set; }
 
         public int nbrMidi { get; set; }
 
@@ -37,6 +40,8 @@ namespace DjApplication3.model
             updateListMidi();
             nbrHeadPhone = 0;
             nbrOut = 0;
+            HeadphoneDeviceId = null;
+            OutputDeviceId = null;
             nbrPiste = 2;
             nbrMidi = 0;
             APP_NAME = "DjApplication 3";
@@ -72,11 +77,44 @@ namespace DjApplication3.model
             }
             else
             {
-                nbrOut = Math.Clamp(nbrOut, 0, dispositifsAudio.Count - 1);
-                nbrHeadPhone = Math.Clamp(nbrHeadPhone, 0, dispositifsAudio.Count - 1);
+                nbrOut = ResolveAudioDeviceIndex(OutputDeviceId, nbrOut);
+                nbrHeadPhone = ResolveAudioDeviceIndex(HeadphoneDeviceId, nbrHeadPhone);
             }
 
             nbrMidi = Math.Clamp(nbrMidi, 0, Math.Max(0, listMidi.Count - 1));
+        }
+
+        public string? GetAudioDeviceId(int index)
+        {
+            if (dispositifsAudio == null || index < 0 || index >= dispositifsAudio.Count)
+            {
+                return null;
+            }
+
+            return GetDeviceIdentifier(dispositifsAudio[index]);
+        }
+
+        private int ResolveAudioDeviceIndex(string? deviceId, int fallbackIndex)
+        {
+            if (dispositifsAudio == null || dispositifsAudio.Count == 0)
+            {
+                return 0;
+            }
+
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                for (var index = 0; index < dispositifsAudio.Count; index++)
+                {
+                    if (string.Equals(GetDeviceIdentifier(dispositifsAudio[index]), deviceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return index;
+                    }
+                }
+
+                return Math.Clamp(fallbackIndex, 0, dispositifsAudio.Count - 1);
+            }
+
+            return Math.Clamp(fallbackIndex, 0, dispositifsAudio.Count - 1);
         }
 
         private void updateMMDeviceCollection()
@@ -91,6 +129,27 @@ namespace DjApplication3.model
                 Console.WriteLine($"Impossible de charger les peripheriques audio: {ex.Message}");
             }
         }
+
+        private static string? GetDeviceIdentifier(object? device)
+        {
+            if (device == null)
+            {
+                return null;
+            }
+
+            var type = device.GetType();
+            foreach (var propertyName in new[] { "ID", "Id", "DeviceID", "DeviceId" })
+            {
+                var property = type.GetProperty(propertyName);
+                if (property?.PropertyType == typeof(string))
+                {
+                    return property.GetValue(device) as string;
+                }
+            }
+
+            return device.ToString();
+        }
+
         private void updateListMidi()
         {
             listMidi.Clear();

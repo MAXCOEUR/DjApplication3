@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -40,4 +40,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
+  <Target Name="CopyWinUICompiledResourcesToPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <WinUICompiledResources Include="$(TargetDir)**\*.xbf;$(TargetDir)**\*.pri" Exclude="$(TargetDir)publish\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(WinUICompiledResources)"
+      DestinationFiles="@(WinUICompiledResources->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
 </Project>

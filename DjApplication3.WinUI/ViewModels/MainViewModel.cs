@@ -3,12 +3,10 @@ using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
+
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -32,7 +30,10 @@ namespace DjApplication3.WinUI.ViewModels
         private int _headphoneVolume = 100;
         private string _selectedSource = "Local";
         private string _searchText = "";
+        private string _localRootPath = AppPaths.MusicDirectory;
         private string _localFolderPath = AppPaths.MusicDirectory;
+        private string _localPathDisplay = "Racine";
+        private string _currentPlaylistName = "";
         private string _status = "Prêt";
         private bool _isSettingsOpen;
         private int _selectedMusicIndex = -1;
@@ -43,6 +44,9 @@ namespace DjApplication3.WinUI.ViewModels
         private LibraryFocus _libraryFocus = LibraryFocus.Musics;
         private bool _leftWasPlayingBeforeScratch;
         private bool _rightWasPlayingBeforeScratch;
+        private bool _isLibraryLoading;
+        private string _libraryLoadingText = "Chargement...";
+        private int _libraryLoadingDepth;
 
         public MainViewModel(DispatcherQueue dispatcherQueue)
         {
@@ -53,7 +57,7 @@ namespace DjApplication3.WinUI.ViewModels
 
         public ObservableCollection<DeckViewModel> Decks { get; } = new();
         public ObservableCollection<MusicRowViewModel> Musics { get; } = new();
-        public ObservableCollection<PlayListe> Playlists { get; } = new();
+        public ObservableCollection<PlaylistRowViewModel> Playlists { get; } = new();
         public ObservableCollection<LocalFolderViewModel> LocalFolders { get; } = new();
         public ObservableCollection<int> TrackNumbers { get; } = new();
         public string[] Sources { get; } = ["Local", "Youtube Music", "Youtube"];
@@ -142,12 +146,29 @@ namespace DjApplication3.WinUI.ViewModels
                     OnPropertyChanged(nameof(IsLocalMode));
                     OnPropertyChanged(nameof(IsYtMusicMode));
                     OnPropertyChanged(nameof(IsYoutubeMode));
-                    _ = RefreshCurrentSourceAsync();
+                    NotifyLibraryFocusChanged();
+                    _ = RunSafeAsync(RefreshCurrentSourceAsync(), "Changement de source impossible");
                 }
             }
         }
         public string SearchText { get => _searchText; set => SetProperty(ref _searchText, value); }
         public string LocalFolderPath { get => _localFolderPath; set => SetProperty(ref _localFolderPath, value); }
+        public string LocalRootPath { get => _localRootPath; private set => SetProperty(ref _localRootPath, value); }
+        public string LocalPathDisplay { get => _localPathDisplay; private set => SetProperty(ref _localPathDisplay, value); }
+        public string CurrentPlaylistName
+        {
+            get => _currentPlaylistName;
+            private set
+            {
+                if (SetProperty(ref _currentPlaylistName, value))
+                {
+                    OnPropertyChanged(nameof(CurrentPlaylistDisplay));
+                }
+            }
+        }
+        public string CurrentPlaylistDisplay => string.IsNullOrWhiteSpace(CurrentPlaylistName)
+            ? "Playlist chargee : aucune"
+            : $"Playlist chargee : {CurrentPlaylistName}";
         public string Status { get => _status; set => SetProperty(ref _status, value); }
         public bool IsSettingsOpen { get => _isSettingsOpen; set => SetProperty(ref _isSettingsOpen, value); }
         public int SelectedMusicIndex
@@ -170,6 +191,17 @@ namespace DjApplication3.WinUI.ViewModels
         public bool IsLocalMode => SelectedSource == "Local";
         public bool IsYtMusicMode => SelectedSource == "Youtube Music";
         public bool IsYoutubeMode => SelectedSource == "Youtube";
+        public bool IsLibraryLoading { get => _isLibraryLoading; private set => SetProperty(ref _isLibraryLoading, value); }
+        public string LibraryLoadingText { get => _libraryLoadingText; private set => SetProperty(ref _libraryLoadingText, value); }
+        public string FolderHeaderLabel => _libraryFocus == LibraryFocus.Folders ? "Dossiers [FOCUS]" : "Dossiers";
+        public string PlaylistHeaderLabel => _libraryFocus == LibraryFocus.Playlists ? "Playlists Youtube Music [FOCUS]" : "Playlists Youtube Music";
+        public string MusicHeaderLabel => _libraryFocus == LibraryFocus.Musics ? "Titre [FOCUS]" : "Titre";
+        public string LibraryFocusStatus => _libraryFocus switch
+        {
+            LibraryFocus.Folders => "Focus: Dossiers",
+            LibraryFocus.Playlists => "Focus: Playlists",
+            _ => "Focus: Musiques"
+        };
         public ISettingsService Settings => _settings;
         public bool IsYtMusicConnected => YtMusicDataSource.isConnected();
 
@@ -185,7 +217,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
 
             await RefreshLocalAsync();
-            _ = UpdateYtDlpAsync();
+            _ = RunSafeAsync(UpdateYtDlpAsync(), "Mise a jour yt-dlp impossible");
 
             try
             {
@@ -197,66 +229,102 @@ namespace DjApplication3.WinUI.ViewModels
             }
         }
 
-        public async Task SearchAsync()
+        public async Task SearchAsync(CancellationToken cancellationToken = default)
         {
+            BeginLibraryLoading("Recherche des musiques...");
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 Status = "Recherche en cours...";
                 Musics.Clear();
                 if (SelectedSource == "Youtube")
                 {
                     foreach (var musique in await _library.SearchYoutubeAsync(SearchText))
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         Musics.Add(CreateInternetRow(musique));
                     }
                 }
                 else if (SelectedSource == "Youtube Music")
                 {
+                    CurrentPlaylistName = "";
                     foreach (var musique in await _library.SearchYtMusicAsync(SearchText))
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         Musics.Add(CreateInternetRow(musique));
                     }
                 }
                 else
                 {
-                    await RefreshLocalAsync();
+                    await RefreshLocalAsync(cancellationToken);
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
                 var currentList = Musics.Select(row => row.Musique).ToList();
                 foreach (var row in Musics)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     row.Musique.musiquesInPlayliste = currentList;
                 }
                 SelectedMusicIndex = Musics.Count > 0 ? 0 : -1;
                 Status = $"{Musics.Count} titres";
             }
+            catch (OperationCanceledException)
+            {
+                Status = "Chargement annulé";
+            }
             catch (Exception ex)
             {
                 Status = ex.Message;
+            }
+            finally
+            {
+                EndLibraryLoading();
             }
         }
 
         public async Task LoadMusicAsync(MusicRowViewModel row, int? deckIndex = null)
         {
+            try
+            {
             var musique = row.Musique;
+            var playlist = musique.musiquesInPlayliste;
             row.IsDownloading = false;
             if (SelectedSource == "Youtube")
             {
+                var originalMusic = musique;
                 row.IsDownloading = true;
                 Status = "Téléchargement Youtube...";
                 musique = await _library.DownloadYoutubeAsync(musique);
+                musique.musiquesInPlayliste = playlist;
+                ReplacePlaylistMusic(playlist, originalMusic, musique);
                 row.UseResolvedMusic(musique);
             }
             else if (SelectedSource == "Youtube Music" && !File.Exists(musique.url))
             {
+                var originalMusic = musique;
                 row.IsDownloading = true;
                 Status = "Téléchargement Youtube Music...";
                 musique = await _library.DownloadYtMusicAsync(musique);
+                musique.musiquesInPlayliste = playlist;
+                ReplacePlaylistMusic(playlist, originalMusic, musique);
                 row.UseResolvedMusic(musique);
             }
             row.IsDownloading = false;
             if (deckIndex.HasValue)
             {
-                await Decks[deckIndex.Value].SetMusicAsync(musique);
+                if (deckIndex.Value < 0 || deckIndex.Value >= Decks.Count)
+                {
+                    Status = "Piste indisponible";
+                    return;
+                }
+
+                var code = await Decks[deckIndex.Value].SetMusicAsync(musique);
+                if (code != 0)
+                {
+                    Status = "Chargement de la piste impossible";
+                    return;
+                }
             }
             else
             {
@@ -268,76 +336,153 @@ namespace DjApplication3.WinUI.ViewModels
             }
             row.Played = true;
             Status = "Titre charge";
+            }
+            catch (Exception ex)
+            {
+                row.IsDownloading = false;
+                Status = $"Chargement impossible: {ex.Message}";
+            }
         }
 
-        public async Task RefreshLocalAsync()
+        public async Task RefreshLocalAsync(CancellationToken cancellationToken = default)
         {
-            Musics.Clear();
-            var folder = Directory.Exists(LocalFolderPath) ? LocalFolderPath : AppPaths.MusicDirectory;
-            LocalFolderPath = folder;
-            RefreshLocalFolders(folder);
-            foreach (var musique in _library.GetLocalMusic(folder))
-            {
-                if (!string.IsNullOrWhiteSpace(SearchText) &&
-                    !musique.title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) &&
-                    !musique.author.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                Musics.Add(new MusicRowViewModel(musique, _library.GetBpmHistory(musique)));
-            }
-            if (Musics.Count > 0 && SelectedMusicIndex < 0)
-            {
-                SelectedMusicIndex = 0;
-            }
-            var visiblePlaylist = Musics.Select(row => row.Musique).ToList();
-            foreach (var row in Musics)
-            {
-                row.Musique.musiquesInPlayliste = visiblePlaylist;
-            }
-            Status = $"{Musics.Count} titres locaux";
-        }
-
-        public async Task LoadPlaylistsAsync()
-        {
+            BeginLibraryLoading("Scan du dossier local...");
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                Musics.Clear();
+                if (!Directory.Exists(LocalRootPath))
+                {
+                    LocalRootPath = Directory.Exists(AppPaths.MusicDirectory)
+                        ? Path.GetFullPath(AppPaths.MusicDirectory)
+                        : AppPaths.MusicDirectory;
+                }
+
+                var root = Path.GetFullPath(LocalRootPath);
+                var folder = Directory.Exists(LocalFolderPath) ? Path.GetFullPath(LocalFolderPath) : root;
+                if (!IsPathInsideRoot(folder, root))
+                {
+                    folder = root;
+                }
+
+                LocalFolderPath = folder;
+                UpdateLocalPathDisplay();
+                RefreshLocalFolders(folder);
+
+                // Slow USB scans can take time: enumerate in background to keep UI responsive.
+                var localMusics = await Task.Run(() => _library.GetLocalMusic(folder), cancellationToken);
+
+                var index = 0;
+                foreach (var musique in localMusics)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!string.IsNullOrWhiteSpace(SearchText) &&
+                        !musique.title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) &&
+                        !musique.author.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    Musics.Add(new MusicRowViewModel(musique, _library.GetBpmHistory(musique)));
+
+                    index++;
+                    if (index % 25 == 0)
+                    {
+                        await Task.Yield();
+                    }
+                }
+                if (Musics.Count > 0 && SelectedMusicIndex < 0)
+                {
+                    SelectedMusicIndex = 0;
+                }
+                var visiblePlaylist = Musics.Select(row => row.Musique).ToList();
+                foreach (var row in Musics)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    row.Musique.musiquesInPlayliste = visiblePlaylist;
+                }
+                Status = $"{Musics.Count} titres locaux";
+            }
+            finally
+            {
+                EndLibraryLoading();
+            }
+        }
+
+        public async Task LoadPlaylistsAsync(CancellationToken cancellationToken = default)
+        {
+            BeginLibraryLoading("Chargement des playlists...");
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
                 Playlists.Clear();
                 foreach (var playlist in await _library.GetYtMusicPlaylistsAsync())
                 {
-                    Playlists.Add(playlist);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Playlists.Add(new PlaylistRowViewModel(playlist));
                 }
                 SelectedPlaylistIndex = Playlists.Count > 0 ? 0 : -1;
                 Status = $"{Playlists.Count} playlists Youtube Music";
+            }
+            catch (OperationCanceledException)
+            {
+                Status = "Chargement annulé";
             }
             catch (Exception ex)
             {
                 Status = ex.Message;
             }
+            finally
+            {
+                EndLibraryLoading();
+            }
         }
 
-        public async Task LoadPlaylistAsync(PlayListe playlist)
+        public async Task LoadPlaylistAsync(PlayListe playlist, CancellationToken cancellationToken = default)
         {
-            Musics.Clear();
-            var all = await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
+            BeginLibraryLoading("Chargement de la playlist...");
+            try
             {
-                foreach (var musique in batch)
+                cancellationToken.ThrowIfCancellationRequested();
+                Musics.Clear();
+                CurrentPlaylistName = playlist.name;
+                var all = await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
                 {
-                    musique.musiquesInPlayliste = batch;
-                    Musics.Add(CreateInternetRow(musique));
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    foreach (var musique in batch)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        musique.musiquesInPlayliste = batch;
+                        Musics.Add(CreateInternetRow(musique));
+                    }
+                }));
+
+                cancellationToken.ThrowIfCancellationRequested();
+                foreach (var musique in all)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    musique.musiquesInPlayliste = all;
                 }
-            }));
-            foreach (var musique in all)
-            {
-                musique.musiquesInPlayliste = all;
+                foreach (var row in Musics)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    row.Musique.musiquesInPlayliste = all;
+                }
+                SelectedMusicIndex = Musics.Count > 0 ? 0 : -1;
+                Status = $"{all.Count} titres dans {playlist.name}";
             }
-            foreach (var row in Musics)
+            finally
             {
-                row.Musique.musiquesInPlayliste = all;
+                EndLibraryLoading();
             }
-            SelectedMusicIndex = Musics.Count > 0 ? 0 : -1;
-            Status = $"{all.Count} titres dans {playlist.name}";
         }
 
         public void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
@@ -373,49 +518,94 @@ namespace DjApplication3.WinUI.ViewModels
         public async Task OpenSelectedLocalFolderAsync()
         {
             if (SelectedFolderIndex < 0 || SelectedFolderIndex >= LocalFolders.Count) return;
-            await OpenLocalFolderAsync(LocalFolders[SelectedFolderIndex].Path);
+            await OpenLocalFolderAsync(LocalFolders[SelectedFolderIndex].Path); 
         }
 
-        public async Task OpenLocalFolderAsync(string folderPath)
+        public async Task OpenLocalFolderAsync(string folderPath, CancellationToken cancellationToken = default)
         {
             if (!Directory.Exists(folderPath)) return;
-            LocalFolderPath = folderPath;
+            cancellationToken.ThrowIfCancellationRequested();
+            var root = Path.GetFullPath(LocalRootPath);
+            var folder = Path.GetFullPath(folderPath);
+            if (!IsPathInsideRoot(folder, root))
+            {
+                folder = root;
+            }
+
+            LocalFolderPath = folder;
             SearchText = "";
-            _libraryFocus = LibraryFocus.Folders;
-            await RefreshLocalAsync();
+            SetLibraryFocus(LibraryFocus.Folders);
+            await RefreshLocalAsync(cancellationToken);
+        }
+
+        public async Task SetLocalRootAsync(string folderPath, CancellationToken cancellationToken = default)
+        {
+            if (!Directory.Exists(folderPath)) return;
+            cancellationToken.ThrowIfCancellationRequested();
+            var folder = Path.GetFullPath(folderPath);
+            LocalRootPath = folder;
+            LocalFolderPath = folder;
+            SearchText = "";
+            SetLibraryFocus(LibraryFocus.Folders);
+            await RefreshLocalAsync(cancellationToken);
         }
 
         public async Task OpenSelectedPlaylistAsync()
         {
             if (SelectedPlaylistIndex < 0 || SelectedPlaylistIndex >= Playlists.Count) return;
-            _libraryFocus = LibraryFocus.Musics;
-            await LoadPlaylistAsync(Playlists[SelectedPlaylistIndex]);
+            await LoadPlaylistAsync(Playlists[SelectedPlaylistIndex].Playlist);
         }
 
         public async Task NavigateLibraryLeftAsync()
         {
             if (IsLocalMode)
             {
+                if (_libraryFocus == LibraryFocus.Musics)
+                {
+                    SetLibraryFocus(LibraryFocus.Folders);
+                    return;
+                }
+
                 if (_libraryFocus == LibraryFocus.Folders)
                 {
                     await OpenSelectedLocalFolderAsync();
-                }
-                else
-                {
-                    _libraryFocus = LibraryFocus.Folders;
                 }
                 return;
             }
 
             if (IsYtMusicMode)
             {
-                _libraryFocus = LibraryFocus.Playlists;
+                if (_libraryFocus == LibraryFocus.Musics)
+                {
+                    SetLibraryFocus(LibraryFocus.Playlists);
+                    return;
+                }
+
+                if (_libraryFocus == LibraryFocus.Playlists)
+                {
+                    await OpenSelectedPlaylistAsync();
+                }
             }
         }
 
-        public void NavigateLibraryRight()
+        public async Task NavigateLibraryRightAsync()
         {
-            _libraryFocus = LibraryFocus.Musics;
+            if (IsLocalMode)
+            {
+                if (_libraryFocus == LibraryFocus.Folders)
+                {
+                    SetLibraryFocus(LibraryFocus.Musics);
+                }
+                return;
+            }
+
+            if (IsYtMusicMode)
+            {
+                if (_libraryFocus == LibraryFocus.Playlists)
+                {
+                    SetLibraryFocus(LibraryFocus.Musics);
+                }
+            }
         }
 
         public void RefreshDevicesForOptions()
@@ -530,9 +720,64 @@ namespace DjApplication3.WinUI.ViewModels
         }
 
         private static bool SameMusic(Musique rowMusic, DeckViewModel deck)
-            => deck.CurrentMusic != null
+            => deck.CurrentMusic is not null
                && rowMusic.title == deck.CurrentMusic.title
                && rowMusic.author == deck.CurrentMusic.author;
+
+        private static void ReplacePlaylistMusic(List<Musique>? playlist, Musique oldMusic, Musique newMusic)
+        {
+            if (playlist == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < playlist.Count; i++)
+            {
+                if (ReferenceEquals(playlist[i], oldMusic)
+                    || playlist[i] == oldMusic
+                    || SameTrack(playlist[i], oldMusic))
+                {
+                    newMusic.musiquesInPlayliste = playlist;
+                    playlist[i] = newMusic;
+                    return;
+                }
+            }
+        }
+
+        private static bool SameTrack(Musique first, Musique second)
+            => string.Equals(first.title, second.title, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(first.author, second.author, StringComparison.OrdinalIgnoreCase);
+
+        private void UpdateLocalPathDisplay()
+        {
+            try
+            {
+                var root = Path.GetFullPath(LocalRootPath);
+                var current = Path.GetFullPath(LocalFolderPath);
+                var relative = Path.GetRelativePath(root, current);
+                LocalPathDisplay = string.IsNullOrWhiteSpace(relative) || relative == "."
+                    ? "Racine"
+                    : relative;
+            }
+            catch
+            {
+                LocalPathDisplay = "Racine";
+            }
+        }
+
+        private static bool IsSamePath(string firstPath, string secondPath)
+            => string.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(firstPath)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(secondPath)),
+                StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsPathInsideRoot(string path, string root)
+        {
+            var normalizedPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+            var normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+            return string.Equals(normalizedPath, normalizedRoot, StringComparison.OrdinalIgnoreCase)
+                   || normalizedPath.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
 
         private void RefreshLocalFolders(string folder)
         {
@@ -540,13 +785,21 @@ namespace DjApplication3.WinUI.ViewModels
 
             try
             {
-                var parent = Directory.GetParent(folder);
-                if (parent != null)
+                var root = Path.GetFullPath(LocalRootPath);
+                var current = Path.GetFullPath(folder);
+                var parent = Directory.GetParent(current);
+                if (!IsSamePath(current, root) && parent != null)
                 {
-                    LocalFolders.Add(new LocalFolderViewModel("..", parent.FullName, true));
+                    var parentPath = Path.GetFullPath(parent.FullName);
+                    if (!IsPathInsideRoot(parentPath, root))
+                    {
+                        parentPath = root;
+                    }
+
+                    LocalFolders.Add(new LocalFolderViewModel("..", parentPath, true));
                 }
 
-                foreach (var directory in Directory.GetDirectories(folder).OrderBy(Path.GetFileName))
+                foreach (var directory in Directory.GetDirectories(current).OrderBy(Path.GetFileName))
                 {
                     LocalFolders.Add(new LocalFolderViewModel(Path.GetFileName(directory), directory));
                 }
@@ -563,15 +816,16 @@ namespace DjApplication3.WinUI.ViewModels
         {
             Musics.Clear();
             Playlists.Clear();
+            CurrentPlaylistName = "";
 
             if (SelectedSource == "Local")
             {
-                _libraryFocus = LibraryFocus.Folders;
+                SetLibraryFocus(LibraryFocus.Folders);
                 await RefreshLocalAsync();
             }
             else if (SelectedSource == "Youtube Music")
             {
-                _libraryFocus = LibraryFocus.Playlists;
+                SetLibraryFocus(LibraryFocus.Playlists);
                 await LoadPlaylistsAsync();
                 if (!string.IsNullOrWhiteSpace(SearchText))
                 {
@@ -580,12 +834,48 @@ namespace DjApplication3.WinUI.ViewModels
             }
             else
             {
-                _libraryFocus = LibraryFocus.Musics;
+                SetLibraryFocus(LibraryFocus.Musics);
                 LocalFolders.Clear();
                 if (!string.IsNullOrWhiteSpace(SearchText))
                 {
                     await SearchAsync();
                 }
+            }
+        }
+
+        private void SetLibraryFocus(LibraryFocus focus)
+        {
+            if (_libraryFocus == focus)
+            {
+                return;
+            }
+
+            _libraryFocus = focus;
+            NotifyLibraryFocusChanged();
+        }
+
+        private void NotifyLibraryFocusChanged()
+        {
+            OnPropertyChanged(nameof(FolderHeaderLabel));
+            OnPropertyChanged(nameof(PlaylistHeaderLabel));
+            OnPropertyChanged(nameof(MusicHeaderLabel));
+            OnPropertyChanged(nameof(LibraryFocusStatus));
+        }
+
+        private void BeginLibraryLoading(string loadingText)
+        {
+            _libraryLoadingDepth++;
+            LibraryLoadingText = loadingText;
+            IsLibraryLoading = true;
+        }
+
+        private void EndLibraryLoading()
+        {
+            _libraryLoadingDepth = Math.Max(0, _libraryLoadingDepth - 1);
+            if (_libraryLoadingDepth == 0)
+            {
+                IsLibraryLoading = false;
+                LibraryLoadingText = "Chargement...";
             }
         }
 
@@ -660,10 +950,10 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.HeadphoneRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ToggleHeadphone());
             _midi.NavigateUp += (_, _) => Enqueue(() => MoveSelection(-1));
             _midi.NavigateDown += (_, _) => Enqueue(() => MoveSelection(1));
-            _midi.NavigateLeft += (_, _) => Enqueue(() => _ = NavigateLibraryLeftAsync());
-            _midi.NavigateRight += (_, _) => Enqueue(NavigateLibraryRight);
-            _midi.LoadLeft += (_, _) => Enqueue(() => _ = LoadSelectedAsync(LeftDeckIndex));
-            _midi.LoadRight += (_, _) => Enqueue(() => _ = LoadSelectedAsync(RightDeckIndex));
+            _midi.NavigateLeft += (_, _) => Enqueue(() => _ = RunSafeAsync(NavigateLibraryLeftAsync(), "Navigation impossible"));
+            _midi.NavigateRight += (_, _) => Enqueue(() => _ = RunSafeAsync(NavigateLibraryRightAsync(), "Navigation impossible"));
+            _midi.LoadLeft += (_, _) => Enqueue(() => _ = RunSafeAsync(LoadSelectedAsync(LeftDeckIndex), "Chargement piste gauche impossible"));
+            _midi.LoadRight += (_, _) => Enqueue(() => _ = RunSafeAsync(LoadSelectedAsync(RightDeckIndex), "Chargement piste droite impossible"));
             _midi.PisteLeft += (_, piste) => Enqueue(() => LeftDeckNumber = Math.Clamp(piste, 1, Decks.Count));
             _midi.PisteRight += (_, piste) => Enqueue(() => RightDeckNumber = Math.Clamp(piste, 1, Decks.Count));
             _midi.VolumeLeft += (_, volume) => Enqueue(() =>
@@ -692,5 +982,21 @@ namespace DjApplication3.WinUI.ViewModels
             try { action(); }
             catch (Exception ex) { Status = ex.Message; }
         });
+
+        private async Task RunSafeAsync(Task task, string errorPrefix)
+        {
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                Status = "Operation annulee";
+            }
+            catch (Exception ex)
+            {
+                Status = $"{errorPrefix}: {ex.Message}";
+            }
+        }
     }
 }

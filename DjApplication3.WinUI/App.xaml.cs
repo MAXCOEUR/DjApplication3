@@ -12,6 +12,8 @@ namespace DjApplication3.WinUI
             InitializeComponent();
             RequestedTheme = ApplicationTheme.Dark;
             UnhandledException += App_UnhandledException;
+            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            System.AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -25,7 +27,9 @@ namespace DjApplication3.WinUI
             catch (System.Exception ex)
             {
                 LogUnhandledException(ex);
-                throw;
+                _window = CreateErrorWindow(ex);
+                MainAppWindow = _window;
+                _window.Activate();
             }
         }
 
@@ -33,6 +37,20 @@ namespace DjApplication3.WinUI
         {
             LogUnhandledException(e.Exception);
             e.Handled = true;
+        }
+
+        private static void TaskScheduler_UnobservedTaskException(object? sender, System.Threading.Tasks.UnobservedTaskExceptionEventArgs e)
+        {
+            LogUnhandledException(e.Exception);
+            e.SetObserved();
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is System.Exception exception)
+            {
+                LogUnhandledException(exception);
+            }
         }
 
         private static void LogUnhandledException(System.Exception exception)
@@ -46,6 +64,31 @@ namespace DjApplication3.WinUI
             {
                 System.Diagnostics.Debug.WriteLine(exception);
             }
+        }
+
+        private static Window CreateErrorWindow(System.Exception exception)
+        {
+            var window = new Window
+            {
+                Title = "DjApplication 3 - erreur"
+            };
+
+            window.Content = new Microsoft.UI.Xaml.Controls.Grid
+            {
+                Padding = new Microsoft.UI.Xaml.Thickness(24),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 23, 26, 30)),
+                Children =
+                {
+                    new Microsoft.UI.Xaml.Controls.TextBlock
+                    {
+                        Text = $"Demarrage impossible, mais l'application n'a pas crashe.\n\n{exception.Message}\n\nVoir winui-crash.log pour le detail.",
+                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 246, 247, 248)),
+                        TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                    }
+                }
+            };
+
+            return window;
         }
     }
 }

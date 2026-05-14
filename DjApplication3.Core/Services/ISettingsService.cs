@@ -10,6 +10,8 @@ namespace DjApplication3.Services
         int TimeBeforeBlinkSecond { get; set; }
         int HeadphoneDeviceIndex { get; set; }
         int OutputDeviceIndex { get; set; }
+        string? HeadphoneDeviceId { get; set; }
+        string? OutputDeviceId { get; set; }
         int MidiDeviceIndex { get; set; }
         int TrackCount { get; set; }
         IReadOnlyList<MidiInCapabilities> MidiDevices { get; }

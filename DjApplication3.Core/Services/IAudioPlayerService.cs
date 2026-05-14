@@ -6,6 +6,7 @@ namespace DjApplication3.Services
     public interface IAudioPlayerService : IDisposable
     {
         event EventHandler? PositionChanged;
+        event EventHandler? PlaybackStopped;
         bool IsPlaying { get; }
         float PositionRatio { get; }
         TimeSpan Duration { get; }

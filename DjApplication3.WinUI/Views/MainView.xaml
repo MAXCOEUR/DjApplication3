@@ -108,7 +108,10 @@
 
             <Border Grid.Column="1" Background="#3A4148" />
 
-            <Grid Grid.Column="2" RowSpacing="8">
+            <Grid
+                x:Name="LibraryPanel"
+                Grid.Column="2"
+                RowSpacing="8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -122,9 +125,24 @@
                         <ColumnDefinition Width="72" />
                     </Grid.ColumnDefinitions>
                     <ComboBox x:Name="SourceCombo" SelectedItem="{Binding SelectedSource, Mode=TwoWay}" ItemsSource="{Binding Sources}" />
-                    <TextBox Grid.Column="1" PlaceholderText="Recherche" Text="{Binding SearchText, Mode=TwoWay}" KeyDown="SearchBox_KeyDown" />
-                    <Button Grid.Column="2" Content="Go" Click="SearchButton_Click" MinHeight="36" />
-                    <Button Grid.Column="3" Content="Reload" Click="RefreshButton_Click" MinHeight="36" />
+                    <TextBox
+                        Grid.Column="1"
+                        PlaceholderText="Recherche"
+                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        KeyUp="SearchBox_KeyUp" />
+                    <Button
+                        x:Name="SearchButton"
+                        Grid.Column="2"
+                        Content="Go"
+                        Click="SearchButton_Click"
+                        MinHeight="36" />
+
+                    <Button
+                        x:Name="RefreshButton"
+                        Grid.Column="3"
+                        Content="Reload"
+                        Click="RefreshButton_Click"
+                        MinHeight="36" />
                 </Grid>
 
                 <Grid x:Name="LocalRootPanel" Grid.Row="1" ColumnSpacing="8">
@@ -133,8 +151,39 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Content="Dossier" Click="BrowseFolderButton_Click" MinHeight="38" />
-                    <TextBox Grid.Column="1" PlaceholderText="Dossier local" Text="{Binding LocalFolderPath, Mode=TwoWay}" KeyDown="LocalFolderBox_KeyDown" />
+                    <Border
+                        Grid.Column="1"
+                        Background="#25292E"
+                        BorderBrush="#353C44"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="12,0"
+                        MinHeight="38">
+                        <TextBlock
+                            Text="{Binding LocalPathDisplay}"
+                            Foreground="#F6F7F8"
+                            TextTrimming="CharacterEllipsis"
+                            VerticalAlignment="Center" />
+                    </Border>
                 </Grid>
+
+                <Border
+                    x:Name="PlaylistTitlePanel"
+                    Grid.Row="1"
+                    Background="#25292E"
+                    BorderBrush="#353C44"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="12,0"
+                    MinHeight="38"
+                    Visibility="Collapsed">
+                    <TextBlock
+                        Text="{Binding CurrentPlaylistDisplay}"
+                        Foreground="#F6F7F8"
+                        FontWeight="SemiBold"
+                        TextTrimming="CharacterEllipsis"
+                        VerticalAlignment="Center" />
+                </Border>
 
                 <Grid Grid.Row="2" ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
@@ -146,11 +195,43 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Dossiers" Foreground="#BCC5CE" FontWeight="SemiBold" />
-                        <ListView Grid.Row="1" x:Name="FolderList" ItemsSource="{Binding LocalFolders}" DoubleTapped="FolderList_DoubleTapped" SelectionMode="Single" SelectionChanged="FolderList_SelectionChanged">
+                        <TextBlock Text="{Binding FolderHeaderLabel}" Foreground="#BCC5CE" FontWeight="SemiBold" />
+                        <ListView
+    Grid.Row="1"
+    x:Name="FolderList"
+    ItemsSource="{Binding LocalFolders}"
+    DoubleTapped="FolderList_DoubleTapped"
+    SelectionMode="Single"
+    SelectionChanged="FolderList_SelectionChanged">
+
+                            <ListView.Resources>
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#30404E" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#3A4C5E" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#293542" />
+                                <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFFFF" />
+                            </ListView.Resources>
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="4,2" />
+                                    <Setter Property="Margin" Value="0,2" />
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" MinHeight="34" VerticalAlignment="Center" />
+                                    <Grid
+                                        MinHeight="38"
+                                        Padding="8,0"
+                                        Background="Transparent">
+                                        <TextBlock
+                                            Text="{Binding Name}"
+                                            Foreground="#F6F7F8"
+                                            TextTrimming="CharacterEllipsis"
+                                            VerticalAlignment="Center" />
+                                    </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
@@ -161,11 +242,43 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Playlists Youtube Music" Foreground="#BCC5CE" FontWeight="SemiBold" />
-                        <ListView Grid.Row="1" x:Name="PlaylistList" ItemsSource="{Binding Playlists}" DoubleTapped="PlaylistList_DoubleTapped" SelectionMode="Single" SelectionChanged="PlaylistList_SelectionChanged">
+                        <TextBlock Text="{Binding PlaylistHeaderLabel}" Foreground="#BCC5CE" FontWeight="SemiBold" />
+                        <ListView
+                            Grid.Row="1"
+                            x:Name="PlaylistList"
+                            ItemsSource="{Binding Playlists}"
+                            DoubleTapped="PlaylistList_DoubleTapped"
+                            SelectionMode="Single"
+                            SelectionChanged="PlaylistList_SelectionChanged">
+
+                            <ListView.Resources>
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#30404E" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#3A4C5E" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#293542" />
+                                <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFFFF" />
+                            </ListView.Resources>
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="4,2" />
+                                    <Setter Property="Margin" Value="0,2" />
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding name}" TextTrimming="CharacterEllipsis" MinHeight="34" VerticalAlignment="Center" />
+                                    <Grid
+                                        MinHeight="38"
+                                        Padding="8,0"
+                                        Background="Transparent">
+                                        <TextBlock
+                                            Text="{Binding Name}"
+                                            Foreground="#F6F7F8"
+                                            TextTrimming="CharacterEllipsis"
+                                            VerticalAlignment="Center" />
+                                    </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
@@ -182,26 +295,95 @@
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition Width="56" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Titre" Foreground="#BCC5CE" FontWeight="SemiBold" />
+                            <Grid Grid.Column="0">
+                                <TextBlock Text="{Binding MusicHeaderLabel}" Foreground="#BCC5CE" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <StackPanel
+                                    x:Name="MusicLoadingPanel"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Visibility="Collapsed">
+                                    <ProgressRing
+                                        x:Name="MusicLoadingRing"
+                                        Width="16"
+                                        Height="16"
+                                        IsActive="False" />
+                                    <TextBlock
+                                        x:Name="MusicLoadingText"
+                                        Text="Chargement..."
+                                        Foreground="#BCC5CE"
+                                        FontSize="12" />
+                                </StackPanel>
+                            </Grid>
                             <TextBlock Grid.Column="1" Text="DL" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
                             <TextBlock Grid.Column="2" Text="BPM" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
                         </Grid>
 
-                        <ListView Grid.Row="1" x:Name="MusicList" ItemsSource="{Binding Musics}" DoubleTapped="MusicList_DoubleTapped" SelectionMode="Single" SelectionChanged="MusicList_SelectionChanged">
+                        <ListView
+                            Grid.Row="1"
+                            x:Name="MusicList"
+                            ItemsSource="{Binding Musics}"
+                            DoubleTapped="MusicList_DoubleTapped"
+                            SelectionMode="Single"
+                            SelectionChanged="MusicList_SelectionChanged">
+
+                            <ListView.Resources>
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#26313A" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#26313A" />
+                                <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#26313A" />
+                                <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFFFF" />
+                            </ListView.Resources>
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="2" />
+                                    <Setter Property="Margin" Value="0,2" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid MinHeight="48" ColumnSpacing="8" Background="{Binding RowBackground}" RightTapped="MusicRow_RightTapped" Padding="4,2">
+                                    <Grid
+                                        MinHeight="48"
+                                        ColumnSpacing="8"
+                                        Background="Transparent"
+                                        RightTapped="MusicRow_RightTapped"
+                                        Padding="4,2">
+
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="48" />
                                             <ColumnDefinition Width="56" />
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Title}" Foreground="#F6F7F8" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Author}" Foreground="#8E9AA6" FontSize="12" TextTrimming="CharacterEllipsis" />
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock
+                                                Text="{Binding Title}"
+                                                Foreground="#F6F7F8"
+                                                TextTrimming="CharacterEllipsis" />
+
+                                            <TextBlock
+                                                Text="{Binding Author}"
+                                                Foreground="#8E9AA6"
+                                                FontSize="12"
+                                                TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding DownloadText}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#E9FF70" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Column="2" Text="{Binding BpmText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="{Binding DownloadText}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Foreground="#E9FF70"
+                                            FontWeight="SemiBold" />
+
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Text="{Binding BpmText}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Foreground="#F6F7F8" />
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
