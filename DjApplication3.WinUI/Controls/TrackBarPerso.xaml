@@ -1,0 +1,58 @@
+<UserControl
+    x:Class="DjApplication3.WinUI.Controls.TrackBarPerso"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    MinHeight="36">
+
+    <Grid
+        x:Name="Root"
+        Background="Transparent"
+        SizeChanged="Root_SizeChanged"
+        PointerPressed="Root_PointerPressed"
+        PointerMoved="Root_PointerMoved"
+        PointerReleased="Root_PointerReleased"
+        PointerExited="Root_PointerExited">
+
+        <Border
+            Height="18"
+            VerticalAlignment="Center"
+            CornerRadius="9"
+            Background="#30343A"
+            BorderBrush="#4B535C"
+            BorderThickness="1" />
+
+        <Rectangle
+            Width="2"
+            Fill="#E6FFFFFF"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            Margin="0,6" />
+
+        <Border
+            x:Name="Thumb"
+            Width="24"
+            Height="34"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            CornerRadius="5"
+            Background="#FFFF3FC7"
+            BorderBrush="#FFFFFFFF"
+            BorderThickness="1"
+            PointerPressed="Thumb_PointerPressed"
+            PointerReleased="Thumb_PointerReleased">
+
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="ThumbTransform" />
+            </Border.RenderTransform>
+
+            <Grid>
+                <Rectangle
+                    Width="2"
+                    Fill="#FFFFFFFF"
+                    HorizontalAlignment="Center"
+                    Margin="0,5" />
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>
