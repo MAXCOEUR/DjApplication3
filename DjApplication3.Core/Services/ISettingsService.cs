@@ -14,6 +14,8 @@ namespace DjApplication3.Services
         string? OutputDeviceId { get; set; }
         int MidiDeviceIndex { get; set; }
         int TrackCount { get; set; }
+        double DeckAreaWidth { get; set; }
+        double LibraryNavigationWidth { get; set; }
         IReadOnlyList<MidiInCapabilities> MidiDevices { get; }
         MMDeviceCollection AudioDevices { get; }
         void RefreshDevices();

@@ -51,6 +51,16 @@ namespace DjApplication3.Services
             get => SettingsManager.Instance.nbrPiste;
             set => SettingsManager.Instance.nbrPiste = value;
         }
+        public double DeckAreaWidth
+        {
+            get => SettingsManager.Instance.DeckAreaWidth;
+            set => SettingsManager.Instance.DeckAreaWidth = value;
+        }
+        public double LibraryNavigationWidth
+        {
+            get => SettingsManager.Instance.LibraryNavigationWidth;
+            set => SettingsManager.Instance.LibraryNavigationWidth = value;
+        }
         public IReadOnlyList<MidiInCapabilities> MidiDevices => SettingsManager.Instance.listMidi;
         public MMDeviceCollection AudioDevices => SettingsManager.Instance.dispositifsAudio;
         public void RefreshDevices()

@@ -19,6 +19,8 @@ namespace DjApplication3.Infrastructure
 
         public static string YtDlpCookieFile => Path.Combine(ExternalToolsDirectory, "ytdlp_cookies.txt");
 
+        public static string SettingsFile => Path.Combine(ExternalToolsDirectory, "settings.json");
+
         public static void EnsureRuntimeDirectories()
         {
             Directory.CreateDirectory(MusicDirectory);

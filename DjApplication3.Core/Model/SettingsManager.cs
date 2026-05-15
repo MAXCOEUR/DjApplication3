@@ -1,14 +1,22 @@
 ﻿using CSCore.CoreAudioAPI;
+using DjApplication3.Infrastructure;
 using Microsoft.Win32;
 using NAudio.Midi;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace DjApplication3.model
 {
     public class SettingsManager
     {
+        private const double DefaultLibraryNavigationWidth = 190;
+        private const double MinLibraryNavigationWidth = 120;
+        private const double MaxLibraryNavigationWidth = 420;
+        private const double UnsetDeckAreaWidth = 0;
+        private const double MinDeckAreaWidth = 420;
         private static SettingsManager _instance;
         private static readonly object _lockObject = new object();
 
@@ -25,6 +33,8 @@ namespace DjApplication3.model
         public int nbrMidi { get; set; }
 
         public int nbrPiste { get; set; }
+        private double _deckAreaWidth = UnsetDeckAreaWidth;
+        private double _libraryNavigationWidth = DefaultLibraryNavigationWidth;
         public List<MidiInCapabilities> listMidi = new List<MidiInCapabilities>();
 
 
@@ -45,7 +55,7 @@ namespace DjApplication3.model
             nbrPiste = 2;
             nbrMidi = 0;
             APP_NAME = "DjApplication 3";
-
+            LoadUiSettings();
 
         }
 
@@ -92,6 +102,26 @@ namespace DjApplication3.model
             }
 
             return GetDeviceIdentifier(dispositifsAudio[index]);
+        }
+
+        public double LibraryNavigationWidth
+        {
+            get => _libraryNavigationWidth;
+            set
+            {
+                _libraryNavigationWidth = Math.Clamp(value, MinLibraryNavigationWidth, MaxLibraryNavigationWidth);
+                SaveUiSettings();
+            }
+        }
+
+        public double DeckAreaWidth
+        {
+            get => _deckAreaWidth;
+            set
+            {
+                _deckAreaWidth = value <= 0 ? UnsetDeckAreaWidth : Math.Max(MinDeckAreaWidth, value);
+                SaveUiSettings();
+            }
         }
 
         private int ResolveAudioDeviceIndex(string? deviceId, int fallbackIndex)
@@ -164,6 +194,59 @@ namespace DjApplication3.model
             {
                 Console.WriteLine($"Impossible de charger les peripheriques MIDI: {ex.Message}");
             }
+        }
+
+        private void LoadUiSettings()
+        {
+            try
+            {
+                if (!File.Exists(AppPaths.SettingsFile))
+                {
+                    return;
+                }
+
+                var json = File.ReadAllText(AppPaths.SettingsFile);
+                var settings = JsonSerializer.Deserialize<PersistedSettings>(json);
+                if (settings?.LibraryNavigationWidth is double width)
+                {
+                    _libraryNavigationWidth = Math.Clamp(width, MinLibraryNavigationWidth, MaxLibraryNavigationWidth);
+                }
+
+                if (settings?.DeckAreaWidth is double deckWidth)
+                {
+                    _deckAreaWidth = deckWidth <= 0 ? UnsetDeckAreaWidth : Math.Max(MinDeckAreaWidth, deckWidth);
+                }
+            }
+            catch
+            {
+                _deckAreaWidth = UnsetDeckAreaWidth;
+                _libraryNavigationWidth = DefaultLibraryNavigationWidth;
+            }
+        }
+
+        private void SaveUiSettings()
+        {
+            try
+            {
+                AppPaths.EnsureRuntimeDirectories();
+                var settings = new PersistedSettings
+                {
+                    DeckAreaWidth = _deckAreaWidth > 0 ? _deckAreaWidth : null,
+                    LibraryNavigationWidth = _libraryNavigationWidth
+                };
+                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(AppPaths.SettingsFile, json);
+            }
+            catch
+            {
+                // Saving UI preferences should never block audio or startup.
+            }
+        }
+
+        private sealed class PersistedSettings
+        {
+            public double? DeckAreaWidth { get; set; }
+            public double? LibraryNavigationWidth { get; set; }
         }
     }
 }

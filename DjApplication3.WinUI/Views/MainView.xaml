@@ -49,10 +49,10 @@
             <Button Grid.Column="3" Content="Option" Click="SettingsButton_Click" MinHeight="40" MinWidth="78" FontWeight="SemiBold" />
         </Grid>
 
-        <Grid Grid.Row="1" Padding="14" ColumnSpacing="14">
+        <Grid x:Name="MainContentGrid" Grid.Row="1" Padding="14" ColumnSpacing="14" SizeChanged="MainContentGrid_SizeChanged">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.2*" />
-                <ColumnDefinition Width="5" />
+                <ColumnDefinition x:Name="DeckAreaColumn" Width="2.2*" />
+                <ColumnDefinition x:Name="MainResizeColumn" Width="6" />
                 <ColumnDefinition Width="*" MinWidth="360" />
             </Grid.ColumnDefinitions>
 
@@ -106,7 +106,15 @@
                 </ScrollViewer>
             </Grid>
 
-            <Border Grid.Column="1" Background="#3A4148" />
+            <Border
+                x:Name="MainResizeGrip"
+                Grid.Column="1"
+                Background="#3A4148"
+                CornerRadius="3"
+                PointerPressed="MainResizeGrip_PointerPressed"
+                PointerMoved="MainResizeGrip_PointerMoved"
+                PointerReleased="MainResizeGrip_PointerReleased"
+                PointerCanceled="MainResizeGrip_PointerCanceled" />
 
             <Grid
                 x:Name="LibraryPanel"
@@ -185,9 +193,10 @@
                         VerticalAlignment="Center" />
                 </Border>
 
-                <Grid Grid.Row="2" ColumnSpacing="10">
+                <Grid x:Name="LibraryListsGrid" Grid.Row="2" ColumnSpacing="6" SizeChanged="LibraryListsGrid_SizeChanged">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="NavigationColumn" Width="190" />
+                        <ColumnDefinition x:Name="NavigationResizeColumn" Width="6" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid x:Name="LocalFolderPanel" RowSpacing="6">
@@ -284,7 +293,17 @@
                         </ListView>
                     </Grid>
 
-                    <Grid Grid.Column="1" RowSpacing="8">
+                    <Border
+                        x:Name="LibraryResizeGrip"
+                        Grid.Column="1"
+                        Background="#3A4148"
+                        CornerRadius="3"
+                        PointerPressed="LibraryResizeGrip_PointerPressed"
+                        PointerMoved="LibraryResizeGrip_PointerMoved"
+                        PointerReleased="LibraryResizeGrip_PointerReleased"
+                        PointerCanceled="LibraryResizeGrip_PointerCanceled" />
+
+                    <Grid Grid.Column="2" RowSpacing="8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
