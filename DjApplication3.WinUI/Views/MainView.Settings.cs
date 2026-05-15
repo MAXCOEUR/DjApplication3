@@ -170,6 +170,9 @@ namespace DjApplication3.WinUI.Views
             }
         }
 
+        private void ResetPlayedMusicButton_Click(object sender, RoutedEventArgs e)
+            => ViewModel.ResetPlayedMusicHistory();
+
         private void ApplyMidiSettingsIfNeeded()
         {
             if (ViewModel == null || MidiCombo.SelectedIndex < 0)

@@ -235,6 +235,7 @@ namespace DjApplication3.WinUI.Controls
             var center = (height - 1) / 2.0;
             var halfHeight = Math.Max(1, center - 2);
             var stride = width * 4;
+            var centerY = Math.Clamp((int)Math.Round(center), 0, height - 1);
 
             for (var x = 0; x < width; x++)
             {
@@ -249,26 +250,33 @@ namespace DjApplication3.WinUI.Controls
                 startIndex = Math.Clamp(startIndex, 0, waveform.Length - 1);
                 endIndex = Math.Clamp(endIndex, startIndex + 1, waveform.Length);
 
-                var min = sbyte.MaxValue;
-                var max = sbyte.MinValue;
+                double amplitudeSum = 0;
+                var sampleCount = 0;
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    var value = waveform[i];
-
-                    if (value < min)
-                    {
-                        min = value;
-                    }
-
-                    if (value > max)
-                    {
-                        max = value;
-                    }
+                    amplitudeSum += Math.Abs(waveform[i]);
+                    sampleCount++;
                 }
 
-                var yTop = (int)Math.Round(center - NormalizeWaveValue(max) * halfHeight);
-                var yBottom = (int)Math.Round(center - NormalizeWaveValue(min) * halfHeight);
+                var amplitude = sampleCount == 0
+                    ? 0
+                    : Math.Clamp(amplitudeSum / sampleCount / 100.0, 0.0, 1.0);
+
+                if (amplitude < 0.015)
+                {
+                    var silentIndex = centerY * stride + x * 4;
+                    pixels[silentIndex + 0] = 120;
+                    pixels[silentIndex + 1] = 132;
+                    pixels[silentIndex + 2] = 142;
+                    pixels[silentIndex + 3] = 95;
+                    continue;
+                }
+
+                var visualAmplitude = Math.Pow(amplitude, 0.65);
+                var barHalfHeight = Math.Max(1, visualAmplitude * halfHeight);
+                var yTop = (int)Math.Round(center - barHalfHeight);
+                var yBottom = (int)Math.Round(center + barHalfHeight);
 
                 yTop = Math.Clamp(yTop, 0, height - 1);
                 yBottom = Math.Clamp(yBottom, 0, height - 1);
@@ -286,7 +294,7 @@ namespace DjApplication3.WinUI.Controls
                     pixels[index + 0] = 255; // Blue
                     pixels[index + 1] = 255; // Green
                     pixels[index + 2] = 255; // Red
-                    pixels[index + 3] = 220; // Alpha
+                    pixels[index + 3] = 225; // Alpha
                 }
             }
 
@@ -307,11 +315,6 @@ namespace DjApplication3.WinUI.Controls
 
             var markerX = Math.Clamp(Position, 0f, 1f) * Math.Max(0, width - PositionMarker.Width);
             PositionMarkerTransform.X = markerX;
-        }
-
-        private static double NormalizeWaveValue(sbyte value)
-        {
-            return Math.Clamp(value / 128.0, -1.0, 1.0);
         }
 
         private void UpdateEndWarningState()

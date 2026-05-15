@@ -1,6 +1,10 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,9 +67,62 @@ namespace DjApplication3.WinUI.ViewModels
 
         private void MarkMusicPlayed(Musique musique)
         {
+            if (_playedMusicKeys.Add(MusicIdentity.GetStableKey(musique)))
+            {
+                SavePlayedMusicKeys();
+            }
+
             foreach (var row in Musics.Where(row => MusicIdentity.SameTrack(row.Musique, musique)))
             {
                 row.Played = true;
+            }
+        }
+
+        private bool IsMusicPlayed(Musique musique)
+            => _playedMusicKeys.Contains(MusicIdentity.GetStableKey(musique));
+
+        public void ResetPlayedMusicHistory()
+        {
+            _playedMusicKeys.Clear();
+            SavePlayedMusicKeys();
+
+            foreach (var row in Musics)
+            {
+                row.Played = false;
+            }
+
+            Status = "Historique des musiques lues reinitialise";
+        }
+
+        private static HashSet<string> LoadPlayedMusicKeys()
+        {
+            try
+            {
+                if (!File.Exists(AppPaths.PlayedMusicFile))
+                {
+                    return new HashSet<string>(StringComparer.Ordinal);
+                }
+
+                var keys = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(AppPaths.PlayedMusicFile));
+                return new HashSet<string>(keys ?? [], StringComparer.Ordinal);
+            }
+            catch
+            {
+                return new HashSet<string>(StringComparer.Ordinal);
+            }
+        }
+
+        private void SavePlayedMusicKeys()
+        {
+            try
+            {
+                AppPaths.EnsureRuntimeDirectories();
+                var keys = _playedMusicKeys.OrderBy(key => key, StringComparer.Ordinal).ToList();
+                File.WriteAllText(AppPaths.PlayedMusicFile, JsonSerializer.Serialize(keys, new JsonSerializerOptions { WriteIndented = true }));
+            }
+            catch (Exception ex)
+            {
+                Status = $"Sauvegarde des musiques lues impossible: {ex.Message}";
             }
         }
     }

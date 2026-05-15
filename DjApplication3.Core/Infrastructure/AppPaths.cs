@@ -23,6 +23,8 @@ namespace DjApplication3.Infrastructure
 
         public static string SettingsFile => Path.Combine(ExternalToolsDirectory, "settings.json");
 
+        public static string PlayedMusicFile => Path.Combine(ExternalToolsDirectory, "played_music.json");
+
         public static void EnsureRuntimeDirectories()
         {
             Directory.CreateDirectory(MusicDirectory);

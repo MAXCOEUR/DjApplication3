@@ -472,6 +472,10 @@
                     <ComboBox x:Name="HeadphoneOutputCombo" SelectionChanged="HeadphoneOutputCombo_SelectionChanged" />
                     <TextBlock Text="Appareil MIDI" />
                     <ComboBox x:Name="MidiCombo" SelectionChanged="MidiCombo_SelectionChanged" />
+                    <Button
+                        x:Name="ResetPlayedMusicButton"
+                        Content="Reset musiques lues"
+                        Click="ResetPlayedMusicButton_Click" />
                     <Button x:Name="YtMusicButton" Content="Connexion Youtube Music" Click="YtMusicButton_Click" />
                     <Grid x:Name="LoginPanel" Visibility="Collapsed" Height="420">
                         <Grid.RowDefinitions>

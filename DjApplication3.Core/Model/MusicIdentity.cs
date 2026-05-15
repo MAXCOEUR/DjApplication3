@@ -12,6 +12,12 @@ namespace DjApplication3.model
                && string.Equals(first.title, second.title, StringComparison.OrdinalIgnoreCase)
                && string.Equals(first.author, second.author, StringComparison.OrdinalIgnoreCase);
 
+        public static string GetStableKey(Musique music)
+            => $"{Normalize(music.title)}\u001F{Normalize(music.author)}";
+
+        private static string Normalize(string? value)
+            => (value ?? "").Trim().ToUpperInvariant();
+
         public static int FindIndex(IList<Musique> playlist, Musique music)
         {
             for (var i = 0; i < playlist.Count; i++)

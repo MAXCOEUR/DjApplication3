@@ -3,6 +3,7 @@ using DjApplication3.Infrastructure;
 using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 
@@ -51,11 +52,13 @@ namespace DjApplication3.WinUI.ViewModels
         private DispatcherQueueTimer? _midiAutoDetectionTimer;
         private int _lastSeenMidiDeviceCount = -1;
         private bool _isCheckingMidiDevices;
+        private readonly HashSet<string> _playedMusicKeys;
 
         public MainViewModel(DispatcherQueue dispatcherQueue)
         {
             _dispatcherQueue = dispatcherQueue;
             AppPaths.EnsureRuntimeDirectories();
+            _playedMusicKeys = LoadPlayedMusicKeys();
             _previewPlayer = new PreviewPlayerService(_library, _settings);
             _previewPlayer.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(ClearPreviewState);
             RefreshDecks();

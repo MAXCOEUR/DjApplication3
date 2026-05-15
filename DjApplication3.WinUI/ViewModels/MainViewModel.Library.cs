@@ -193,7 +193,7 @@ namespace DjApplication3.WinUI.ViewModels
                         continue;
                     }
 
-                    Musics.Add(new MusicRowViewModel(musique, _library.GetBpmHistory(musique)));
+                    Musics.Add(CreateMusicRow(musique, _library.GetBpmHistory(musique)));
 
                     index++;
                     if (index % 25 == 0)
@@ -336,8 +336,14 @@ namespace DjApplication3.WinUI.ViewModels
         {
             var localPath = Path.Combine(AppPaths.TempMusicDirectory, $"{musique.title} ({musique.author}).mp3");
             var localMusic = new Musique(localPath, musique.title, musique.author, musique.musiquesInPlayliste);
-            return new MusicRowViewModel(musique, _library.GetBpmHistory(localMusic), File.Exists(localPath));
+            return CreateMusicRow(musique, _library.GetBpmHistory(localMusic), File.Exists(localPath));
         }
+
+        private MusicRowViewModel CreateMusicRow(Musique musique, int? bpm = null, bool downloaded = false)
+            => new MusicRowViewModel(musique, bpm, downloaded)
+            {
+                Played = IsMusicPlayed(musique)
+            };
 
         private void UpdateLocalPathDisplay()
         {
