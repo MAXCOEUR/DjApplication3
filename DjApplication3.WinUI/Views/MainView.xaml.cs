@@ -13,6 +13,7 @@ namespace DjApplication3.WinUI.Views
         private CancellationTokenSource? _libraryActionCancellation;
         private object? _selectedLibraryItem;
         private object? _openedLibraryItem;
+        private bool _isPopulatingSettings;
 
         public MainView()
         {

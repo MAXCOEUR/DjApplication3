@@ -75,40 +75,53 @@ namespace DjApplication3.WinUI.Views
 
         private void PopulateSettings(bool refreshDevices = false)
         {
-            if (refreshDevices)
+            _isPopulatingSettings = true;
+            try
             {
-                ViewModel.RefreshDevicesForOptions();
-            }
-
-            AudioOutputCombo.Items.Clear();
-            HeadphoneOutputCombo.Items.Clear();
-            var audioDevices = ViewModel.Settings.AudioDevices;
-            if (audioDevices != null)
-            {
-                foreach (var device in audioDevices)
+                if (refreshDevices)
                 {
-                    AudioOutputCombo.Items.Add(device);
-                    HeadphoneOutputCombo.Items.Add(device);
+                    ViewModel.RefreshDevicesForOptions();
+                }
+
+                AudioOutputCombo.Items.Clear();
+                HeadphoneOutputCombo.Items.Clear();
+                var audioDevices = ViewModel.Settings.AudioDevices;
+                if (audioDevices != null)
+                {
+                    foreach (var device in audioDevices)
+                    {
+                        AudioOutputCombo.Items.Add(device);
+                        HeadphoneOutputCombo.Items.Add(device);
+                    }
+                }
+
+                if (AudioOutputCombo.Items.Count > ViewModel.Settings.OutputDeviceIndex)
+                {
+                    AudioOutputCombo.SelectedIndex = ViewModel.Settings.OutputDeviceIndex;
+                }
+                if (HeadphoneOutputCombo.Items.Count > ViewModel.Settings.HeadphoneDeviceIndex)
+                {
+                    HeadphoneOutputCombo.SelectedIndex = ViewModel.Settings.HeadphoneDeviceIndex;
+                }
+
+                MidiCombo.Items.Clear();
+                foreach (var midi in ViewModel.Settings.MidiDevices)
+                {
+                    MidiCombo.Items.Add(midi.ProductName);
+                }
+
+                if (MidiCombo.Items.Count == 0)
+                {
+                    MidiCombo.SelectedIndex = -1;
+                }
+                else if (MidiCombo.Items.Count > ViewModel.Settings.MidiDeviceIndex)
+                {
+                    MidiCombo.SelectedIndex = ViewModel.Settings.MidiDeviceIndex;
                 }
             }
-
-            if (AudioOutputCombo.Items.Count > ViewModel.Settings.OutputDeviceIndex)
+            finally
             {
-                AudioOutputCombo.SelectedIndex = ViewModel.Settings.OutputDeviceIndex;
-            }
-            if (HeadphoneOutputCombo.Items.Count > ViewModel.Settings.HeadphoneDeviceIndex)
-            {
-                HeadphoneOutputCombo.SelectedIndex = ViewModel.Settings.HeadphoneDeviceIndex;
-            }
-
-            MidiCombo.Items.Clear();
-            foreach (var midi in ViewModel.Settings.MidiDevices)
-            {
-                MidiCombo.Items.Add(midi.ProductName);
-            }
-            if (MidiCombo.Items.Count > ViewModel.Settings.MidiDeviceIndex)
-            {
-                MidiCombo.SelectedIndex = ViewModel.Settings.MidiDeviceIndex;
+                _isPopulatingSettings = false;
             }
         }
 
@@ -142,7 +155,7 @@ namespace DjApplication3.WinUI.Views
             {
                 return;
             }
-            if (MidiCombo.SelectedIndex >= 0)
+            if (!_isPopulatingSettings && MidiCombo.SelectedIndex >= 0)
             {
                 ViewModel.Settings.MidiDeviceIndex = MidiCombo.SelectedIndex;
                 ViewModel.RestartMidiController();

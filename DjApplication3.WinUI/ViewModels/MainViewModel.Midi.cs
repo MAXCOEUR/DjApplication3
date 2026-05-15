@@ -11,7 +11,18 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 _settings.RefreshDevices();
-                Status = "Peripheriques mis a jour";
+                if (!string.IsNullOrWhiteSpace(_settings.MidiDeviceRefreshError))
+                {
+                    Status = $"Mise a jour MIDI impossible: {_settings.MidiDeviceRefreshError}";
+                }
+                else if (_settings.MidiDevices.Count == 0)
+                {
+                    Status = "Aucun p\u00e9riph\u00e9rique MIDI d\u00e9tect\u00e9";
+                }
+                else
+                {
+                    Status = $"{_settings.MidiDevices.Count} peripherique(s) MIDI detecte(s)";
+                }
             }
             catch (Exception ex)
             {

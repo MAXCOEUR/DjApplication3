@@ -17,6 +17,7 @@ namespace DjApplication3.Services
         double DeckAreaWidth { get; set; }
         double LibraryNavigationWidth { get; set; }
         IReadOnlyList<MidiInCapabilities> MidiDevices { get; }
+        string? MidiDeviceRefreshError { get; }
         MMDeviceCollection AudioDevices { get; }
         void RefreshDevices();
     }

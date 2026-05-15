@@ -62,6 +62,7 @@ namespace DjApplication3.Services
             set => SettingsManager.Instance.LibraryNavigationWidth = value;
         }
         public IReadOnlyList<MidiInCapabilities> MidiDevices => SettingsManager.Instance.listMidi;
+        public string? MidiDeviceRefreshError => SettingsManager.Instance.MidiDeviceRefreshError;
         public MMDeviceCollection AudioDevices => SettingsManager.Instance.dispositifsAudio;
         public void RefreshDevices()
         {

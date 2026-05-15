@@ -36,6 +36,7 @@ namespace DjApplication3.model
         private double _deckAreaWidth = UnsetDeckAreaWidth;
         private double _libraryNavigationWidth = DefaultLibraryNavigationWidth;
         public List<MidiInCapabilities> listMidi = new List<MidiInCapabilities>();
+        public string? MidiDeviceRefreshError { get; private set; }
 
 
         MMDeviceEnumerator enumerator;
@@ -91,7 +92,9 @@ namespace DjApplication3.model
                 nbrHeadPhone = ResolveAudioDeviceIndex(HeadphoneDeviceId, nbrHeadPhone);
             }
 
-            nbrMidi = Math.Clamp(nbrMidi, 0, Math.Max(0, listMidi.Count - 1));
+            nbrMidi = listMidi.Count == 0
+                ? 0
+                : Math.Clamp(nbrMidi, 0, listMidi.Count - 1);
         }
 
         public string? GetAudioDeviceId(int index)
@@ -183,6 +186,7 @@ namespace DjApplication3.model
         private void updateListMidi()
         {
             listMidi.Clear();
+            MidiDeviceRefreshError = null;
             try
             {
                 for (int device = 0; device < MidiIn.NumberOfDevices; device++)
@@ -192,6 +196,7 @@ namespace DjApplication3.model
             }
             catch (Exception ex)
             {
+                MidiDeviceRefreshError = ex.Message;
                 Console.WriteLine($"Impossible de charger les peripheriques MIDI: {ex.Message}");
             }
         }
