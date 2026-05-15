@@ -11,6 +11,7 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 _settings.RefreshDevices();
+                _lastSeenMidiDeviceCount = _settings.MidiDevices.Count;
                 if (!string.IsNullOrWhiteSpace(_settings.MidiDeviceRefreshError))
                 {
                     Status = $"Mise a jour MIDI impossible: {_settings.MidiDeviceRefreshError}";
@@ -36,6 +37,7 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 _midi.Start();
                 SyncControllerState();
+                _lastSeenMidiDeviceCount = _settings.MidiDevices.Count;
                 Status = "Controleur MIDI reconnecte";
             }
             catch (Exception ex)
@@ -147,6 +149,97 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.VolumeDownHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume -= 5);
             _midi.Start();
             SyncControllerState();
+        }
+
+        private void StartMidiAutoDetection()
+        {
+            if (_midiAutoDetectionTimer != null)
+            {
+                return;
+            }
+
+            try
+            {
+                _settings.RefreshDevices();
+                _lastSeenMidiDeviceCount = _settings.MidiDevices.Count;
+            }
+            catch
+            {
+                _lastSeenMidiDeviceCount = -1;
+            }
+
+            _midiAutoDetectionTimer = _dispatcherQueue.CreateTimer();
+            _midiAutoDetectionTimer.Interval = TimeSpan.FromSeconds(2);
+            _midiAutoDetectionTimer.Tick += (_, _) => CheckMidiDevicesForAutoConnect();
+            _midiAutoDetectionTimer.Start();
+        }
+
+        private void StopMidiAutoDetection()
+        {
+            if (_midiAutoDetectionTimer == null)
+            {
+                return;
+            }
+
+            _midiAutoDetectionTimer.Stop();
+            _midiAutoDetectionTimer = null;
+        }
+
+        private void CheckMidiDevicesForAutoConnect()
+        {
+            if (_isCheckingMidiDevices)
+            {
+                return;
+            }
+
+            _isCheckingMidiDevices = true;
+            try
+            {
+                var previousCount = _lastSeenMidiDeviceCount;
+                _settings.RefreshDevices();
+
+                if (!string.IsNullOrWhiteSpace(_settings.MidiDeviceRefreshError))
+                {
+                    return;
+                }
+
+                var currentCount = _settings.MidiDevices.Count;
+                if (currentCount == previousCount)
+                {
+                    return;
+                }
+
+                if (currentCount == 1 && previousCount <= 0)
+                {
+                    _settings.MidiDeviceIndex = 0;
+                    _midi.Start();
+                    SyncControllerState();
+                    _lastSeenMidiDeviceCount = currentCount;
+                    Status = $"Controleur MIDI detecte: {_settings.MidiDevices[0].ProductName}";
+                }
+                else if (currentCount == 0)
+                {
+                    _lastSeenMidiDeviceCount = currentCount;
+                    Status = "Aucun p\u00e9riph\u00e9rique MIDI d\u00e9tect\u00e9";
+                }
+                else if (previousCount <= 0)
+                {
+                    _lastSeenMidiDeviceCount = currentCount;
+                    Status = $"{currentCount} peripherique(s) MIDI detecte(s), selectionne le bon dans les options";
+                }
+                else
+                {
+                    _lastSeenMidiDeviceCount = currentCount;
+                }
+            }
+            catch (Exception ex)
+            {
+                Status = $"Detection MIDI impossible: {ex.Message}";
+            }
+            finally
+            {
+                _isCheckingMidiDevices = false;
+            }
         }
 
         private async Task HandleMidiNavigateRightAsync()

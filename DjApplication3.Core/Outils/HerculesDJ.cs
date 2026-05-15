@@ -93,36 +93,59 @@ namespace DjApplication3.outils
             try
             {
                 midiIn = new MidiIn(SettingsManager.Instance.nbrMidi);
-
-                initOut();
-
                 midiIn.MessageReceived += midiIn_MessageReceived;
                 midiIn.ErrorReceived += midiIn_ErrorReceived;
                 midiIn.Start();
-
-            }catch(Exception ex)
+            }
+            catch
             {
-                Console.WriteLine(ex.ToString());
+                midiIn?.Dispose();
+                midiIn = null;
+                throw;
             }
 
-
-            return;
-
-            
+            try
+            {
+                initOut();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Impossible d'initialiser la sortie MIDI: {ex}");
+            }
         }
 
         public void Dispose()
         {
             _instance = null;
-            if (midiIn == null) return;
-            midiIn.Stop();
-            midiIn.Dispose();
-            midiIn = null;
+            if (midiIn != null)
+            {
+                try
+                {
+                    midiIn.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Impossible d'arreter l'entree MIDI: {ex.Message}");
+                }
 
-            if (midiOut == null) return;
-            midiOut.Close();
-            midiOut.Dispose();
-            midiOut = null;
+                midiIn.Dispose();
+                midiIn = null;
+            }
+
+            if (midiOut != null)
+            {
+                try
+                {
+                    midiOut.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Impossible de fermer la sortie MIDI: {ex.Message}");
+                }
+
+                midiOut.Dispose();
+                midiOut = null;
+            }
         }
 
         private void midiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)

@@ -14,6 +14,8 @@ namespace DjApplication3.WinUI.Views
         private object? _selectedLibraryItem;
         private object? _openedLibraryItem;
         private bool _isPopulatingSettings;
+        private int _midiIndexWhenSettingsOpened = -1;
+        private int _midiDeviceCountWhenSettingsOpened;
 
         public MainView()
         {

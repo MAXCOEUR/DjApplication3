@@ -32,6 +32,8 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 Status = $"MIDI indisponible: {ex.Message}";
             }
+
+            StartMidiAutoDetection();
         }
 
         public async Task SearchAsync(CancellationToken cancellationToken = default)

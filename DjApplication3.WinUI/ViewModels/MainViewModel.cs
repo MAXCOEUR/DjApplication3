@@ -48,6 +48,9 @@ namespace DjApplication3.WinUI.ViewModels
         private int _libraryLoadingDepth;
         private MusicRowViewModel? _previewRow;
         private CancellationTokenSource? _previewCancellation;
+        private DispatcherQueueTimer? _midiAutoDetectionTimer;
+        private int _lastSeenMidiDeviceCount = -1;
+        private bool _isCheckingMidiDevices;
 
         public MainViewModel(DispatcherQueue dispatcherQueue)
         {
@@ -237,6 +240,7 @@ namespace DjApplication3.WinUI.ViewModels
 
             _previewCancellation?.Cancel();
             _previewCancellation?.Dispose();
+            StopMidiAutoDetection();
             _previewPlayer.Dispose();
             _midi.Dispose();
         }

@@ -28,9 +28,17 @@ namespace DjApplication3.WinUI.Views
         {
             try
             {
+                var wasOpen = ViewModel.IsSettingsOpen;
+                if (wasOpen)
+                {
+                    ApplyMidiSettingsIfNeeded();
+                }
+
                 ViewModel.ToggleSettings();
                 if (ViewModel.IsSettingsOpen)
                 {
+                    _midiIndexWhenSettingsOpened = ViewModel.Settings.MidiDeviceIndex;
+                    _midiDeviceCountWhenSettingsOpened = ViewModel.Settings.MidiDevices.Count;
                     PopulateSettings(refreshDevices: true);
                 }
                 UpdateSettingsVisibility();
@@ -43,6 +51,7 @@ namespace DjApplication3.WinUI.Views
 
         private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            ApplyMidiSettingsIfNeeded();
             ViewModel.IsSettingsOpen = false;
             UpdateSettingsVisibility();
         }
@@ -158,6 +167,20 @@ namespace DjApplication3.WinUI.Views
             if (!_isPopulatingSettings && MidiCombo.SelectedIndex >= 0)
             {
                 ViewModel.Settings.MidiDeviceIndex = MidiCombo.SelectedIndex;
+            }
+        }
+
+        private void ApplyMidiSettingsIfNeeded()
+        {
+            if (ViewModel == null || MidiCombo.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            ViewModel.Settings.MidiDeviceIndex = MidiCombo.SelectedIndex;
+            if (MidiCombo.SelectedIndex != _midiIndexWhenSettingsOpened ||
+                ViewModel.Settings.MidiDevices.Count != _midiDeviceCountWhenSettingsOpened)
+            {
                 ViewModel.RestartMidiController();
             }
         }
