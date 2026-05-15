@@ -9,14 +9,14 @@
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
-    <Version>2.0.1.0</Version>
-    <FileVersion>2.0.1.0</FileVersion>
+    <Version>2.0.2.0</Version>
+    <FileVersion>2.0.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260101001" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
-    <PackageReference Include="WinUI.TableView" Version="1.4.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
+    <PackageReference Include="WinUI.TableView" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,7 +27,7 @@
     <Content Include="Resources\*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Resources\logo.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(NuGetPackageRoot)microsoft.web.webview2\1.0.3800.47\build\native\x64\WebView2Loader.dll" Link="WebView2Loader.dll" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\DjApplication3\outilsExtern\**\*.*" Link="outilsExtern\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\DjApplication3.Core\outilsExtern\**\*.*" Link="outilsExtern\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\DjApplication3\musique\**\*.*" Link="musique\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -45,9 +45,6 @@
     <ItemGroup>
       <WinUICompiledResources Include="$(TargetDir)**\*.xbf;$(TargetDir)**\*.pri" Exclude="$(TargetDir)publish\**\*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(WinUICompiledResources)"
-      DestinationFiles="@(WinUICompiledResources->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(WinUICompiledResources)" DestinationFiles="@(WinUICompiledResources->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 </Project>

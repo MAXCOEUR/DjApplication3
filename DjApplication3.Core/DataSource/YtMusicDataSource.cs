@@ -63,6 +63,14 @@ namespace DjApplication3.DataSource
                     {
                         foreach (var c in loadedCookies)
                         {
+                            if (string.IsNullOrWhiteSpace(c.Name)
+                                || string.IsNullOrWhiteSpace(c.Value)
+                                || string.IsNullOrWhiteSpace(c.Path)
+                                || string.IsNullOrWhiteSpace(c.Domain))
+                            {
+                                continue;
+                            }
+
                             cookieList.Add(new Cookie(c.Name, c.Value, c.Path, c.Domain));
                         }
                     }
@@ -180,6 +188,13 @@ namespace DjApplication3.DataSource
                 CleanFileName(p.Name)
             )).ToList();
             res.AddRange(res2);
+
+            if (res.Count == 0)
+            {
+                throw new NotConnectedException(
+                    "Aucune playlist Youtube Music reçue. La session existe, mais elle est probablement expirée ou incomplète. Déconnecte puis reconnecte Youtube Music.");
+            }
+
             return res;
         }
         
@@ -380,8 +395,35 @@ namespace DjApplication3.DataSource
 
         public static bool isConnected()
         {
-            // Vérifie si le fichier de cookies existe et contient quelque chose
-            return File.Exists(sessionFile) && new FileInfo(sessionFile).Length > 0 && File.Exists(ytdlpCookieFile) && new FileInfo(ytdlpCookieFile).Length > 0;
+            if (!File.Exists(sessionFile)
+                || new FileInfo(sessionFile).Length == 0
+                || !File.Exists(ytdlpCookieFile)
+                || new FileInfo(ytdlpCookieFile).Length == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                var jsonString = File.ReadAllText(sessionFile);
+                var loadedCookies = JsonSerializer.Deserialize<List<CookieModel>>(jsonString) ?? new List<CookieModel>();
+                var names = loadedCookies
+                    .Select(cookie => cookie.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                var hasSapisid = names.Contains("SAPISID")
+                    || names.Contains("__Secure-1PAPISID")
+                    || names.Contains("__Secure-3PAPISID");
+                var hasSession = names.Contains("SID")
+                    || names.Contains("__Secure-1PSID")
+                    || names.Contains("__Secure-3PSID");
+
+                return hasSapisid && hasSession;
+            }
+            catch
+            {
+                return false;
+            }
         }
         public static void removeConnect()
         {

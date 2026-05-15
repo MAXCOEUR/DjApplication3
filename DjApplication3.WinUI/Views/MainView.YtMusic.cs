@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -73,7 +74,24 @@ namespace DjApplication3.WinUI.Views
                 }
 
                 var cookieManager = _loginWebView.CoreWebView2.CookieManager;
-                var cookies = await cookieManager.GetCookiesAsync("https://music.youtube.com");
+                var cookies = new List<CoreWebView2Cookie>();
+                foreach (var url in new[]
+                {
+                    "https://music.youtube.com",
+                    "https://www.youtube.com",
+                    "https://youtube.com",
+                    "https://accounts.google.com",
+                    "https://google.com"
+                })
+                {
+                    cookies.AddRange(await cookieManager.GetCookiesAsync(url));
+                }
+
+                cookies = cookies
+                    .GroupBy(c => $"{c.Domain}|{c.Path}|{c.Name}")
+                    .Select(group => group.First())
+                    .ToList();
+
                 if (cookies == null || cookies.Count == 0)
                 {
                     ViewModel.Status = "Aucun cookie trouvé. Connecte-toi d'abord.";
@@ -88,6 +106,7 @@ namespace DjApplication3.WinUI.Views
                     c.Domain
                 }).ToList();
 
+                Directory.CreateDirectory(Path.GetDirectoryName(YtMusicDataSource.sessionFile)!);
                 File.WriteAllText(YtMusicDataSource.sessionFile, JsonSerializer.Serialize(cookieData));
 
                 var sb = new StringBuilder();
@@ -96,7 +115,8 @@ namespace DjApplication3.WinUI.Views
                 foreach (var c in cookies)
                 {
                     var flag = c.Domain.StartsWith(".") ? "TRUE" : "FALSE";
-                    sb.AppendLine($"{c.Domain}\t{flag}\t{c.Path}\tTRUE\t0\t{c.Name}\t{c.Value}");
+                    var secure = c.IsSecure ? "TRUE" : "FALSE";
+                    sb.AppendLine($"{c.Domain}\t{flag}\t{c.Path}\t{secure}\t0\t{c.Name}\t{c.Value}");
                 }
                 File.WriteAllText(YtMusicDataSource.ytdlpCookieFile, sb.ToString());
 

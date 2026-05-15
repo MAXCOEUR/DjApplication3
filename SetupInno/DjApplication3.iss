@@ -1,5 +1,5 @@
 #define MyAppName "DjApplication 3"
-#define MyAppVersion "2.0.1"
+#define MyAppVersion "2.0.2"
 #define MyAppPublisher "MaxenceCOEUR"
 #define MyAppExeName "DjApplication3.WinUI.exe"
 #define RepoRoot AddBackslash(SourcePath) + "..\"
