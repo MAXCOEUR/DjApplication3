@@ -114,6 +114,11 @@ namespace DjApplication3.Services
 
         public void SetHeadphoneEnabled(bool enabled)
         {
+            if (_headphoneEnabled == enabled)
+            {
+                return;
+            }
+
             _headphoneEnabled = enabled;
             UpdateOutputDevice();
         }
@@ -127,7 +132,24 @@ namespace DjApplication3.Services
         }
 
         public void UpdateOutputDevice()
-            => ReinitializeKeepingState();
+        {
+            var currentDevice = _audioPlayer?.Device;
+            var targetDevice = ResolveDevice(currentDevice);
+
+            if (targetDevice == null)
+            {
+                UpdateVolume();
+                return;
+            }
+
+            if (currentDevice != null && AreSameDevice(currentDevice, targetDevice))
+            {
+                UpdateVolume();
+                return;
+            }
+
+            ReinitializeKeepingState();
+        }
 
         public void Dispose()
         {
@@ -300,6 +322,19 @@ namespace DjApplication3.Services
             }
 
             return device.ToString();
+        }
+
+        private static bool AreSameDevice(object left, object right)
+        {
+            var leftId = GetDeviceIdentifier(left);
+            var rightId = GetDeviceIdentifier(right);
+
+            if (!string.IsNullOrWhiteSpace(leftId) && !string.IsNullOrWhiteSpace(rightId))
+            {
+                return string.Equals(leftId, rightId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(left.ToString(), right.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         private void UpdateVolume()

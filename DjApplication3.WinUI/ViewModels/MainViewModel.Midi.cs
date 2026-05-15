@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -81,7 +82,7 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.NavigateUp += (_, _) => Enqueue(() => MoveSelection(-1));
             _midi.NavigateDown += (_, _) => Enqueue(() => MoveSelection(1));
             _midi.NavigateLeft += (_, _) => Enqueue(() => _ = RunSafeAsync(NavigateLibraryLeftAsync(), "Navigation impossible"));
-            _midi.NavigateRight += (_, _) => Enqueue(() => _ = RunSafeAsync(NavigateLibraryRightAsync(), "Navigation impossible"));
+            _midi.NavigateRight += (_, _) => Enqueue(() => _ = RunSafeAsync(HandleMidiNavigateRightAsync(), "Navigation impossible"));
             _midi.LoadLeft += (_, _) => Enqueue(() => _ = RunSafeAsync(LoadSelectedAsync(LeftDeckIndex), "Chargement piste gauche impossible"));
             _midi.LoadRight += (_, _) => Enqueue(() => _ = RunSafeAsync(LoadSelectedAsync(RightDeckIndex), "Chargement piste droite impossible"));
             _midi.PisteLeft += (_, piste) => Enqueue(() => LeftDeckNumber = Math.Clamp(piste, 1, Decks.Count));
@@ -135,6 +136,19 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.VolumeDownHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume -= 5);
             _midi.Start();
             SyncControllerState();
+        }
+
+        private async Task HandleMidiNavigateRightAsync()
+        {
+            if (_libraryFocus == LibraryFocus.Musics
+                && SelectedMusicIndex >= 0
+                && SelectedMusicIndex < Musics.Count)
+            {
+                await TogglePreviewAsync(Musics[SelectedMusicIndex]);
+                return;
+            }
+
+            await NavigateLibraryRightAsync();
         }
 
         private void Enqueue(Action action) => _dispatcherQueue.TryEnqueue(() =>
