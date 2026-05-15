@@ -18,6 +18,12 @@ namespace DjApplication3.Services
         event EventHandler<int>? PisteRight;
         event EventHandler<float>? VolumeLeft;
         event EventHandler<float>? VolumeRight;
+        event EventHandler<float>? BassLeft;
+        event EventHandler<float>? BassRight;
+        event EventHandler<float>? MediumLeft;
+        event EventHandler<float>? MediumRight;
+        event EventHandler<float>? TrebleLeft;
+        event EventHandler<float>? TrebleRight;
         event EventHandler<float>? Mix;
         event EventHandler<int>? ScratchLeft;
         event EventHandler<int>? ScratchRight;

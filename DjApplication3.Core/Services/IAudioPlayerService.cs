@@ -21,6 +21,7 @@ namespace DjApplication3.Services
         void SetTrackVolume(float volume);
         void SetHeadphoneVolume(float volume);
         void SetHeadphoneEnabled(bool enabled);
+        void SetEqualizer(float bassDb, float midDb, float trebleDb);
         void UpdateOutputDevice();
     }
 }

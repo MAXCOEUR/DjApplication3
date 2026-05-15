@@ -1,6 +1,8 @@
 using CSCore;
 using CSCore.Codecs;
 using CSCore.SoundOut;
+using CSCore.Streams;
+using CSCore.Streams.Effects;
 using DjApplication3.model;
 using System;
 
@@ -12,9 +14,14 @@ namespace DjApplication3.Services
         private readonly System.Timers.Timer _timer = new(500);
         private IWaveSource? _waveSource;
         private WasapiOut? _audioPlayer;
+        private Equalizer? _equalizer;
+        private string? _loadedPath;
         private float _masterVolume = 1;
         private float _trackVolume = 1;
         private float _headphoneVolume = 1;
+        private float _bassDb;
+        private float _midDb;
+        private float _trebleDb;
         private bool _headphoneEnabled;
 
         public event EventHandler? PositionChanged;
@@ -38,7 +45,7 @@ namespace DjApplication3.Services
             var wasPlaying = IsPlaying;
             var fallbackDevice = _audioPlayer?.Device;
             Stop();
-            _waveSource = CodecFactory.Instance.GetCodec(musique.url);
+            _loadedPath = musique.url;
             InitializePlayer(0, fallbackDevice);
             if (wasPlaying)
             {
@@ -69,6 +76,8 @@ namespace DjApplication3.Services
             _audioPlayer = null;
             _waveSource?.Dispose();
             _waveSource = null;
+            _equalizer = null;
+            _loadedPath = null;
             PositionChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -109,9 +118,27 @@ namespace DjApplication3.Services
             UpdateOutputDevice();
         }
 
-        public void UpdateOutputDevice()
+        public void SetEqualizer(float bassDb, float midDb, float trebleDb)
         {
-            if (_waveSource == null) return;
+            _bassDb = Math.Clamp(bassDb, -12, 12);
+            _midDb = Math.Clamp(midDb, -12, 12);
+            _trebleDb = Math.Clamp(trebleDb, -12, 12);
+            ApplyEqualizerGains();
+        }
+
+        public void UpdateOutputDevice()
+            => ReinitializeKeepingState();
+
+        public void Dispose()
+        {
+            _timer.Dispose();
+            DisposePlayer();
+            _waveSource?.Dispose();
+        }
+
+        private void ReinitializeKeepingState()
+        {
+            if (string.IsNullOrWhiteSpace(_loadedPath)) return;
             var wasPlaying = IsPlaying;
             var currentPosition = PositionRatio;
             var fallbackDevice = _audioPlayer?.Device;
@@ -126,16 +153,9 @@ namespace DjApplication3.Services
             }
         }
 
-        public void Dispose()
-        {
-            _timer.Dispose();
-            DisposePlayer();
-            _waveSource?.Dispose();
-        }
-
         private void InitializePlayer(float positionRatio, object? fallbackDevice = null)
         {
-            if (_waveSource == null) return;
+            if (string.IsNullOrWhiteSpace(_loadedPath)) return;
             if (_audioPlayer == null)
             {
                 _audioPlayer = new WasapiOut();
@@ -146,6 +166,8 @@ namespace DjApplication3.Services
             {
                 _audioPlayer.WaveSource.Dispose();
             }
+            _waveSource?.Dispose();
+            _waveSource = CodecFactory.Instance.GetCodec(_loadedPath);
             var device = ResolveDevice(fallbackDevice);
             if (device == null)
             {
@@ -153,12 +175,39 @@ namespace DjApplication3.Services
             }
 
             SetPlayerDevice(device);
-            _audioPlayer.Initialize(_waveSource);
+            var outputSource = BuildOutputSource(_waveSource);
+            _audioPlayer.Initialize(outputSource);
             if (_audioPlayer.WaveSource != null)
             {
                 _audioPlayer.WaveSource.Position = (long)(_audioPlayer.WaveSource.Length * positionRatio);
             }
             UpdateVolume();
+        }
+
+        private IWaveSource BuildOutputSource(IWaveSource source)
+        {
+            var sampleSource = source.ToSampleSource();
+            _equalizer = new Equalizer(sampleSource);
+            var sampleRate = _equalizer.WaveFormat.SampleRate;
+            var channels = Math.Max(1, _equalizer.WaveFormat.Channels);
+            _equalizer.SampleFilters.Add(new EqualizerFilter(channels, new EqualizerChannelFilter(sampleRate, 100, 0.8, _bassDb)));
+            _equalizer.SampleFilters.Add(new EqualizerFilter(channels, new EqualizerChannelFilter(sampleRate, 1000, 0.8, _midDb)));
+            _equalizer.SampleFilters.Add(new EqualizerFilter(channels, new EqualizerChannelFilter(sampleRate, 10000, 0.8, _trebleDb)));
+            ApplyEqualizerGains();
+
+            return _equalizer.ToWaveSource();
+        }
+
+        private void ApplyEqualizerGains()
+        {
+            if (_equalizer == null || _equalizer.SampleFilters.Count < 3)
+            {
+                return;
+            }
+
+            _equalizer.SampleFilters[0].AverageGainDB = _bassDb;
+            _equalizer.SampleFilters[1].AverageGainDB = _midDb;
+            _equalizer.SampleFilters[2].AverageGainDB = _trebleDb;
         }
 
         private void DisposePlayer()

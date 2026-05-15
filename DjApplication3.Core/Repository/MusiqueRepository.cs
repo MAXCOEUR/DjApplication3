@@ -2,6 +2,7 @@
 using DjApplication3.model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,6 +93,26 @@ namespace DjApplication3.repository
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
             return await dataSource.DownloadMusique(musiqueyt);
+        }
+
+        async public Task<Musique> GetPreviewAsync(Musique musique, string source)
+        {
+            if (File.Exists(musique.url))
+            {
+                return musique;
+            }
+
+            if (source == "Youtube")
+            {
+                return await PreviewDataSource.CreateInternetPreviewAsync(musique, useCookies: false);
+            }
+
+            if (source == "Youtube Music")
+            {
+                return await PreviewDataSource.CreateInternetPreviewAsync(musique, useCookies: true);
+            }
+
+            throw new FileNotFoundException("Fichier local introuvable pour la pre-ecoute.", musique.url);
         }
     }
 }

@@ -23,6 +23,9 @@ namespace DjApplication3.WinUI.ViewModels
                 }
 
                 _isHandlingTrackEnd = false;
+                _playedEnoughReported = false;
+                _lastPlaybackUpdateUtc = null;
+                _listenedDuration = TimeSpan.Zero;
 
                 _currentMusic = musique;
                 UpdateNextMusicPreview();

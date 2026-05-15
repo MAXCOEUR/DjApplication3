@@ -312,6 +312,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="48" />
+                                <ColumnDefinition Width="48" />
                                 <ColumnDefinition Width="56" />
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
@@ -335,8 +336,9 @@
                                         FontSize="12" />
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Grid.Column="1" Text="DL" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="2" Text="BPM" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Cue" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="DL" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="BPM" Foreground="#BCC5CE" FontWeight="SemiBold" HorizontalAlignment="Center" />
                         </Grid>
 
                         <ListView
@@ -366,12 +368,13 @@
                                     <Grid
                                         MinHeight="48"
                                         ColumnSpacing="8"
-                                        Background="Transparent"
+                                        Background="{Binding RowBackground}"
                                         RightTapped="MusicRow_RightTapped"
                                         Padding="4,2">
 
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="48" />
                                             <ColumnDefinition Width="48" />
                                             <ColumnDefinition Width="56" />
                                         </Grid.ColumnDefinitions>
@@ -389,8 +392,21 @@
                                                 TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
 
-                                        <TextBlock
+                                        <Button
                                             Grid.Column="1"
+                                            Content="{Binding PreviewText}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            MinWidth="42"
+                                            MinHeight="30"
+                                            Padding="4,0"
+                                            Background="{Binding PreviewButtonBackground}"
+                                            Foreground="{Binding PreviewButtonForeground}"
+                                            Click="PreviewButton_Click"
+                                            ToolTipService.ToolTip="Pre-ecoute casque" />
+
+                                        <TextBlock
+                                            Grid.Column="2"
                                             Text="{Binding DownloadText}"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
@@ -398,7 +414,7 @@
                                             FontWeight="SemiBold" />
 
                                         <TextBlock
-                                            Grid.Column="2"
+                                            Grid.Column="3"
                                             Text="{Binding BpmText}"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"

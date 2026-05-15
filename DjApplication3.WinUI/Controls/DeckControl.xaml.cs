@@ -51,6 +51,11 @@ namespace DjApplication3.WinUI.Controls
 
         private void HeadphoneButton_Click(object sender, RoutedEventArgs e) => ViewModel?.ToggleHeadphone();
 
+        private void ResetAudioButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.ResetEqualizer();
+        }
+
         private async void RandomButton_Click(object sender, RoutedEventArgs e)
         {
             try

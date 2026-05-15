@@ -13,6 +13,7 @@ namespace DjApplication3.Services
         Task<List<Musique>> GetYtMusicPlaylistTracksAsync(string playlistId, IProgress<List<Musique>>? progress = null);
         Task<Musique> DownloadYoutubeAsync(Musique musique);
         Task<Musique> DownloadYtMusicAsync(Musique musique);
+        Task<Musique> GetPreviewAsync(Musique musique, string source);
         Task UpdateYtDlpAsync();
         int? GetBpmHistory(Musique musique);
         Task<int> GetBpmAsync(Musique musique);

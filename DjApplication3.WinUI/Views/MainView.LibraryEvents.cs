@@ -50,6 +50,15 @@ namespace DjApplication3.WinUI.Views
             }
         }
 
+        private async void PreviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is MusicRowViewModel row)
+            {
+                MusicList.SelectedItem = row;
+                await RunUiActionAsync(() => ViewModel.TogglePreviewAsync(row), "Pre-ecoute impossible");
+            }
+        }
+
         private async void LoadLeftButton_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as Button)?.Tag is MusicRowViewModel row)

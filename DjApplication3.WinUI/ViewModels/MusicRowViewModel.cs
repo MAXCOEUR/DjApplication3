@@ -1,4 +1,6 @@
 using DjApplication3.model;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -9,6 +11,8 @@ namespace DjApplication3.WinUI.ViewModels
         private bool _downloaded;
         private bool _played;
         private bool _isDownloading;
+        private bool _isPreviewing;
+        private bool _isPreviewLoading;
 
         public MusicRowViewModel(Musique musique, int? bpm = null, bool downloaded = false)
         {
@@ -76,12 +80,53 @@ namespace DjApplication3.WinUI.ViewModels
                 if (SetProperty(ref _played, value))
                 {
                     OnPropertyChanged(nameof(PlayedText));
+                    OnPropertyChanged(nameof(RowBackground));
                 }
             }
         }
 
         public string DownloadText => IsDownloading ? "..." : Downloaded ? "OK" : "";
         public string PlayedText => Played ? "Oui" : "";
+        public SolidColorBrush RowBackground => Played
+            ? new SolidColorBrush(Color.FromArgb(64, 220, 185, 55))
+            : new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
+
+        public bool IsPreviewing
+        {
+            get => _isPreviewing;
+            set
+            {
+                if (SetProperty(ref _isPreviewing, value))
+                {
+                    OnPropertyChanged(nameof(PreviewText));
+                    OnPropertyChanged(nameof(PreviewButtonBackground));
+                    OnPropertyChanged(nameof(PreviewButtonForeground));
+                }
+            }
+        }
+
+        public bool IsPreviewLoading
+        {
+            get => _isPreviewLoading;
+            set
+            {
+                if (SetProperty(ref _isPreviewLoading, value))
+                {
+                    OnPropertyChanged(nameof(PreviewText));
+                    OnPropertyChanged(nameof(PreviewButtonBackground));
+                    OnPropertyChanged(nameof(PreviewButtonForeground));
+                }
+            }
+        }
+
+        public string PreviewText => IsPreviewLoading ? "..." : IsPreviewing ? "Stop" : "Cue";
+        public SolidColorBrush PreviewButtonBackground => IsPreviewing
+            ? new SolidColorBrush(Color.FromArgb(255, 0, 150, 80))
+            : IsPreviewLoading
+                ? new SolidColorBrush(Color.FromArgb(255, 64, 72, 82))
+                : new SolidColorBrush(Color.FromArgb(255, 36, 40, 44));
+
+        public SolidColorBrush PreviewButtonForeground => new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
 
         public void UseResolvedMusic(Musique musique)
         {

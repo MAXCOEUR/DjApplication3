@@ -8,33 +8,39 @@ namespace DjApplication3.outils
 {
     internal class HerculesDJ
     {
-        private static HerculesDJ _instance;
+        private static HerculesDJ? _instance;
         private static readonly object _lockObject = new object();
 
-        public event EventHandler eventPlayPauseLeft;
-        public event EventHandler eventPlayPauseRight;
-        public event EventHandler eventCasqueLeft;
-        public event EventHandler eventCasqueRight;
-        public event EventHandler eventButtonUp;
-        public event EventHandler eventButtonDown;
-        public event EventHandler eventButtonLeft;
-        public event EventHandler eventButtonRight;
-        public event EventHandler eventButtonLoadLeft;
-        public event EventHandler eventButtonLoadRight;
-        public event EventHandler<int> eventPisteLeft;
-        public event EventHandler<int> eventPisteRight;
-        public event EventHandler<float> eventVolumeLeft;
-        public event EventHandler<float> eventVolumeRight;
-        public event EventHandler<float> eventMixe;
-        public event EventHandler<int> eventScratchLeft;
-        public event EventHandler<int> eventScratchRight;
-        public event EventHandler<bool> eventScratchLeftPress;
-        public event EventHandler<bool> eventScratchRightPress;
-        public event EventHandler eventVolumeUpHeadPhone;
-        public event EventHandler eventVolumeDownHeadPhone;
+        public event EventHandler? eventPlayPauseLeft;
+        public event EventHandler? eventPlayPauseRight;
+        public event EventHandler? eventCasqueLeft;
+        public event EventHandler? eventCasqueRight;
+        public event EventHandler? eventButtonUp;
+        public event EventHandler? eventButtonDown;
+        public event EventHandler? eventButtonLeft;
+        public event EventHandler? eventButtonRight;
+        public event EventHandler? eventButtonLoadLeft;
+        public event EventHandler? eventButtonLoadRight;
+        public event EventHandler<int>? eventPisteLeft;
+        public event EventHandler<int>? eventPisteRight;
+        public event EventHandler<float>? eventVolumeLeft;
+        public event EventHandler<float>? eventVolumeRight;
+        public event EventHandler<float>? eventBassLeft;
+        public event EventHandler<float>? eventBassRight;
+        public event EventHandler<float>? eventMediumLeft;
+        public event EventHandler<float>? eventMediumRight;
+        public event EventHandler<float>? eventTrebleLeft;
+        public event EventHandler<float>? eventTrebleRight;
+        public event EventHandler<float>? eventMixe;
+        public event EventHandler<int>? eventScratchLeft;
+        public event EventHandler<int>? eventScratchRight;
+        public event EventHandler<bool>? eventScratchLeftPress;
+        public event EventHandler<bool>? eventScratchRightPress;
+        public event EventHandler? eventVolumeUpHeadPhone;
+        public event EventHandler? eventVolumeDownHeadPhone;
 
-        MidiIn midiIn;
-        MidiOut midiOut;
+        MidiIn? midiIn;
+        MidiOut? midiOut;
 
         public static HerculesDJ Instance
         {
@@ -307,6 +313,18 @@ namespace DjApplication3.outils
                         eventVolumeLeft?.Invoke(this, controlEvent.ControllerValue / 127.0F);
                         Console.WriteLine("Droite volume " + controlEvent.ControllerValue / 127.0F);
                         break;
+                    case 55:
+                        eventTrebleLeft?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Gauche treble " + ToEqDb(controlEvent.ControllerValue));
+                        break;
+                    case 56:
+                        eventMediumLeft?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Gauche medium " + ToEqDb(controlEvent.ControllerValue));
+                        break;
+                    case 57:
+                        eventBassLeft?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Gauche bass " + ToEqDb(controlEvent.ControllerValue));
+                        break;
                     case 48:
                         eventScratchLeft?.Invoke(this, controlEvent.ControllerValue);
                         Console.WriteLine("Gauche scrach " + controlEvent.ControllerValue);
@@ -327,9 +345,24 @@ namespace DjApplication3.outils
                         eventMixe?.Invoke(this, controlEvent.ControllerValue / 127.0F);
                         Console.WriteLine("mixage " + controlEvent.ControllerValue / 127.0F);
                         break;
+                    case 60:
+                        eventTrebleRight?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Droite treble " + ToEqDb(controlEvent.ControllerValue));
+                        break;
+                    case 61:
+                        eventMediumRight?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Droite medium " + ToEqDb(controlEvent.ControllerValue));
+                        break;
+                    case 62:
+                        eventBassRight?.Invoke(this, ToEqDb(controlEvent.ControllerValue));
+                        Console.WriteLine("Droite bass " + ToEqDb(controlEvent.ControllerValue));
+                        break;
                 }
             }
         }
+
+        private static float ToEqDb(int midiValue)
+            => (midiValue / 127.0f * 24.0f) - 12.0f;
         private void midiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
             int rawMessage = e.RawMessage;

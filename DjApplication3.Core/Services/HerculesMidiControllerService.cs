@@ -19,6 +19,12 @@ namespace DjApplication3.Services
         public event EventHandler<int>? PisteRight;
         public event EventHandler<float>? VolumeLeft;
         public event EventHandler<float>? VolumeRight;
+        public event EventHandler<float>? BassLeft;
+        public event EventHandler<float>? BassRight;
+        public event EventHandler<float>? MediumLeft;
+        public event EventHandler<float>? MediumRight;
+        public event EventHandler<float>? TrebleLeft;
+        public event EventHandler<float>? TrebleRight;
         public event EventHandler<float>? Mix;
         public event EventHandler<int>? ScratchLeft;
         public event EventHandler<int>? ScratchRight;
@@ -29,29 +35,37 @@ namespace DjApplication3.Services
 
         public void Start()
         {
-            HerculesDJ.Instance?.Dispose();
-            HerculesDJ.Instance.eventPlayPauseLeft += (_, e) => PlayPauseLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventPlayPauseRight += (_, e) => PlayPauseRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventCasqueLeft += (_, e) => HeadphoneLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventCasqueRight += (_, e) => HeadphoneRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonUp += (_, e) => NavigateUp?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonDown += (_, e) => NavigateDown?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonLeft += (_, e) => NavigateLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonRight += (_, e) => NavigateRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonLoadLeft += (_, e) => LoadLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventButtonLoadRight += (_, e) => LoadRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventPisteLeft += (_, e) => PisteLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventPisteRight += (_, e) => PisteRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventVolumeLeft += (_, e) => VolumeLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventVolumeRight += (_, e) => VolumeRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventMixe += (_, e) => Mix?.Invoke(this, e);
-            HerculesDJ.Instance.eventScratchLeft += (_, e) => ScratchLeft?.Invoke(this, e);
-            HerculesDJ.Instance.eventScratchRight += (_, e) => ScratchRight?.Invoke(this, e);
-            HerculesDJ.Instance.eventScratchLeftPress += (_, e) => ScratchLeftPress?.Invoke(this, e);
-            HerculesDJ.Instance.eventScratchRightPress += (_, e) => ScratchRightPress?.Invoke(this, e);
-            HerculesDJ.Instance.eventVolumeUpHeadPhone += (_, e) => VolumeUpHeadPhone?.Invoke(this, e);
-            HerculesDJ.Instance.eventVolumeDownHeadPhone += (_, e) => VolumeDownHeadPhone?.Invoke(this, e);
-            HerculesDJ.Instance.start();
+            var controller = HerculesDJ.Instance;
+            controller.Dispose();
+            controller = HerculesDJ.Instance;
+            controller.eventPlayPauseLeft += (_, e) => PlayPauseLeft?.Invoke(this, e);
+            controller.eventPlayPauseRight += (_, e) => PlayPauseRight?.Invoke(this, e);
+            controller.eventCasqueLeft += (_, e) => HeadphoneLeft?.Invoke(this, e);
+            controller.eventCasqueRight += (_, e) => HeadphoneRight?.Invoke(this, e);
+            controller.eventButtonUp += (_, e) => NavigateUp?.Invoke(this, e);
+            controller.eventButtonDown += (_, e) => NavigateDown?.Invoke(this, e);
+            controller.eventButtonLeft += (_, e) => NavigateLeft?.Invoke(this, e);
+            controller.eventButtonRight += (_, e) => NavigateRight?.Invoke(this, e);
+            controller.eventButtonLoadLeft += (_, e) => LoadLeft?.Invoke(this, e);
+            controller.eventButtonLoadRight += (_, e) => LoadRight?.Invoke(this, e);
+            controller.eventPisteLeft += (_, e) => PisteLeft?.Invoke(this, e);
+            controller.eventPisteRight += (_, e) => PisteRight?.Invoke(this, e);
+            controller.eventVolumeLeft += (_, e) => VolumeLeft?.Invoke(this, e);
+            controller.eventVolumeRight += (_, e) => VolumeRight?.Invoke(this, e);
+            controller.eventBassLeft += (_, e) => BassLeft?.Invoke(this, e);
+            controller.eventBassRight += (_, e) => BassRight?.Invoke(this, e);
+            controller.eventMediumLeft += (_, e) => MediumLeft?.Invoke(this, e);
+            controller.eventMediumRight += (_, e) => MediumRight?.Invoke(this, e);
+            controller.eventTrebleLeft += (_, e) => TrebleLeft?.Invoke(this, e);
+            controller.eventTrebleRight += (_, e) => TrebleRight?.Invoke(this, e);
+            controller.eventMixe += (_, e) => Mix?.Invoke(this, e);
+            controller.eventScratchLeft += (_, e) => ScratchLeft?.Invoke(this, e);
+            controller.eventScratchRight += (_, e) => ScratchRight?.Invoke(this, e);
+            controller.eventScratchLeftPress += (_, e) => ScratchLeftPress?.Invoke(this, e);
+            controller.eventScratchRightPress += (_, e) => ScratchRightPress?.Invoke(this, e);
+            controller.eventVolumeUpHeadPhone += (_, e) => VolumeUpHeadPhone?.Invoke(this, e);
+            controller.eventVolumeDownHeadPhone += (_, e) => VolumeDownHeadPhone?.Invoke(this, e);
+            controller.start();
         }
 
         public void SetPlayLeft(bool isOn) => HerculesDJ.Instance.playLeft(isOn);

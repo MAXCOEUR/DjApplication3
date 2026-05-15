@@ -24,6 +24,8 @@ namespace DjApplication3.Services
 
         public Task<Musique> DownloadYtMusicAsync(Musique musique) => _repository.DownloadMusiqueYtMusic(musique);
 
+        public Task<Musique> GetPreviewAsync(Musique musique, string source) => _repository.GetPreviewAsync(musique, source);
+
         public Task UpdateYtDlpAsync() => _repository.UpdateYtDlp();
 
         public int? GetBpmHistory(Musique musique) => _repository.getBpmHistory(musique);

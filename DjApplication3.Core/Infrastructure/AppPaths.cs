@@ -11,6 +11,8 @@ namespace DjApplication3.Infrastructure
 
         public static string TempMusicDirectory => Path.Combine(MusicDirectory, "tmp");
 
+        public static string PreviewMusicDirectory => Path.Combine(TempMusicDirectory, "preview");
+
         public static string ExternalToolsDirectory => Path.Combine(BaseDirectory, "outilsExtern");
 
         public static string FfmpegDirectory => Path.Combine(ExternalToolsDirectory, "ffmpeg");
@@ -25,6 +27,7 @@ namespace DjApplication3.Infrastructure
         {
             Directory.CreateDirectory(MusicDirectory);
             Directory.CreateDirectory(TempMusicDirectory);
+            Directory.CreateDirectory(PreviewMusicDirectory);
             Directory.CreateDirectory(ExternalToolsDirectory);
         }
     }

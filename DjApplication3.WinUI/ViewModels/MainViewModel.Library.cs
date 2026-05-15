@@ -41,6 +41,7 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Status = "Recherche en cours...";
+                StopPreview();
                 Musics.Clear();
                 if (SelectedSource == "Youtube")
                 {
@@ -142,7 +143,6 @@ namespace DjApplication3.WinUI.ViewModels
                     }
                 }
 
-                row.Played = true;
                 Status = "Titre charge";
             }
             catch (Exception ex)
@@ -158,6 +158,7 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                StopPreview();
                 Musics.Clear();
                 if (!Directory.Exists(LocalRootPath))
                 {
@@ -225,6 +226,7 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                StopPreview();
                 Playlists.Clear();
                 foreach (var playlist in await _library.GetYtMusicPlaylistsAsync())
                 {
@@ -255,6 +257,7 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                StopPreview();
                 Musics.Clear();
                 CurrentPlaylistName = playlist.name;
                 var all = await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
@@ -400,6 +403,7 @@ namespace DjApplication3.WinUI.ViewModels
 
         private async Task RefreshCurrentSourceAsync()
         {
+            StopPreview();
             Musics.Clear();
             Playlists.Clear();
             CurrentPlaylistName = "";

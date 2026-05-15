@@ -30,6 +30,7 @@ namespace DjApplication3.WinUI.ViewModels
                 var deck = Decks[^1];
                 deck.PropertyChanged -= Deck_PropertyChanged;
                 deck.BpmCalculated -= Deck_BpmCalculated;
+                deck.PlayedEnough -= Deck_PlayedEnough;
                 deck.Dispose();
                 Decks.RemoveAt(Decks.Count - 1);
             }
@@ -39,6 +40,7 @@ namespace DjApplication3.WinUI.ViewModels
                 var deck = new DeckViewModel(Decks.Count + 1, _library, _settings, _dispatcherQueue);
                 deck.PropertyChanged += Deck_PropertyChanged;
                 deck.BpmCalculated += Deck_BpmCalculated;
+                deck.PlayedEnough += Deck_PlayedEnough;
                 Decks.Add(deck);
             }
 
@@ -75,6 +77,9 @@ namespace DjApplication3.WinUI.ViewModels
                 row.Bpm = bpm;
             }
         }
+
+        private void Deck_PlayedEnough(object? sender, Musique musique)
+            => MarkMusicPlayed(musique);
 
         private void ApplyCrossfade()
         {

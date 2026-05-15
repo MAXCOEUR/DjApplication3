@@ -96,6 +96,36 @@ namespace DjApplication3.WinUI.ViewModels
                 var deck = Decks.ElementAtOrDefault(RightDeckIndex);
                 if (deck != null) deck.Volume = (int)(volume * 100);
             });
+            _midi.BassLeft += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(LeftDeckIndex);
+                if (deck != null) deck.BassDb = value;
+            });
+            _midi.MediumLeft += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(LeftDeckIndex);
+                if (deck != null) deck.MidDb = value;
+            });
+            _midi.TrebleLeft += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(LeftDeckIndex);
+                if (deck != null) deck.TrebleDb = value;
+            });
+            _midi.BassRight += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(RightDeckIndex);
+                if (deck != null) deck.BassDb = value;
+            });
+            _midi.MediumRight += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(RightDeckIndex);
+                if (deck != null) deck.MidDb = value;
+            });
+            _midi.TrebleRight += (_, value) => Enqueue(() =>
+            {
+                var deck = Decks.ElementAtOrDefault(RightDeckIndex);
+                if (deck != null) deck.TrebleDb = value;
+            });
             _midi.Mix += (_, mix) => Enqueue(() => Crossfade = (int)(mix * 100));
             _midi.ScratchLeft += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.ChangePosition(value != 127));
             _midi.ScratchRight += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ChangePosition(value != 127));

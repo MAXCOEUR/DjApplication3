@@ -25,13 +25,20 @@ namespace DjApplication3.WinUI.ViewModels
         private bool _isAutoNext;
         private bool _hasMusic;
         private int _volume = 100;
+        private double _bassDb;
+        private double _midDb;
+        private double _trebleDb;
         private double _deckHeight = 260;
         private sbyte[] _waveform = Array.Empty<sbyte>();
         private bool _isEndingSoon;
         private bool _isHandlingTrackEnd;
+        private bool _playedEnoughReported;
+        private DateTime? _lastPlaybackUpdateUtc;
+        private TimeSpan _listenedDuration = TimeSpan.Zero;
         private string _nextMusicPreview = "Aucune musique suivante";
 
         public event EventHandler<int>? BpmCalculated;
+        public event EventHandler<Musique>? PlayedEnough;
 
         public DeckViewModel(int trackNumber, IMusicLibraryService library, ISettingsService settings, DispatcherQueue dispatcherQueue)
         {
@@ -82,6 +89,9 @@ namespace DjApplication3.WinUI.ViewModels
         public bool IsAutoNext { get => _isAutoNext; set { if (SetProperty(ref _isAutoNext, value)) _ = PreloadNextMusicAsync(); } }
         public bool HasMusic { get => _hasMusic; private set => SetProperty(ref _hasMusic, value); }
         public int Volume { get => _volume; set { if (SetProperty(ref _volume, value)) TryAudio(() => _audio.SetTrackVolume(value / 100.0f), "Volume indisponible"); } }
+        public double BassDb { get => _bassDb; set { if (SetProperty(ref _bassDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
+        public double MidDb { get => _midDb; set { if (SetProperty(ref _midDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
+        public double TrebleDb { get => _trebleDb; set { if (SetProperty(ref _trebleDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
         public double DeckHeight { get => _deckHeight; set => SetProperty(ref _deckHeight, value); }
         public sbyte[] Waveform { get => _waveform; private set => SetProperty(ref _waveform, value); }
         public string HeadphoneLabel => IsHeadphone ? "Casque ON" : "Casque OFF";
@@ -107,5 +117,15 @@ namespace DjApplication3.WinUI.ViewModels
         }
 
         public void Dispose() => _audio.Dispose();
+
+        public void ResetEqualizer()
+        {
+            BassDb = 0;
+            MidDb = 0;
+            TrebleDb = 0;
+        }
+
+        private void ApplyEqualizer()
+            => TryAudio(() => _audio.SetEqualizer((float)BassDb, (float)MidDb, (float)TrebleDb), "EQ indisponible");
     }
 }

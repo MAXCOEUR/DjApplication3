@@ -39,6 +39,8 @@ namespace DjApplication3.WinUI.ViewModels
             HasMusic = false;
             IsPlaying = false;
             IsEndingSoon = false;
+            _lastPlaybackUpdateUtc = null;
+            _listenedDuration = TimeSpan.Zero;
             UpdatePosition();
         }
 
@@ -89,13 +91,17 @@ namespace DjApplication3.WinUI.ViewModels
                 CurrentTime = Format(position);
                 TotalTime = Format(duration);
                 RemainingTime = Format(remaining);
-                IsPlaying = _audio.IsPlaying;
+                var isCurrentlyPlaying = _audio.IsPlaying;
+                UpdateListenedDuration(isCurrentlyPlaying);
+                IsPlaying = isCurrentlyPlaying;
 
                 IsEndingSoon =
                     HasMusic &&
                     duration > TimeSpan.Zero &&
                     remaining.TotalSeconds <= 30 &&
                     remaining.TotalSeconds > 0;
+
+                ReportPlayedEnoughIfNeeded(duration);
 
                 var isAtEnd =
                     HasMusic &&
@@ -122,6 +128,7 @@ namespace DjApplication3.WinUI.ViewModels
                 var currentMusic = _currentMusic;
                 var playlist = _currentMusic?.musiquesInPlayliste;
                 var nextMusic = GetNextMusic();
+                ReportPlayedEnough(force: true);
                 _audio.Stop();
                 IsPlaying = false;
                 PositionRatio = 0f;
@@ -172,6 +179,55 @@ namespace DjApplication3.WinUI.ViewModels
 
         private static string Format(TimeSpan value)
             => $"{(int)value.TotalHours:D2}h {value.Minutes:D2}m {value.Seconds:D2}s";
+
+        private void UpdateListenedDuration(bool isCurrentlyPlaying)
+        {
+            var now = DateTime.UtcNow;
+
+            if (isCurrentlyPlaying && HasMusic)
+            {
+                if (_lastPlaybackUpdateUtc.HasValue)
+                {
+                    _listenedDuration += now - _lastPlaybackUpdateUtc.Value;
+                }
+
+                _lastPlaybackUpdateUtc = now;
+                return;
+            }
+
+            if (_lastPlaybackUpdateUtc.HasValue)
+            {
+                _listenedDuration += now - _lastPlaybackUpdateUtc.Value;
+                _lastPlaybackUpdateUtc = null;
+            }
+        }
+
+        private void ReportPlayedEnoughIfNeeded(TimeSpan duration)
+        {
+            if (duration <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            var listenedEnough = PositionRatio >= 0.30f
+                || _listenedDuration.TotalSeconds >= duration.TotalSeconds * 0.30;
+
+            if (listenedEnough)
+            {
+                ReportPlayedEnough(force: false);
+            }
+        }
+
+        private void ReportPlayedEnough(bool force)
+        {
+            if (_playedEnoughReported || _currentMusic is null || !HasMusic)
+            {
+                return;
+            }
+
+            _playedEnoughReported = true;
+            PlayedEnough?.Invoke(this, _currentMusic);
+        }
 
         private void TryAudio(Action action, string errorMessage)
         {

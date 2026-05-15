@@ -4,6 +4,7 @@ using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -20,6 +21,7 @@ namespace DjApplication3.WinUI.ViewModels
         private readonly IMusicLibraryService _library = new MusicLibraryService();
         private readonly ISettingsService _settings = new SettingsService();
         private readonly IMidiControllerService _midi = new HerculesMidiControllerService();
+        private readonly IPreviewPlayerService _previewPlayer;
         private int _trackCount = 2;
         private int _leftDeckIndex;
         private int _rightDeckIndex = 1;
@@ -44,11 +46,15 @@ namespace DjApplication3.WinUI.ViewModels
         private bool _isLibraryLoading;
         private string _libraryLoadingText = "Chargement...";
         private int _libraryLoadingDepth;
+        private MusicRowViewModel? _previewRow;
+        private CancellationTokenSource? _previewCancellation;
 
         public MainViewModel(DispatcherQueue dispatcherQueue)
         {
             _dispatcherQueue = dispatcherQueue;
             AppPaths.EnsureRuntimeDirectories();
+            _previewPlayer = new PreviewPlayerService(_library, _settings);
+            _previewPlayer.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(ClearPreviewState);
             RefreshDecks();
         }
 
@@ -135,6 +141,7 @@ namespace DjApplication3.WinUI.ViewModels
                 if (SetProperty(ref _headphoneVolume, Math.Clamp(value, 0, 100)))
                 {
                     foreach (var deck in Decks) deck.SetHeadphoneVolume(_headphoneVolume);
+                    _previewPlayer.SetHeadphoneVolume(_headphoneVolume);
                 }
             }
         }
@@ -224,9 +231,13 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 deck.PropertyChanged -= Deck_PropertyChanged;
                 deck.BpmCalculated -= Deck_BpmCalculated;
+                deck.PlayedEnough -= Deck_PlayedEnough;
                 deck.Dispose();
             }
 
+            _previewCancellation?.Cancel();
+            _previewCancellation?.Dispose();
+            _previewPlayer.Dispose();
             _midi.Dispose();
         }
     }
