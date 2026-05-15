@@ -12,6 +12,13 @@ namespace DjApplication3.WinUI.Controls
 
         private readonly DispatcherTimer _animationTimer;
 
+        public static readonly DependencyProperty BarHeightProperty =
+            DependencyProperty.Register(
+                nameof(BarHeight),
+                typeof(double),
+                typeof(TrackBarPerso),
+                new PropertyMetadata(36d, OnBarHeightChanged));
+
         public event EventHandler<double>? ValueChanged;
 
         public static readonly DependencyProperty ValueProperty =
@@ -89,8 +96,15 @@ namespace DjApplication3.WinUI.Controls
             Unloaded += TrackBarPerso_Unloaded;
         }
 
+        public double BarHeight
+        {
+            get => (double)GetValue(BarHeightProperty);
+            set => SetValue(BarHeightProperty, value);
+        }
+
         private void TrackBarPerso_Loaded(object sender, RoutedEventArgs e)
         {
+            ApplyBarHeight();
             UpdateThumbPosition();
         }
 
@@ -128,6 +142,38 @@ namespace DjApplication3.WinUI.Controls
 
             control.Value = Clamp(control.Value, control.Minimum, control.Maximum);
             control.UpdateThumbPosition();
+        }
+
+        private static void OnBarHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (TrackBarPerso)d;
+            control.ApplyBarHeight();
+        }
+
+        private void ApplyBarHeight()
+        {
+            try
+            {
+                var h = Math.Max(8.0, BarHeight);
+                this.MinHeight = h;
+
+                if (BackgroundBar != null)
+                {
+                    BackgroundBar.Height = Math.Max(4.0, h / 2.0);
+                }
+
+                if (Thumb != null)
+                {
+                    Thumb.Height = Math.Max(10.0, h - 2.0);
+                    // keep width as-is
+                }
+
+                UpdateThumbPosition();
+            }
+            catch
+            {
+                // swallow errors to avoid UI crashes
+            }
         }
 
         private void Root_PointerPressed(object sender, PointerRoutedEventArgs e)

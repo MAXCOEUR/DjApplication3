@@ -8,69 +8,17 @@ namespace DjApplication3.WinUI.Controls
 {
     public sealed partial class DeckControl : UserControl
     {
-        private DeckViewModel? _subscribedViewModel;
-
         public DeckControl()
         {
             InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
         }
 
-        private DeckViewModel? ViewModel => DataContext as DeckViewModel;
-
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void Waveform_SeekRequested(object? sender, double e)
         {
-            if (_subscribedViewModel != null)
+            if (DataContext is DeckViewModel vm)
             {
-                _subscribedViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-            }
-            if (args.NewValue is DeckViewModel newVm)
-            {
-                newVm.PropertyChanged += ViewModel_PropertyChanged;
-                _subscribedViewModel = newVm;
-            }
-            UpdatePlayPauseButton();
-        }
-
-        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(DeckViewModel.IsPlaying))
-            {
-                UpdatePlayPauseButton();
+                vm.Seek(e);
             }
         }
-
-        private void UpdatePlayPauseButton()
-        {
-            PlayPauseButton.Content = ViewModel?.IsPlaying == true ? "Pause" : "Play";
-        }
-
-        private void PlayPauseButton_Click(object sender, RoutedEventArgs e) => ViewModel?.TogglePlayPause();
-
-        private void StopButton_Click(object sender, RoutedEventArgs e) => ViewModel?.Stop();
-
-        private void HeadphoneButton_Click(object sender, RoutedEventArgs e) => ViewModel?.ToggleHeadphone();
-
-        private void ResetAudioButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel?.ResetEqualizer();
-        }
-
-        private async void RandomButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (ViewModel != null)
-                {
-                    await ViewModel.ShufflePlaylistAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Shuffle impossible: {ex}");
-            }
-        }
-
-        private void Waveform_SeekRequested(object? sender, double e) => ViewModel?.Seek(e);
     }
 }

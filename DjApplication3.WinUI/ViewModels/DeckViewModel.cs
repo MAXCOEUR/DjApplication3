@@ -4,6 +4,8 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using System;
 using Windows.UI;
+using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -40,6 +42,14 @@ namespace DjApplication3.WinUI.ViewModels
         public event EventHandler<int>? BpmCalculated;
         public event EventHandler<Musique>? PlayedEnough;
 
+        // Commands for UI bindings
+        public ICommand PlayPauseCommand { get; }
+        public ICommand StopCommand { get; }
+        public ICommand ToggleHeadphoneCommand { get; }
+        public ICommand ResetEqualizerCommand { get; }
+        public ICommand RandomCommand { get; }
+        public ICommand SeekCommand { get; }
+
         public DeckViewModel(int trackNumber, IMusicLibraryService library, ISettingsService settings, DispatcherQueue dispatcherQueue)
         {
             TrackNumber = trackNumber;
@@ -48,6 +58,17 @@ namespace DjApplication3.WinUI.ViewModels
             _audio = new CsCoreAudioPlayerService(settings);
             _audio.PositionChanged += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePosition);
             _audio.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePosition);
+
+            PlayPauseCommand = new RelayCommand(_ => TogglePlayPause());
+            StopCommand = new RelayCommand(_ => Stop());
+            ToggleHeadphoneCommand = new RelayCommand(_ => ToggleHeadphone());
+            ResetEqualizerCommand = new RelayCommand(_ => ResetEqualizer());
+            RandomCommand = new RelayCommand(async _ => await ShufflePlaylistAsync());
+            SeekCommand = new RelayCommand(param =>
+            {
+                if (param is double d) Seek(d);
+                else if (param != null && double.TryParse(param.ToString(), out var v)) Seek(v);
+            });
         }
 
         public int TrackNumber { get; }

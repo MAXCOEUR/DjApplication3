@@ -8,20 +8,20 @@
     </UserControl.Resources>
     <Grid Background="#171A1E">
         <Grid.RowDefinitions>
-            <RowDefinition Height="56" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="28" />
+            <RowDefinition Height="20" />
         </Grid.RowDefinitions>
 
-        <Grid Padding="14,8" Background="#202427" ColumnSpacing="12">
+        <Grid Padding="12,4" Background="#202427" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="120" />
                 <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="86" />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="DjApplication 3" Foreground="#F6F7F8" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
-            <ComboBox Grid.Column="1" x:Name="TrackCountCombo" SelectionChanged="TrackCountCombo_SelectionChanged" VerticalAlignment="Center">
+            <TextBlock Text="DjApplication 3" Foreground="#F6F7F8" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" x:Name="TrackCountCombo" SelectionChanged="TrackCountCombo_SelectionChanged" VerticalAlignment="Center" MinHeight="34">
                 <ComboBoxItem Content="2" IsSelected="True" />
                 <ComboBoxItem Content="3" />
                 <ComboBoxItem Content="4" />
@@ -42,11 +42,12 @@
                     Minimum="0"
                     Maximum="100"
                     Default="100"
+                            BarHeight="24"
                     Value="{Binding HeadphoneVolume, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
             </Grid>
-            <Button Grid.Column="3" Content="Option" Click="SettingsButton_Click" MinHeight="40" MinWidth="78" FontWeight="SemiBold" />
+                        <Button Grid.Column="3" Content="Option" Click="SettingsButton_Click" MinHeight="34" MinWidth="72" FontWeight="SemiBold" />
         </Grid>
 
         <Grid x:Name="MainContentGrid" Grid.Row="1" Padding="14" ColumnSpacing="14" SizeChanged="MainContentGrid_SizeChanged">
@@ -58,34 +59,58 @@
 
             <Grid RowSpacing="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="72" />
+                    <RowDefinition Height="40" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Border Background="#24282C" BorderBrush="#3A4148" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                    <Grid ColumnSpacing="12">
+                <Border Background="#24282C" BorderBrush="#3A4148" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                    <Grid ColumnSpacing="10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="116" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="88" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="116" />
+                            <ColumnDefinition Width="88" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Spacing="2">
-                            <TextBlock Text="Gauche" Foreground="#BCC5CE" FontSize="11" />
-                            <ComboBox ItemsSource="{Binding TrackNumbers}" SelectedItem="{Binding LeftDeckNumber, Mode=TwoWay}" HorizontalAlignment="Stretch" MinHeight="42" />
-                        </StackPanel>
-                        <controls:TrackBarPerso
+
+                        <TextBlock
+                            Text="Gauche"
+                            Foreground="#BCC5CE"
+                            FontSize="12"
+                            VerticalAlignment="Center"
+                            Margin="0,0,4,0" />
+
+                        <ComboBox
                             Grid.Column="1"
+                            ItemsSource="{Binding TrackNumbers}"
+                            SelectedItem="{Binding LeftDeckNumber, Mode=TwoWay}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="34" />
+
+                        <controls:TrackBarPerso
+                            Grid.Column="2"
                             Minimum="0"
                             Maximum="100"
                             Default="50"
+                            BarHeight="24"
                             Value="{Binding Crossfade, Mode=TwoWay}"
                             AnimationStep="1"
                             AnimationIntervalMs="10"
+                            VerticalAlignment="Center" />
+
+                        <ComboBox
+                            Grid.Column="3"
+                            ItemsSource="{Binding TrackNumbers}"
+                            SelectedItem="{Binding RightDeckNumber, Mode=TwoWay}"
+                            HorizontalAlignment="Stretch"
+                            MinHeight="34" />
+
+                        <TextBlock
+                            Grid.Column="4"
+                            Text="Droite"
+                            Foreground="#BCC5CE"
+                            FontSize="12"
                             VerticalAlignment="Center"
-                            MinHeight="42" />
-                        <StackPanel Grid.Column="2" Spacing="2">
-                            <TextBlock Text="Droite" Foreground="#BCC5CE" FontSize="11" />
-                            <ComboBox ItemsSource="{Binding TrackNumbers}" SelectedItem="{Binding RightDeckNumber, Mode=TwoWay}" HorizontalAlignment="Stretch" MinHeight="42" />
-                        </StackPanel>
+                            Margin="4,0,0,0" />
                     </Grid>
                 </Border>
 
@@ -428,7 +453,7 @@
             </Grid>
         </Grid>
 
-        <TextBlock Grid.Row="2" Text="{Binding Status}" Foreground="#BCC5CE" Padding="14,4" />
+        <TextBlock Grid.Row="2" Text="{Binding Status}" Foreground="#BCC5CE" Padding="14,2" />
 
         <Border x:Name="SettingsOverlay" Grid.RowSpan="3" Background="#CC000000" Visibility="Collapsed">
             <Grid Width="620" HorizontalAlignment="Right" Background="#202427" Padding="18">

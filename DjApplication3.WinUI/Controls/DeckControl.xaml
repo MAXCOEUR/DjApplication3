@@ -3,26 +3,26 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:DjApplication3.WinUI.Controls">
-    <Border CornerRadius="8" Background="#24282C" BorderBrush="#3A4148" BorderThickness="1" Padding="12" Margin="0,0,0,10" MinHeight="320" Height="{Binding DeckHeight}">
+    <Border CornerRadius="8" Background="#24282C" BorderBrush="#3A4148" BorderThickness="1" Padding="10" Margin="0,0,0,10" MinHeight="320" Height="{Binding DeckHeight}">
         <Border.Resources>
             <Style x:Key="DeckActionButtonStyle" TargetType="Button">
-                <Setter Property="MinHeight" Value="42" />
+                <Setter Property="MinHeight" Value="34" />
                 <Setter Property="MinWidth" Value="68" />
                 <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
             <Style x:Key="DeckToggleButtonStyle" TargetType="ToggleButton">
-                <Setter Property="MinHeight" Value="42" />
+                <Setter Property="MinHeight" Value="34" />
                 <Setter Property="MinWidth" Value="118" />
                 <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
         </Border.Resources>
-        <Grid RowSpacing="8">
+        <Grid RowSpacing="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" MinHeight="92" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="44" />
+                <RowDefinition Height="38" />
             </Grid.RowDefinitions>
 
             <Grid ColumnSpacing="12">
@@ -30,18 +30,19 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="120" />
                     <ColumnDefinition Width="84" />
-                <ColumnDefinition Width="132" />
+                    <ColumnDefinition Width="180" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding Title}" Foreground="#F6F7F8" FontSize="16" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Title}" Foreground="#F6F7F8" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding Bpm}" Foreground="#E9FF70" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="2" Text="{Binding TrackNumber}" Foreground="#F6F7F8" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <ToggleSwitch
-                    Grid.Column="3"
-                    Header="Auto"
-                    IsOn="{Binding IsAutoNext, Mode=TwoWay}"
-                    MinWidth="124"
-                    MinHeight="40"
-                    ToolTipService.ToolTip="{Binding NextMusicPreview}" />
+                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <ToggleSwitch
+                        IsOn="{Binding IsAutoNext, Mode=TwoWay}"
+                        MinWidth="64"
+                        MinHeight="28"
+                        ToolTipService.ToolTip="{Binding NextMusicPreview}" />
+                    <TextBlock Text="Auto" Foreground="#BCC5CE" FontSize="12" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
             </Grid>
 
             <controls:WaveformControl
@@ -62,7 +63,7 @@
                 <TextBlock Grid.Column="2" Text="{Binding RemainingTime}" Foreground="#FFB4A8" FontWeight="SemiBold" HorizontalAlignment="Right" />
             </Grid>
 
-            <Grid Grid.Row="3" ColumnSpacing="8" RowSpacing="4">
+            <Grid Grid.Row="3" ColumnSpacing="8" RowSpacing="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -78,6 +79,7 @@
                     Minimum="-12"
                     Maximum="12"
                     Default="0"
+                    BarHeight="24"
                     Value="{Binding BassDb, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
@@ -87,6 +89,7 @@
                     Minimum="-12"
                     Maximum="12"
                     Default="0"
+                    BarHeight="24"
                     Value="{Binding MidDb, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
@@ -96,10 +99,11 @@
                     Minimum="-12"
                     Maximum="12"
                     Default="0"
+                    BarHeight="24"
                     Value="{Binding TrebleDb, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
-                <Button Grid.Column="6" Content="Reset" Click="ResetAudioButton_Click" MinHeight="30" />
+                <Button Grid.Column="6" Content="Reset" Command="{Binding ResetEqualizerCommand}" MinHeight="26" />
             </Grid>
 
             <Grid Grid.Row="4" ColumnSpacing="8">
@@ -113,11 +117,11 @@
                 <Button
                     x:Name="PlayPauseButton"
                     Content="{Binding PlayStateLabel}"
-                    Click="PlayPauseButton_Click"
+                    Command="{Binding PlayPauseCommand}"
                     Style="{StaticResource DeckActionButtonStyle}"
                     Background="{Binding PlayButtonBackground}"
                     Foreground="{Binding PlayButtonForeground}" />
-                <Button Grid.Column="1" Content="Stop" Click="StopButton_Click" Style="{StaticResource DeckActionButtonStyle}" />
+                <Button Grid.Column="1" Content="Stop" Command="{Binding StopCommand}" Style="{StaticResource DeckActionButtonStyle}" />
                 <controls:TrackBarPerso
                     Grid.Column="2"
                     Minimum="0"
@@ -126,11 +130,11 @@
                     Value="{Binding Volume, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
-                <ToggleButton Grid.Column="3" Content="{Binding HeadphoneLabel}" IsChecked="{Binding IsHeadphone, Mode=TwoWay}" Style="{StaticResource DeckToggleButtonStyle}" />
+                <ToggleButton Grid.Column="3" Content="{Binding HeadphoneLabel}" IsChecked="{Binding IsHeadphone, Mode=TwoWay}" Command="{Binding ToggleHeadphoneCommand}" Style="{StaticResource DeckToggleButtonStyle}" />
                 <Button
                     Grid.Column="4"
                     Content="Rnd"
-                    Click="RandomButton_Click"
+                    Command="{Binding RandomCommand}"
                     Style="{StaticResource DeckActionButtonStyle}"
                     ToolTipService.ToolTip="{Binding NextMusicPreview}" />
             </Grid>
