@@ -1,21 +1,18 @@
-﻿using DjApplication3.model;
+using DjApplication3.model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace DjApplication3.DataSource
 {
     internal class CacheDataSource
     {
-        private static CacheDataSource instance;
-        private Dictionary<Musique,int> musiquesBPM = new Dictionary<Musique, int>();
-        private Musique musique;
+        private static CacheDataSource? instance;
+        private readonly Dictionary<string, int> musiquesBPM = new(StringComparer.OrdinalIgnoreCase);
 
         private CacheDataSource()
         {
-            // Constructeur privé pour empêcher l'instanciation en dehors de la classe.
+            // Constructeur prive pour empecher l'instanciation en dehors de la classe.
         }
 
         public static CacheDataSource Instance
@@ -32,33 +29,36 @@ namespace DjApplication3.DataSource
 
         public int? GetBpm(Musique musique)
         {
-
-            if (musiquesBPM.ContainsKey(musique))
+            var key = GetCacheKey(musique);
+            if (musiquesBPM.ContainsKey(key))
             {
-                return musiquesBPM[musique];
-            }
-            if (this.musique == musique)
-            {
-                return null;
+                return musiquesBPM[key];
             }
 
             return null;
         }
 
-        public void AddMusiqueBPM(Musique musique,int bpm)
+        public void AddMusiqueBPM(Musique musique, int bpm)
         {
-            // Vérifier si la clé existe déjà dans le dictionnaire
-            if (musiquesBPM.ContainsKey(musique))
+            var key = GetCacheKey(musique);
+            if (musiquesBPM.ContainsKey(key))
             {
-                // La clé existe, mettre à jour la valeur associée
-                musiquesBPM[musique] = bpm;
+                musiquesBPM[key] = bpm;
             }
             else
             {
-                // La clé n'existe pas, ajouter une nouvelle entrée
-                musiquesBPM.Add(musique, bpm);
+                musiquesBPM.Add(key, bpm);
             }
         }
-    }
 
+        private static string GetCacheKey(Musique musique)
+        {
+            if (!string.IsNullOrWhiteSpace(musique.url) && File.Exists(musique.url))
+            {
+                return Path.GetFullPath(musique.url);
+            }
+
+            return MusicIdentity.GetStableKey(musique);
+        }
+    }
 }

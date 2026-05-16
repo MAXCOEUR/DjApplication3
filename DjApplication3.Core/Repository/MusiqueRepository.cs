@@ -41,9 +41,12 @@ namespace DjApplication3.repository
 
 
         public List<Musique> GetMp3Files(string folderPath)
+            => GetAudioFiles(folderPath);
+
+        public List<Musique> GetAudioFiles(string folderPath)
         {
             LocalDataSource dataSource = new LocalDataSource();
-            return dataSource.GetMp3Files(folderPath);
+            return dataSource.GetAudioFiles(folderPath);
         }
         public async Task<List<Musique>> GetMusiqueYoutube(string search)
         {
@@ -104,12 +107,12 @@ namespace DjApplication3.repository
 
             if (source == "Youtube")
             {
-                return await PreviewDataSource.CreateInternetPreviewAsync(musique, useCookies: false);
+                return await DownloadMusiqueYoutube(musique);
             }
 
             if (source == "Youtube Music")
             {
-                return await PreviewDataSource.CreateInternetPreviewAsync(musique, useCookies: true);
+                return await DownloadMusiqueYtMusic(musique);
             }
 
             throw new FileNotFoundException("Fichier local introuvable pour la pre-ecoute.", musique.url);

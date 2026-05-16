@@ -3,8 +3,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using WinRT.Interop;
 
 namespace DjApplication3.WinUI
@@ -48,11 +46,7 @@ namespace DjApplication3.WinUI
         {
             try
             {
-                foreach (var file in Directory.GetFiles(AppPaths.TempMusicDirectory)
-                             .Where(file => Path.GetExtension(file).Equals(".mp3", StringComparison.OrdinalIgnoreCase)))
-                {
-                    File.Delete(file);
-                }
+                AppPaths.CleanupTempMusicDirectory();
             }
             catch (Exception ex)
             {

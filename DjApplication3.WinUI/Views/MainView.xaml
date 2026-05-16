@@ -8,25 +8,108 @@
     </UserControl.Resources>
     <Grid Background="#171A1E">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
 
-        <Grid Padding="12,4" Background="#202427" ColumnSpacing="10">
+        <Grid Padding="6" Background="#202427" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190" />
+                <ColumnDefinition Width="96" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="120" />
                 <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="86" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="DjApplication 3" Foreground="#F6F7F8" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+
             <ComboBox Grid.Column="1" x:Name="TrackCountCombo" SelectionChanged="TrackCountCombo_SelectionChanged" VerticalAlignment="Center" MinHeight="34">
                 <ComboBoxItem Content="2" IsSelected="True" />
                 <ComboBoxItem Content="3" />
                 <ComboBoxItem Content="4" />
             </ComboBox>
-            <Grid Grid.Column="2" ColumnSpacing="8" VerticalAlignment="Center">
+
+            <Grid Grid.Column="2" RowSpacing="3" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="18" />
+                    <RowDefinition Height="34" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="84" />
+                        <ColumnDefinition Width="180" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Text="{Binding PreviewTitle}"
+                        Foreground="#F6F7F8"
+                        FontSize="12"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding PreviewBpmText}"
+                        Foreground="#E9FF70"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"
+                        TextAlignment="Right" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Text="{Binding DeckBpmSummary}"
+                        Foreground="#BCC5CE"
+                        FontSize="12"
+                        VerticalAlignment="Center"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+
+                <Grid Grid.Row="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="58" />
+                        <ColumnDefinition Width="46" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="92" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button
+                        Content="{Binding PreviewPlayPauseText}"
+                        Click="PreviewPlayPauseButton_Click"
+                        IsEnabled="{Binding IsPreviewActive}"
+                        Background="{Binding PreviewPlayPauseBackground}"
+                        Foreground="{Binding PreviewPlayPauseForeground}"
+                        MinHeight="28"
+                        Padding="6,0" />
+
+                    <Button
+                        Grid.Column="1"
+                        Content="Stop"
+                        Click="PreviewStopButton_Click"
+                        IsEnabled="{Binding IsPreviewActive}"
+                        MinHeight="28"
+                        Padding="6,0" />
+
+                    <controls:WaveformControl
+                        Grid.Column="2"
+                        Waveform="{Binding PreviewWaveform}"
+                        Position="{Binding PreviewWavePosition}"
+                        IsEnabled="{Binding IsPreviewActive}"
+                        SeekRequested="PreviewWaveform_SeekRequested"
+                        Height="30"
+                        VerticalAlignment="Center" />
+
+                    <TextBlock
+                        Grid.Column="3"
+                        Text="{Binding PreviewTimeText}"
+                        Foreground="#BCC5CE"
+                        FontSize="12"
+                        TextAlignment="Right"
+                        VerticalAlignment="Center" />
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="3" ColumnSpacing="8" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -47,7 +130,7 @@
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
             </Grid>
-                        <Button Grid.Column="3" Content="Option" Click="SettingsButton_Click" MinHeight="34" MinWidth="72" FontWeight="SemiBold" />
+                        <Button Grid.Column="4" Content="Option" Click="SettingsButton_Click" MinHeight="34" MinWidth="72" FontWeight="SemiBold" />
         </Grid>
 
         <Grid x:Name="MainContentGrid" Grid.Row="1" Padding="14" ColumnSpacing="14" SizeChanged="MainContentGrid_SizeChanged">

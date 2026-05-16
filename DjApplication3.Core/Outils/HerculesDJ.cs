@@ -21,6 +21,7 @@ namespace DjApplication3.outils
         public event EventHandler? eventButtonRight;
         public event EventHandler? eventButtonLoadLeft;
         public event EventHandler? eventButtonLoadRight;
+        public event EventHandler? eventPreviewPlayPause;
         public event EventHandler<int>? eventPisteLeft;
         public event EventHandler<int>? eventPisteRight;
         public event EventHandler<float>? eventVolumeLeft;
@@ -85,6 +86,7 @@ namespace DjApplication3.outils
 
             PreviewLeft(false);
             PreviewRight(false);
+            PreviewPlayPause(false);
 
             lightButton();
         }
@@ -264,6 +266,13 @@ namespace DjApplication3.outils
                             eventScratchRightPress?.Invoke(this, false);
                         }
                         Console.WriteLine("eventScratchRightPress " + noteOnEvent.Velocity);
+                        break;
+                    case 53:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventPreviewPlayPause?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("eventPreviewPlayPause SCRATCH " + noteOnEvent.Velocity);
                         break;
                     case 54:
                         if (noteOnEvent.Velocity == 127)
@@ -447,6 +456,11 @@ namespace DjApplication3.outils
         public void loadedRight(bool isOn)
         {
             SendNoteOn(51, isOn ? 127 : 0);
+        }
+
+        public void PreviewPlayPause(bool isOn)
+        {
+            SendNoteOn(53, isOn ? 0 : 127);
         }
 
         public void selectPisteLeft(int piste)

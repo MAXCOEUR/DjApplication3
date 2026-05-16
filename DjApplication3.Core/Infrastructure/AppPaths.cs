@@ -32,5 +32,48 @@ namespace DjApplication3.Infrastructure
             Directory.CreateDirectory(PreviewMusicDirectory);
             Directory.CreateDirectory(ExternalToolsDirectory);
         }
+
+        public static void CleanupTempMusicDirectory()
+        {
+            if (!Directory.Exists(TempMusicDirectory))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(TempMusicDirectory, "*", SearchOption.AllDirectories))
+            {
+                TryDeleteFile(file);
+            }
+
+            foreach (var directory in Directory.GetDirectories(TempMusicDirectory, "*", SearchOption.AllDirectories))
+            {
+                TryDeleteDirectory(directory);
+            }
+        }
+
+        private static void TryDeleteFile(string file)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void TryDeleteDirectory(string directory)
+        {
+            try
+            {
+                if (Directory.Exists(directory) && Directory.GetFileSystemEntries(directory).Length == 0)
+                {
+                    Directory.Delete(directory);
+                }
+            }
+            catch
+            {
+            }
+        }
     }
 }

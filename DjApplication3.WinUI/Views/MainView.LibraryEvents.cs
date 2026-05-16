@@ -59,6 +59,19 @@ namespace DjApplication3.WinUI.Views
             }
         }
 
+        private void PreviewPlayPauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.TogglePreviewPlayback();
+        }
+
+        private void PreviewStopButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.StopPreview();
+        }
+
+        private void PreviewWaveform_SeekRequested(object? sender, double positionRatio)
+            => ViewModel.SeekPreview(positionRatio * 100.0);
+
         private async void LoadLeftButton_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as Button)?.Tag is MusicRowViewModel row)

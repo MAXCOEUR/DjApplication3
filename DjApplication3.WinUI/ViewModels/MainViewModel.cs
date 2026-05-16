@@ -2,10 +2,12 @@ using DjApplication3.DataSource;
 using DjApplication3.Infrastructure;
 using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
+using Windows.UI;
 
 namespace DjApplication3.WinUI.ViewModels
 {
@@ -35,6 +37,15 @@ namespace DjApplication3.WinUI.ViewModels
         private string _localPathDisplay = "Racine";
         private string _currentPlaylistName = "";
         private string _status = "Prêt";
+        private string _previewTitle = "Aucune pre-ecoute";
+        private string _previewTimeText = "00:00 / 00:00";
+        private string _previewBpmText = "BPM --";
+        private string _deckBpmSummary = "BPM pistes : --";
+        private double _previewPositionRatio;
+        private float _previewWavePosition;
+        private sbyte[] _previewWaveform = Array.Empty<sbyte>();
+        private bool _isPreviewActive;
+        private bool _isPreviewPlaying;
         private bool _isSettingsOpen;
         private int _selectedMusicIndex = -1;
         private int _leftDeckNumber = 1;
@@ -60,6 +71,7 @@ namespace DjApplication3.WinUI.ViewModels
             AppPaths.EnsureRuntimeDirectories();
             _playedMusicKeys = LoadPlayedMusicKeys();
             _previewPlayer = new PreviewPlayerService(_library, _settings);
+            _previewPlayer.PositionChanged += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePreviewPlayerState);
             _previewPlayer.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(ClearPreviewState);
             RefreshDecks();
         }
@@ -190,6 +202,49 @@ namespace DjApplication3.WinUI.ViewModels
             : $"Playlist chargee : {CurrentPlaylistName}";
 
         public string Status { get => _status; set => SetProperty(ref _status, value); }
+        public string PreviewTitle { get => _previewTitle; private set => SetProperty(ref _previewTitle, value); }
+        public string PreviewTimeText { get => _previewTimeText; private set => SetProperty(ref _previewTimeText, value); }
+        public string PreviewBpmText { get => _previewBpmText; private set => SetProperty(ref _previewBpmText, value); }
+        public string DeckBpmSummary { get => _deckBpmSummary; private set => SetProperty(ref _deckBpmSummary, value); }
+        public double PreviewPositionRatio { get => _previewPositionRatio; private set => SetProperty(ref _previewPositionRatio, Math.Clamp(value, 0, 100)); }
+        public float PreviewWavePosition { get => _previewWavePosition; private set => SetProperty(ref _previewWavePosition, Math.Clamp(value, 0f, 1f)); }
+        public sbyte[] PreviewWaveform { get => _previewWaveform; private set => SetProperty(ref _previewWaveform, value); }
+        public bool IsPreviewActive
+        {
+            get => _isPreviewActive;
+            private set
+            {
+                if (SetProperty(ref _isPreviewActive, value))
+                {
+                    OnPropertyChanged(nameof(PreviewPlayPauseText));
+                    OnPropertyChanged(nameof(PreviewPlayPauseBackground));
+                    OnPropertyChanged(nameof(PreviewPlayPauseForeground));
+                }
+            }
+        }
+
+        public bool IsPreviewPlaying
+        {
+            get => _isPreviewPlaying;
+            private set
+            {
+                if (SetProperty(ref _isPreviewPlaying, value))
+                {
+                    OnPropertyChanged(nameof(PreviewPlayPauseText));
+                    OnPropertyChanged(nameof(PreviewPlayPauseBackground));
+                    OnPropertyChanged(nameof(PreviewPlayPauseForeground));
+                }
+            }
+        }
+
+        public string PreviewPlayPauseText => IsPreviewPlaying ? "Pause" : "Play";
+        public SolidColorBrush PreviewPlayPauseBackground => IsPreviewPlaying
+            ? new SolidColorBrush(Color.FromArgb(255, 0, 170, 80))
+            : IsPreviewActive
+                ? new SolidColorBrush(Color.FromArgb(255, 190, 45, 45))
+                : new SolidColorBrush(Color.FromArgb(255, 64, 72, 82));
+
+        public SolidColorBrush PreviewPlayPauseForeground => new(Color.FromArgb(255, 255, 255, 255));
         public bool IsSettingsOpen { get => _isSettingsOpen; set => SetProperty(ref _isSettingsOpen, value); }
 
         public int SelectedMusicIndex

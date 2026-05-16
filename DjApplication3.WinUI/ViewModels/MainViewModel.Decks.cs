@@ -56,6 +56,7 @@ namespace DjApplication3.WinUI.ViewModels
             RightDeckIndex = RightDeckNumber - 1;
             ApplyCrossfade();
             SyncControllerState();
+            UpdateDeckBpmSummary();
         }
 
         private void Deck_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -65,6 +66,12 @@ namespace DjApplication3.WinUI.ViewModels
                 or nameof(DeckViewModel.HasMusic))
             {
                 SyncControllerState();
+            }
+
+            if (e.PropertyName is nameof(DeckViewModel.Bpm)
+                or nameof(DeckViewModel.HasMusic))
+            {
+                UpdateDeckBpmSummary();
             }
         }
 
@@ -76,6 +83,8 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 row.Bpm = bpm;
             }
+
+            UpdateDeckBpmSummary();
         }
 
         private void Deck_PlayedEnough(object? sender, Musique musique)
@@ -89,5 +98,22 @@ namespace DjApplication3.WinUI.ViewModels
             if (LeftDeckIndex >= 0 && LeftDeckIndex < Decks.Count) Decks[LeftDeckIndex].SetMasterVolume(leftVolume);
             if (RightDeckIndex >= 0 && RightDeckIndex < Decks.Count) Decks[RightDeckIndex].SetMasterVolume(rightVolume);
         }
+
+        private void UpdateDeckBpmSummary()
+        {
+            if (Decks.Count == 0)
+            {
+                DeckBpmSummary = "BPM pistes : --";
+                return;
+            }
+
+            DeckBpmSummary = "BPM pistes : " + string.Join(" | ", Decks.Select(deck =>
+                $"P{deck.TrackNumber} {NormalizeDeckBpm(deck.Bpm)}"));
+        }
+
+        private static string NormalizeDeckBpm(string bpm)
+            => string.IsNullOrWhiteSpace(bpm) || bpm == "000 BPM"
+                ? "--"
+                : bpm.Replace(" BPM", "", StringComparison.OrdinalIgnoreCase);
     }
 }

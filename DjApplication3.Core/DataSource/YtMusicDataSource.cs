@@ -205,49 +205,59 @@ namespace DjApplication3.DataSource
         {
 
             AppPaths.EnsureRuntimeDirectories();
-            string lienMusique = Path.Combine(AppPaths.TempMusicDirectory, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+            var baseName = $"{musiqueyt.title} ({musiqueyt.author})";
+            var existingPath = SupportedAudioFormats.FindExistingAudioFile(AppPaths.TempMusicDirectory, baseName);
             string lienMusiqueTmp="";
 
-            if (File.Exists(lienMusique))
+            if (existingPath != null)
             {
-                TagLib.File chemain = TagLib.File.Create(lienMusique);
-
-                if (chemain != null && chemain.Tag != null)
-                {
-                    string title = chemain.Tag.Title ?? Path.GetFileNameWithoutExtension(lienMusique);
-                    string author = string.Join(", ", chemain.Tag.Artists) ?? "";
-
-                    return new Musique(lienMusique, title, author);
-                }
-
+                var resolvedPath = await EnsureDirectDownloadReadyAsync(existingPath, baseName);
+                return CreateMusicFromFile(resolvedPath, musiqueyt.title, musiqueyt.author);
             }
+
+            string lienMusique = Path.Combine(AppPaths.TempMusicDirectory, $"{baseName}.mp3");
             try
             {
                 var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(musiqueyt.url);
-                var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                lienMusiqueTmp = Path.Combine(AppPaths.TempMusicDirectory, $"{musiqueyt.title} ({musiqueyt.author}).{streamInfo.Container}");
+                var streamInfo = SelectBestAudioStream(streamManifest.GetAudioOnlyStreams());
+                var directExtension = GetDirectDownloadExtension(streamInfo);
+                lienMusique = Path.Combine(AppPaths.TempMusicDirectory, baseName + (directExtension ?? ".mp3"));
+                lienMusiqueTmp = directExtension != null
+                    ? lienMusique + ".download"
+                    : Path.Combine(AppPaths.TempMusicDirectory, $"{baseName}.{streamInfo.Container.Name}");
 
                 Console.WriteLine("start download :" + musiqueyt.title + " " + musiqueyt.url);
                 await _youtube.Videos.Streams.DownloadAsync(streamInfo, lienMusiqueTmp);
                 Console.WriteLine("end download");
-                Console.WriteLine("start mp3");
 
                 Musique musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
 
-                await FFmpegGestion.ConvertWebmToMp3(lienMusiqueTmp, lienMusique);
+                if (directExtension != null)
+                {
+                    if (File.Exists(lienMusique))
+                    {
+                        File.Delete(lienMusique);
+                    }
 
-                var file = TagLib.File.Create(musique.url);
-                file.Tag.Title = musique.title;
-                file.Tag.Performers = new[] { musique.author };
-                file.Save();
-                Console.WriteLine("end mp3");
+                    File.Move(lienMusiqueTmp, lienMusique);
+                    lienMusique = await EnsureDirectDownloadReadyAsync(lienMusique, baseName);
+                    musique = new Musique(lienMusique, musiqueyt.title, musiqueyt.author);
+                }
+                else
+                {
+                    Console.WriteLine("start mp3");
+                    await FFmpegGestion.ConvertAudioToMp3(lienMusiqueTmp, lienMusique);
+                    File.Delete(lienMusiqueTmp);
+                    Console.WriteLine("delete tmp file");
+                }
 
-                File.Delete(lienMusiqueTmp);
-                Console.WriteLine("delete tmp file");
+                TryWriteTags(musique);
+                Console.WriteLine("end download audio");
+
 
                 return musique;
             }
-            catch (Exception ex)
+            catch
             {
                 if (!isConnected())
                 {
@@ -256,8 +266,8 @@ namespace DjApplication3.DataSource
 
                 if (lienMusiqueTmp != "")
                 {
-                    File.Delete(lienMusiqueTmp);
-                    File.Delete(lienMusique);
+                    TryDelete(lienMusiqueTmp);
+                    TryDelete(lienMusique);
                 }
 
                 return await otherdl(musiqueyt);
@@ -273,77 +283,208 @@ namespace DjApplication3.DataSource
             Directory.CreateDirectory(directory);
 
             // Préparation des chemins
-            string outputTemplate = Path.Combine(directory, $"{musiqueyt.title} ({musiqueyt.author}).%(ext)s");
-            string finalMp3Path = Path.Combine(directory, $"{musiqueyt.title} ({musiqueyt.author}).mp3");
+            string baseName = $"{musiqueyt.title} ({musiqueyt.author})";
+            string outputTemplate = Path.Combine(directory, $"{baseName}.%(ext)s");
+            string finalMp3Path = Path.Combine(directory, $"{baseName}.mp3");
 
             // Chemin vers l'outil externe (qjs.exe au lieu de deno pour la légèreté)
             string qjsPath = Path.Combine(pathOutilsExtern, "qjs.exe");
 
-            // CONSTRUCTION DES ARGUMENTS MODERNES
-            // On garde ta structure d'arguments mais avec les fix de contournement YouTube
-            string arguments = $"-x --audio-format mp3 --no-check-certificate " +
-                               $"--js-runtimes \"quickjs:{qjsPath}\" " +
-                               $"--extractor-args \"youtube:player-client=ios,android,web;player-skip=web_music\" " +
-                               $"-o \"{outputTemplate}\" ";
-            if (File.Exists(ytdlpCookieFile))
+            var useCookies = File.Exists(ytdlpCookieFile);
+            var arguments = BuildYtDlpAudioArguments(outputTemplate, qjsPath, musiqueyt.url, useCookies);
+            var exitCode = await RunYtDlpAsync(arguments);
+
+            if (exitCode != 0 && useCookies)
             {
-                // C'est cet argument qui va débloquer le Premium pour yt-dlp
+                Console.WriteLine("yt-dlp avec cookies a echoue, nouvel essai sans cookies.");
+                exitCode = await RunYtDlpAsync(BuildYtDlpAudioArguments(outputTemplate, qjsPath, musiqueyt.url, useCookies: false));
+            }
+
+            var downloadedPath = FindDownloadedFile(directory, baseName);
+            if (downloadedPath != null && SupportedAudioFormats.IsSupported(downloadedPath))
+            {
+                var resolvedPath = await EnsureDirectDownloadReadyAsync(downloadedPath, baseName);
+                var musiqueResult = new Musique(resolvedPath, musiqueyt.title, musiqueyt.author);
+                TryWriteTags(musiqueResult);
+                return musiqueResult;
+            }
+
+            if (downloadedPath != null)
+            {
+                await FFmpegGestion.ConvertAudioToMp3(downloadedPath, finalMp3Path);
+                TryDelete(downloadedPath);
+                var musiqueResult = new Musique(finalMp3Path, musiqueyt.title, musiqueyt.author);
+                TryWriteTags(musiqueResult);
+                return musiqueResult;
+            }
+
+            throw new InvalidOperationException($"Telechargement Youtube Music impossible. Code yt-dlp: {exitCode}.");
+        }
+
+        private static string BuildYtDlpAudioArguments(string outputTemplate, string qjsPath, string url, bool useCookies)
+        {
+            var arguments = "-f \"bestaudio[ext=m4a]/bestaudio[acodec^=mp4a]/bestaudio\" --no-check-certificate ";
+
+            if (File.Exists(qjsPath))
+            {
+                arguments += $"--js-runtimes \"quickjs:{qjsPath}\" ";
+            }
+
+            if (useCookies && File.Exists(ytdlpCookieFile))
+            {
                 arguments += $"--cookies \"{ytdlpCookieFile}\" ";
             }
-            // Ajout de ffmpeg si trouvé via ta classe FFmpegGestion
+
             if (File.Exists(FFmpegGestion.ffmpegPath))
             {
-                arguments += $" --ffmpeg-location \"{FFmpegGestion.ffmpegPath}\"";
+                arguments += $"--ffmpeg-location \"{FFmpegGestion.ffmpegPath}\" ";
             }
 
-            // Ajout de l'URL
-            arguments += $" \"{musiqueyt.url}\"";
+            return arguments + $"-o \"{outputTemplate}\" \"{url}\"";
+        }
 
-            using (var process = new Process())
+        private static async Task<int> RunYtDlpAsync(string arguments)
+        {
+            using var process = new Process();
+            process.StartInfo.FileName = Path.Combine(pathOutilsExtern, "yt-dlp.exe");
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.WorkingDirectory = pathOutilsExtern;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.OutputDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) Console.WriteLine($"[yt-dlp]: {e.Data}"); };
+            process.ErrorDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) Console.WriteLine($"[Error]: {e.Data}"); };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            await process.WaitForExitAsync();
+            return process.ExitCode;
+        }
+
+        private static AudioOnlyStreamInfo SelectBestAudioStream(IEnumerable<AudioOnlyStreamInfo> streams)
+        {
+            var audioStreams = streams.ToList();
+            return audioStreams
+                .Where(stream => GetDirectDownloadExtension(stream) != null)
+                .OrderByDescending(stream => stream.Bitrate.BitsPerSecond)
+                .FirstOrDefault()
+                ?? (AudioOnlyStreamInfo)audioStreams.GetWithHighestBitrate();
+        }
+
+        private static string? GetDirectDownloadExtension(AudioOnlyStreamInfo streamInfo)
+        {
+            var container = streamInfo.Container.Name;
+            var codec = streamInfo.AudioCodec ?? "";
+
+            if (container.Equals("mp4", StringComparison.OrdinalIgnoreCase)
+                && (codec.Contains("mp4a", StringComparison.OrdinalIgnoreCase)
+                    || codec.Contains("aac", StringComparison.OrdinalIgnoreCase)))
             {
-                process.StartInfo.FileName = Path.Combine(pathOutilsExtern, "yt-dlp.exe");
-                process.StartInfo.Arguments = arguments;
-                process.StartInfo.WorkingDirectory = pathOutilsExtern;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
+                return ".m4a";
+            }
 
-                process.OutputDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) Console.WriteLine($"[yt-dlp]: {e.Data}"); };
-                process.ErrorDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) Console.WriteLine($"[Error]: {e.Data}"); };
+            if (container.Equals("mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return ".mp3";
+            }
 
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+            return null;
+        }
 
-                // Attente asynchrone
-                await Task.Run(() => process.WaitForExit());
+        private static async Task<string> EnsureDirectDownloadReadyAsync(string path, string baseName)
+        {
+            if (!SupportedAudioFormats.IsM4aContainer(path) || AudioCompatibility.CanReadSamples(path))
+            {
+                return path;
+            }
 
-                // Si le fichier MP3 existe, on applique les tags et on retourne l'objet Musique
-                if (File.Exists(finalMp3Path))
-                {
-                    try
-                    {
-                        // On crée le nouvel objet avec le chemin local du MP3
-                        Musique musiqueResult = new Musique(finalMp3Path, musiqueyt.title, musiqueyt.author);
+            var remuxedPath = Path.Combine(AppPaths.TempMusicDirectory, baseName + ".m4a");
+            var temporaryPath = Path.Combine(AppPaths.TempMusicDirectory, baseName + ".remux.m4a");
+            Console.WriteLine($"Remux M4A requis: {Path.GetFileName(path)} est un conteneur AAC non lisible directement.");
+            TryDelete(temporaryPath);
+            await FFmpegGestion.RemuxAudioToM4a(path, temporaryPath);
 
-                        var file = TagLib.File.Create(musiqueResult.url);
-                        file.Tag.Title = musiqueResult.title;
-                        file.Tag.Performers = new[] { musiqueResult.author };
-                        file.Save();
+            if (!AudioCompatibility.CanReadSamples(temporaryPath))
+            {
+                TryDelete(temporaryPath);
+                return path;
+            }
 
-                        return musiqueResult;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Erreur Tags: {ex.Message}");
-                        // Retourne l'objet quand même car le fichier est là
-                        return new Musique(finalMp3Path, musiqueyt.title, musiqueyt.author);
-                    }
-                }
+            TryDelete(path);
+            TryDelete(remuxedPath);
+            File.Move(temporaryPath, remuxedPath);
+            return remuxedPath;
+        }
 
-                // Si ça échoue, on retourne null ou on lève une exception selon tes besoins
+        private static string? FindDownloadedFile(string directory, string baseName)
+        {
+            if (!Directory.Exists(directory))
+            {
                 return null;
+            }
+
+            return Directory.GetFiles(directory, baseName + ".*")
+                .Where(path => !path.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.EndsWith(".download", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.EndsWith(".remux.m4a", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .FirstOrDefault();
+        }
+
+        private static Musique CreateMusicFromFile(string path, string fallbackTitle, string fallbackAuthor)
+        {
+            try
+            {
+                TagLib.File file = TagLib.File.Create(path);
+                if (file != null && file.Tag != null)
+                {
+                    string title = string.IsNullOrWhiteSpace(file.Tag.Title)
+                        ? fallbackTitle
+                        : file.Tag.Title;
+                    string author = file.Tag.Performers != null && file.Tag.Performers.Length > 0
+                        ? string.Join(", ", file.Tag.Performers)
+                        : fallbackAuthor;
+
+                    return new Musique(path, title, author);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur Tags: {ex.Message}");
+            }
+
+            return new Musique(path, fallbackTitle, fallbackAuthor);
+        }
+
+        private static void TryWriteTags(Musique musique)
+        {
+            try
+            {
+                var file = TagLib.File.Create(musique.url);
+                file.Tag.Title = musique.title;
+                file.Tag.Performers = new[] { musique.author };
+                file.Save();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur Tags: {ex.Message}");
+            }
+        }
+
+        private static void TryDelete(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
             }
         }
 

@@ -1,10 +1,12 @@
-﻿using DjApplication3.model;
-using NAudio.Wave;
+using CSCore;
+using CSCore.Codecs;
+using CSCore.Streams;
+using DjApplication3.Infrastructure;
+using DjApplication3.model;
+using DjApplication3.outils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace DjApplication3.DataSource
 {
@@ -12,17 +14,53 @@ namespace DjApplication3.DataSource
     {
         public sbyte[] getWaveForme(Musique musique)
         {
+            try
+            {
+                return ReadWaveFormeWithCsCore(musique.url);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Waveform directe impossible: {ex.Message}");
+                return getWaveFormeWithFfmpegFallback(musique.url);
+            }
+        }
+
+        private sbyte[] getWaveFormeWithFfmpegFallback(string filePath)
+        {
+            string? temporaryWave = null;
+            try
+            {
+                AppPaths.EnsureRuntimeDirectories();
+                temporaryWave = Path.Combine(AppPaths.TempMusicDirectory, $"analysis-wave-{Guid.NewGuid():N}.wav");
+                FFmpegGestion.ConvertAudioToWave(filePath, temporaryWave).GetAwaiter().GetResult();
+                return ReadWaveFormeWithCsCore(temporaryWave);
+            }
+            finally
+            {
+                if (temporaryWave != null && File.Exists(temporaryWave))
+                {
+                    try
+                    {
+                        File.Delete(temporaryWave);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+        }
+
+        private sbyte[] ReadWaveFormeWithCsCore(string filePath)
+        {
             const int bufferSize = 8192;
             const int targetPoints = 8192;
 
-            using AudioFileReader lecteurAudio = new AudioFileReader(musique.url);
+            using IWaveSource waveSource = CodecFactory.Instance.GetCodec(filePath);
+            using var sampleSource = waveSource.ToSampleSource();
 
             var buffer = new float[bufferSize];
             var waveform = new List<sbyte>();
-            var bytesPerSample = lecteurAudio.WaveFormat.BitsPerSample / 8;
-            var totalSamples = bytesPerSample > 0
-                ? Math.Max(1, lecteurAudio.Length / bytesPerSample)
-                : Math.Max(1, lecteurAudio.WaveFormat.SampleRate * lecteurAudio.WaveFormat.Channels);
+            var totalSamples = Math.Max(1, waveSource.Length / Math.Max(1, waveSource.WaveFormat.BytesPerSample));
             var samplesPerPoint = Math.Max(1.0, totalSamples / (double)targetPoints);
             var nextPointAt = samplesPerPoint;
             long samplePosition = 0;
@@ -31,7 +69,7 @@ namespace DjApplication3.DataSource
             var bucketSamples = 0;
 
             int read;
-            while ((read = lecteurAudio.Read(buffer, 0, buffer.Length)) > 0)
+            while ((read = sampleSource.Read(buffer, 0, buffer.Length)) > 0)
             {
                 for (var i = 0; i < read; i++)
                 {
@@ -55,6 +93,11 @@ namespace DjApplication3.DataSource
             if (bucketSamples > 0)
             {
                 waveform.Add(GetEnvelopeValue(absoluteSum, absolutePeak, bucketSamples));
+            }
+
+            if (waveform.Count == 0)
+            {
+                throw new InvalidOperationException("Aucun sample lisible pour generer la waveform.");
             }
 
             return waveform.ToArray();

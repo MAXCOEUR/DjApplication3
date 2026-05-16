@@ -43,7 +43,6 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Status = "Recherche en cours...";
-                StopPreview();
                 Musics.Clear();
                 if (SelectedSource == "Youtube")
                 {
@@ -96,6 +95,33 @@ namespace DjApplication3.WinUI.ViewModels
         {
             try
             {
+                DeckViewModel? targetDeck = null;
+
+                if (deckIndex.HasValue)
+                {
+                    if (deckIndex.Value < 0 || deckIndex.Value >= Decks.Count)
+                    {
+                        Status = "Piste indisponible";
+                        return;
+                    }
+
+                    targetDeck = Decks[deckIndex.Value];
+                    if (targetDeck.IsPlaying)
+                    {
+                        Status = $"Piste {targetDeck.TrackNumber} en lecture: chargement refuse";
+                        return;
+                    }
+                }
+                else
+                {
+                    targetDeck = Decks.FirstOrDefault(deck => !deck.IsPlaying);
+                    if (targetDeck == null)
+                    {
+                        Status = "Toutes les pistes sont en lecture";
+                        return;
+                    }
+                }
+
                 var musique = row.Musique;
                 var playlist = musique.musiquesInPlayliste;
                 row.IsDownloading = false;
@@ -121,31 +147,20 @@ namespace DjApplication3.WinUI.ViewModels
                 }
 
                 row.IsDownloading = false;
-                if (deckIndex.HasValue)
+                var code = await targetDeck.SetMusicAsync(musique);
+                if (code == 3)
                 {
-                    if (deckIndex.Value < 0 || deckIndex.Value >= Decks.Count)
-                    {
-                        Status = "Piste indisponible";
-                        return;
-                    }
-
-                    var code = await Decks[deckIndex.Value].SetMusicAsync(musique);
-                    if (code != 0)
-                    {
-                        Status = "Chargement de la piste impossible";
-                        return;
-                    }
-                }
-                else
-                {
-                    foreach (var deck in Decks)
-                    {
-                        var code = await deck.SetMusicAsync(musique);
-                        if (code == 0 || code == 2) break;
-                    }
+                    Status = $"Piste {targetDeck.TrackNumber} en lecture: chargement refuse";
+                    return;
                 }
 
-                Status = "Titre charge";
+                if (code != 0)
+                {
+                    Status = "Chargement de la piste impossible";
+                    return;
+                }
+
+                Status = $"Titre charge sur piste {targetDeck.TrackNumber}";
             }
             catch (Exception ex)
             {
@@ -160,7 +175,6 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                StopPreview();
                 Musics.Clear();
                 if (!Directory.Exists(LocalRootPath))
                 {
@@ -228,7 +242,6 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                StopPreview();
                 Playlists.Clear();
                 foreach (var playlist in await _library.GetYtMusicPlaylistsAsync())
                 {
@@ -259,7 +272,6 @@ namespace DjApplication3.WinUI.ViewModels
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                StopPreview();
                 Musics.Clear();
                 CurrentPlaylistName = playlist.name;
                 var all = await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
@@ -334,9 +346,10 @@ namespace DjApplication3.WinUI.ViewModels
 
         private MusicRowViewModel CreateInternetRow(Musique musique)
         {
-            var localPath = Path.Combine(AppPaths.TempMusicDirectory, $"{musique.title} ({musique.author}).mp3");
-            var localMusic = new Musique(localPath, musique.title, musique.author, musique.musiquesInPlayliste);
-            return CreateMusicRow(musique, _library.GetBpmHistory(localMusic), File.Exists(localPath));
+            var baseName = $"{musique.title} ({musique.author})";
+            var localPath = SupportedAudioFormats.FindExistingAudioFile(AppPaths.TempMusicDirectory, baseName);
+            var localMusic = new Musique(localPath ?? Path.Combine(AppPaths.TempMusicDirectory, baseName + ".mp3"), musique.title, musique.author, musique.musiquesInPlayliste);
+            return CreateMusicRow(musique, _library.GetBpmHistory(localMusic), localPath != null);
         }
 
         private MusicRowViewModel CreateMusicRow(Musique musique, int? bpm = null, bool downloaded = false)
@@ -411,7 +424,6 @@ namespace DjApplication3.WinUI.ViewModels
 
         private async Task RefreshCurrentSourceAsync()
         {
-            StopPreview();
             Musics.Clear();
             Playlists.Clear();
             CurrentPlaylistName = "";

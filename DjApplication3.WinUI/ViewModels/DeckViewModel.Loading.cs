@@ -16,10 +16,9 @@ namespace DjApplication3.WinUI.ViewModels
 
             try
             {
-                if (_audio.IsPlaying)
+                if (IsPlaying || _audio.IsPlaying)
                 {
-                    _audio.Stop();
-                    IsPlaying = false;
+                    return Task.FromResult(3);
                 }
 
                 _isHandlingTrackEnd = false;

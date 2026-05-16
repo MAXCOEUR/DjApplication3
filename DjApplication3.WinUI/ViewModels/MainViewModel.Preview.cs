@@ -23,23 +23,39 @@ namespace DjApplication3.WinUI.ViewModels
             StopPreview();
             _previewCancellation = new CancellationTokenSource();
             _previewRow = row;
+            var originalMusic = row.Musique;
+            var playlist = originalMusic.musiquesInPlayliste;
             row.IsPreviewLoading = true;
-            Status = "Preparation pre-ecoute...";
+            row.IsDownloading = !File.Exists(originalMusic.url);
+            PreviewBpmText = row.Bpm.HasValue ? $"{row.Bpm.Value} BPM" : "BPM --";
+            Status = row.IsDownloading ? "Telechargement pre-ecoute..." : "Preparation pre-ecoute...";
 
             try
             {
-                await _previewPlayer.PlayAsync(row.Musique, SelectedSource, HeadphoneVolume, _previewCancellation.Token);
+                var resolvedMusic = await _previewPlayer.PlayAsync(originalMusic, SelectedSource, HeadphoneVolume, _previewCancellation.Token);
+                resolvedMusic.musiquesInPlayliste = playlist;
+                if (File.Exists(resolvedMusic.url))
+                {
+                    MusicIdentity.ReplaceInPlaylist(playlist, originalMusic, resolvedMusic);
+                    row.UseResolvedMusic(resolvedMusic);
+                }
+
                 row.IsPreviewLoading = false;
+                row.IsDownloading = false;
                 row.IsPreviewing = true;
+                UpdatePreviewPlayerState();
+                _ = LoadPreviewAnalysisAsync(row, resolvedMusic);
                 Status = "Pre-ecoute casque";
             }
             catch (OperationCanceledException)
             {
                 row.IsPreviewLoading = false;
+                row.IsDownloading = false;
             }
             catch (Exception ex)
             {
                 row.IsPreviewLoading = false;
+                row.IsDownloading = false;
                 Status = $"Pre-ecoute impossible: {ex.Message}";
                 ClearPreviewState();
             }
@@ -54,6 +70,36 @@ namespace DjApplication3.WinUI.ViewModels
             ClearPreviewState();
         }
 
+        public void TogglePreviewPlayback()
+        {
+            if (!IsPreviewActive)
+            {
+                return;
+            }
+
+            if (_previewPlayer.IsPlaying)
+            {
+                _previewPlayer.Pause();
+            }
+            else
+            {
+                _previewPlayer.Play();
+            }
+
+            UpdatePreviewPlayerState();
+        }
+
+        public void SeekPreview(double positionRatio)
+        {
+            if (!IsPreviewActive)
+            {
+                return;
+            }
+
+            _previewPlayer.Seek(positionRatio / 100.0);
+            UpdatePreviewPlayerState();
+        }
+
         private void ClearPreviewState()
         {
             if (_previewRow != null)
@@ -63,7 +109,68 @@ namespace DjApplication3.WinUI.ViewModels
             }
 
             _previewRow = null;
+            PreviewTitle = "Aucune pre-ecoute";
+            PreviewTimeText = "00:00 / 00:00";
+            PreviewBpmText = "BPM --";
+            PreviewPositionRatio = 0;
+            PreviewWavePosition = 0;
+            PreviewWaveform = Array.Empty<sbyte>();
+            IsPreviewActive = false;
+            IsPreviewPlaying = false;
         }
+
+        private void UpdatePreviewPlayerState()
+        {
+            var currentMusic = _previewPlayer.CurrentMusic;
+            IsPreviewActive = currentMusic is not null;
+            IsPreviewPlaying = _previewPlayer.IsPlaying;
+
+            if (currentMusic is null)
+            {
+                PreviewTitle = "Aucune pre-ecoute";
+                PreviewTimeText = "00:00 / 00:00";
+                PreviewPositionRatio = 0;
+                PreviewWavePosition = 0;
+                return;
+            }
+
+            PreviewTitle = $"{currentMusic.title} - {currentMusic.author}";
+            PreviewPositionRatio = _previewPlayer.PositionRatio * 100.0;
+            PreviewWavePosition = _previewPlayer.PositionRatio;
+            PreviewTimeText = $"{FormatPreviewTime(_previewPlayer.Position)} / {FormatPreviewTime(_previewPlayer.Duration)}";
+        }
+
+        private async Task LoadPreviewAnalysisAsync(MusicRowViewModel row, Musique musique)
+        {
+            try
+            {
+                var bpm = await _library.GetBpmAsync(musique);
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    row.Bpm = bpm;
+                    PreviewBpmText = $"{bpm} BPM";
+                });
+            }
+            catch
+            {
+                _dispatcherQueue.TryEnqueue(() => PreviewBpmText = "BPM --");
+            }
+
+            try
+            {
+                var waveform = await _library.GetWaveAsync(musique);
+                _dispatcherQueue.TryEnqueue(() => PreviewWaveform = waveform);
+            }
+            catch
+            {
+                _dispatcherQueue.TryEnqueue(() => PreviewWaveform = Array.Empty<sbyte>());
+            }
+        }
+
+        private static string FormatPreviewTime(TimeSpan time)
+            => time.TotalHours >= 1
+                ? time.ToString(@"h\:mm\:ss")
+                : time.ToString(@"mm\:ss");
 
         private void MarkMusicPlayed(Musique musique)
         {

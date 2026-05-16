@@ -55,7 +55,11 @@ namespace DjApplication3.Services
 
         public void Play()
         {
-            if (_audioPlayer == null || _audioPlayer.DebuggingId == -1) return;
+            if (_audioPlayer == null || _audioPlayer.DebuggingId == -1 || _audioPlayer.WaveSource == null)
+            {
+                throw new InvalidOperationException("Aucun lecteur audio initialise.");
+            }
+
             _audioPlayer.Play();
             _timer.Start();
             PositionChanged?.Invoke(this, EventArgs.Empty);
@@ -177,7 +181,11 @@ namespace DjApplication3.Services
 
         private void InitializePlayer(float positionRatio, object? fallbackDevice = null)
         {
-            if (string.IsNullOrWhiteSpace(_loadedPath)) return;
+            if (string.IsNullOrWhiteSpace(_loadedPath))
+            {
+                throw new InvalidOperationException("Aucun fichier audio charge.");
+            }
+
             if (_audioPlayer == null)
             {
                 _audioPlayer = new WasapiOut();
@@ -193,12 +201,17 @@ namespace DjApplication3.Services
             var device = ResolveDevice(fallbackDevice);
             if (device == null)
             {
-                return;
+                throw new InvalidOperationException("Aucun peripherique audio disponible.");
             }
 
             SetPlayerDevice(device);
             var outputSource = BuildOutputSource(_waveSource);
             _audioPlayer.Initialize(outputSource);
+            if (_audioPlayer.WaveSource == null)
+            {
+                throw new InvalidOperationException("Initialisation du lecteur audio impossible.");
+            }
+
             if (_audioPlayer.WaveSource != null)
             {
                 _audioPlayer.WaveSource.Position = (long)(_audioPlayer.WaveSource.Length * positionRatio);

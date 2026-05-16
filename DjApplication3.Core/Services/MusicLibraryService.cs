@@ -9,7 +9,7 @@ namespace DjApplication3.Services
     {
         private readonly MusiqueRepository _repository = new();
 
-        public List<Musique> GetLocalMusic(string folderPath) => _repository.GetMp3Files(folderPath);
+        public List<Musique> GetLocalMusic(string folderPath) => _repository.GetAudioFiles(folderPath);
 
         public Task<List<Musique>> SearchYoutubeAsync(string search) => _repository.GetMusiqueYoutube(search);
 

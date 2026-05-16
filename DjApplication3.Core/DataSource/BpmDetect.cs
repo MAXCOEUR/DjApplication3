@@ -1,7 +1,10 @@
-﻿using NAudio.Dsp;
+using DjApplication3.Infrastructure;
+using DjApplication3.outils;
+using NAudio.Dsp;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace DjApplication3.DataSource
 {
@@ -10,19 +13,14 @@ namespace DjApplication3.DataSource
         public int Count;
         public short Tempo;
     }
+
     internal class BpmDetect
     {
-        private BPMGroup[] groups;
-
-        public BPMGroup[] Groups
-        {
-            get
-            {
-                return groups;
-            }
-        }
+        private BPMGroup[] groups = Array.Empty<BPMGroup>();
         private int sampleRate;
         private int channels;
+
+        public BPMGroup[] Groups => groups;
 
         private struct Peak
         {
@@ -32,39 +30,55 @@ namespace DjApplication3.DataSource
 
         public int getBpm(string filePath)
         {
-
             try
             {
                 CalculateGroups(filePath);
+                if (Groups.Length > 0)
+                {
+                    return Groups[0].Tempo;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
 
-                return Groups[0].Tempo;
+            return getBpmWithFfmpegFallback(filePath);
+        }
+
+        private int getBpmWithFfmpegFallback(string filePath)
+        {
+            string? temporaryWave = null;
+            try
+            {
+                AppPaths.EnsureRuntimeDirectories();
+                temporaryWave = Path.Combine(AppPaths.TempMusicDirectory, $"analysis-bpm-{Guid.NewGuid():N}.wav");
+                FFmpegGestion.ConvertAudioToWave(filePath, temporaryWave).GetAwaiter().GetResult();
+                CalculateGroups(temporaryWave);
+                return Groups.Length > 0 ? Groups[0].Tempo : 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 return 0;
             }
+            finally
+            {
+                if (temporaryWave != null && File.Exists(temporaryWave))
+                {
+                    try
+                    {
+                        File.Delete(temporaryWave);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
-
 
         private Peak[] getPeaks(float[] data)
         {
-            // What we're going to do here, is to divide up our audio into parts.
-
-            // We will then identify, for each part, what the loudest sample is in that
-            // part.
-
-            // It's implied that that sample would represent the most likely 'beat'
-            // within that part.
-
-            // Each part is 0.5 seconds long
-
-            // This will give us 60 'beats' - we will only take the loudest half of
-            // those.
-
-            // This will allow us to ignore breaks, and allow us to address tracks with
-            // a BPM below 120.
-
             int partSize = sampleRate / 2;
             int parts = data.Length / channels / partSize;
             Peak[] peaks = new Peak[parts];
@@ -96,16 +110,8 @@ namespace DjApplication3.DataSource
                 peaks[i] = max;
             }
 
-            // We then sort the peaks according to volume...
-
             Array.Sort(peaks, (x, y) => y.Volume.CompareTo(x.Volume));
-
-            // ...take the loundest half of those...
-
             Array.Resize(ref peaks, peaks.Length / 2);
-
-            // ...and re-sort it back based on position.
-
             Array.Sort(peaks, (x, y) => x.Position.CompareTo(y.Position));
 
             return peaks;
@@ -113,14 +119,6 @@ namespace DjApplication3.DataSource
 
         private BPMGroup[] getIntervals(Peak[] peaks)
         {
-            // What we now do is get all of our peaks, and then measure the distance to
-            // other peaks, to create intervals.  Then based on the distance between
-            // those peaks (the distance of the intervals) we can calculate the BPM of
-            // that particular interval.
-
-            // The interval that is seen the most should have the BPM that corresponds
-            // to the track itself.
-
             List<BPMGroup> groups = new List<BPMGroup>();
 
             for (int index = 0; index < peaks.Length; ++index)
@@ -160,29 +158,24 @@ namespace DjApplication3.DataSource
 
         public void CalculateGroups(string audioFile, int start = 0, int length = 0)
         {
-            // Load the file
             using (MediaFoundationReader reader = new MediaFoundationReader(audioFile))
             {
-                // Originally the sample rate was constant (44100), and the number of channels was 2. 
-                // Let's just in case take them from file's properties
                 sampleRate = reader.WaveFormat.SampleRate;
                 channels = reader.WaveFormat.Channels;
 
                 int bytesPerSample = reader.WaveFormat.BitsPerSample / 8;
                 if (bytesPerSample == 0)
                 {
-                    bytesPerSample = 2; // assume 16 bit
+                    bytesPerSample = 2;
                 }
 
                 int sampleCount = (int)reader.Length / bytesPerSample;
-
-                // Read the wave data
 
                 start *= channels * sampleRate;
                 length *= channels * sampleRate;
                 if (start >= sampleCount)
                 {
-                    groups = new BPMGroup[0];
+                    groups = Array.Empty<BPMGroup>();
                     return;
                 }
                 if (length == 0 || start + length >= sampleCount)
@@ -196,17 +189,9 @@ namespace DjApplication3.DataSource
                 float[] samples = new float[length];
                 sampleReader.Read(samples, start, length);
 
-                // Beats, or kicks, generally occur around the 100 to 150 hz range.
-                // Below this is often the bassline.  So let's focus just on that.
-
                 for (int ch = 0; ch < channels; ++ch)
                 {
-                    // First a lowpass to remove most of the song.
-
                     BiQuadFilter lowpass = BiQuadFilter.LowPassFilter(sampleRate, 150.0F, 1.0F);
-
-                    // Now a highpass to remove the bassline.
-
                     BiQuadFilter highpass = BiQuadFilter.HighPassFilter(sampleRate, 100.0F, 1.0F);
 
                     for (int i = ch; i < length; i += channels)
@@ -216,9 +201,7 @@ namespace DjApplication3.DataSource
                 }
 
                 Peak[] peaks = getPeaks(samples);
-
                 BPMGroup[] allGroups = getIntervals(peaks);
-
                 Array.Sort(allGroups, (x, y) => y.Count.CompareTo(x.Count));
 
                 if (allGroups.Length > 5)
@@ -226,9 +209,8 @@ namespace DjApplication3.DataSource
                     Array.Resize(ref allGroups, 5);
                 }
 
-                this.groups = allGroups;
+                groups = allGroups;
             }
         }
-
     }
 }
