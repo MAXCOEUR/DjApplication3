@@ -138,6 +138,15 @@ namespace DjApplication3.WinUI.ViewModels
             PreviewPositionRatio = _previewPlayer.PositionRatio * 100.0;
             PreviewWavePosition = _previewPlayer.PositionRatio;
             PreviewTimeText = $"{FormatPreviewTime(_previewPlayer.Position)} / {FormatPreviewTime(_previewPlayer.Duration)}";
+            // Sync VINYL (note 53) LED with preview playback state
+            try
+            {
+                _midi.SetPreviewPlayPause(_previewPlayer.IsPlaying);
+            }
+            catch
+            {
+                // ignore if MIDI controller not available
+            }
         }
 
         private async Task LoadPreviewAnalysisAsync(MusicRowViewModel row, Musique musique)

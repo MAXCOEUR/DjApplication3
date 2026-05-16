@@ -44,7 +44,11 @@ namespace DjApplication3.WinUI.ViewModels
             UpdatePosition();
         }
 
-        public void ToggleHeadphone() => IsHeadphone = !IsHeadphone;
+        public void ToggleHeadphone()
+        {
+            Debug.WriteLine($"[DeckViewModel] ToggleHeadphone invoked on deck {TrackNumber}");
+            IsHeadphone = !IsHeadphone;
+        }
 
         public void SetMasterVolume(float volume) => TryAudio(() => _audio.SetMasterVolume(volume), "Volume master indisponible");
 

@@ -47,7 +47,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0-windows10.0.19041.0
 /out:obj\Debug\net8.0-windows10.0.19041.0\DjApplication3.WinUI.dll
 /refout:obj\Debug\net8.0-windows10.0.19041.0\refint\DjApplication3.WinUI.dll
 /subsystemversion:6.00
-/target:winexe
+/target:exe
 /warnaserror-
 /utf8output
 /win32icon:Resources\logo.ico

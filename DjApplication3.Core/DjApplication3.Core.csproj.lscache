@@ -58,10 +58,12 @@ DataSource/
  CacheDataSource.cs
  GraphiqueDataSource.cs
  LocalDataSource.cs
- PreviewDataSource.cs
  YoutubeDataSource.cs
  YtMusicDataSource.cs
-Infrastructure/AppPaths.cs
+Infrastructure/
+ AppPaths.cs
+ AudioCompatibility.cs
+ SupportedAudioFormats.cs
 Model/
  FileSystemNode.cs
  MusicIdentity.cs

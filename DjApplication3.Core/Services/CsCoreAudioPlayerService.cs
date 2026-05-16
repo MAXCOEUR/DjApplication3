@@ -4,6 +4,7 @@ using CSCore.SoundOut;
 using CSCore.Streams;
 using CSCore.Streams.Effects;
 using DjApplication3.model;
+using System.Diagnostics;
 using System;
 
 namespace DjApplication3.Services
@@ -30,7 +31,18 @@ namespace DjApplication3.Services
         public CsCoreAudioPlayerService(ISettingsService settings)
         {
             _settings = settings;
-            _timer.Elapsed += (_, _) => PositionChanged?.Invoke(this, EventArgs.Empty);
+            _timer.Elapsed += (_, _) =>
+            {
+                try
+                {
+                    PositionChanged?.Invoke(this, EventArgs.Empty);
+                    Debug.WriteLine($"[CsCoreAudioPlayerService] Timer tick. IsPlaying={IsPlaying}, PositionRatio={PositionRatio}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[CsCoreAudioPlayerService] Timer handler exception: {ex}");
+                }
+            };
         }
 
         public bool IsPlaying => _audioPlayer?.PlaybackState == PlaybackState.Playing;
@@ -123,8 +135,18 @@ namespace DjApplication3.Services
                 return;
             }
 
+            var previous = _headphoneEnabled;
             _headphoneEnabled = enabled;
-            UpdateOutputDevice();
+            try
+            {
+                UpdateOutputDevice();
+            }
+            catch (Exception ex)
+            {
+                // If switching output fails, restore previous state and log the error.
+                _headphoneEnabled = previous;
+                Debug.WriteLine($"SetHeadphoneEnabled failed: {ex}");
+            }
         }
 
         public void SetEqualizer(float bassDb, float midDb, float trebleDb)

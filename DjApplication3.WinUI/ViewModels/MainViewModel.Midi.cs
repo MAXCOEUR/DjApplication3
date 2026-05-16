@@ -147,6 +147,7 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.ScratchRightPress += (_, isPressed) => Enqueue(() => HandleScratchPress(false, isPressed));
             _midi.VolumeUpHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume += 5);
             _midi.VolumeDownHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume -= 5);
+            _midi.PreviewPlayPause += (_, _) => Enqueue(() => TogglePreviewPlayback());
             _midi.Start();
             SyncControllerState();
         }

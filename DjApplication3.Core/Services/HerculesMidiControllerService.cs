@@ -32,6 +32,7 @@ namespace DjApplication3.Services
         public event EventHandler<bool>? ScratchRightPress;
         public event EventHandler? VolumeUpHeadPhone;
         public event EventHandler? VolumeDownHeadPhone;
+        public event EventHandler? PreviewPlayPause;
 
         public void Start()
         {
@@ -63,6 +64,7 @@ namespace DjApplication3.Services
             controller.eventScratchRight += (_, e) => ScratchRight?.Invoke(this, e);
             controller.eventScratchLeftPress += (_, e) => ScratchLeftPress?.Invoke(this, e);
             controller.eventScratchRightPress += (_, e) => ScratchRightPress?.Invoke(this, e);
+            controller.eventPreviewPlayPause += (_, e) => PreviewPlayPause?.Invoke(this, e);
             controller.eventVolumeUpHeadPhone += (_, e) => VolumeUpHeadPhone?.Invoke(this, e);
             controller.eventVolumeDownHeadPhone += (_, e) => VolumeDownHeadPhone?.Invoke(this, e);
             controller.start();
@@ -72,6 +74,7 @@ namespace DjApplication3.Services
         public void SetPlayRight(bool isOn) => HerculesDJ.Instance.playRight(isOn);
         public void SetPreviewLeft(bool isOn) => HerculesDJ.Instance.PreviewLeft(isOn);
         public void SetPreviewRight(bool isOn) => HerculesDJ.Instance.PreviewRight(isOn);
+        public void SetPreviewPlayPause(bool isOn) => HerculesDJ.Instance.PreviewPlayPause(isOn);
         public void SetLoadedLeft(bool isOn) => HerculesDJ.Instance.loadedLeft(isOn);
         public void SetLoadedRight(bool isOn) => HerculesDJ.Instance.loadedRight(isOn);
         public void SetSelectedLeftDeck(int deckNumber) => HerculesDJ.Instance.selectPisteLeft(deckNumber);

@@ -460,7 +460,7 @@ namespace DjApplication3.outils
 
         public void PreviewPlayPause(bool isOn)
         {
-            SendNoteOn(53, isOn ? 0 : 127);
+            SendNoteOn(53, isOn ? 127 : 0);
         }
 
         public void selectPisteLeft(int piste)

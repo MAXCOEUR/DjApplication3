@@ -3,6 +3,7 @@ using DjApplication3.Infrastructure;
 using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -71,7 +72,21 @@ namespace DjApplication3.WinUI.ViewModels
             AppPaths.EnsureRuntimeDirectories();
             _playedMusicKeys = LoadPlayedMusicKeys();
             _previewPlayer = new PreviewPlayerService(_library, _settings);
-            _previewPlayer.PositionChanged += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePreviewPlayerState);
+            _previewPlayer.PositionChanged += (_, _) =>
+            {
+                try
+                {
+                    var enqueued = _dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, UpdatePreviewPlayerState);
+                    if (!enqueued)
+                    {
+                        Debug.WriteLine("[MainViewModel] Dispatcher.TryEnqueue(High) failed for UpdatePreviewPlayerState");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[MainViewModel] Preview PositionChanged handler exception: {ex}");
+                }
+            };
             _previewPlayer.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(ClearPreviewState);
             RefreshDecks();
         }

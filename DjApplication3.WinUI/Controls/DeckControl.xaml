@@ -130,7 +130,7 @@
                     Value="{Binding Volume, Mode=TwoWay}"
                     AnimationStep="1"
                     AnimationIntervalMs="10" />
-                <ToggleButton Grid.Column="3" Content="{Binding HeadphoneLabel}" IsChecked="{Binding IsHeadphone, Mode=TwoWay}" Command="{Binding ToggleHeadphoneCommand}" Style="{StaticResource DeckToggleButtonStyle}" />
+                <ToggleButton Grid.Column="3" Content="{Binding HeadphoneLabel}" IsChecked="{Binding IsHeadphone, Mode=TwoWay}" Style="{StaticResource DeckToggleButtonStyle}" />
                 <Button
                     Grid.Column="4"
                     Content="Rnd"

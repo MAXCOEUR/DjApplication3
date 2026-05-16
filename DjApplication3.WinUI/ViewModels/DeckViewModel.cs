@@ -3,6 +3,7 @@ using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Diagnostics;
 using Windows.UI;
 using System.Windows.Input;
 using System.Threading.Tasks;
@@ -56,8 +57,22 @@ namespace DjApplication3.WinUI.ViewModels
             _library = library;
             _dispatcherQueue = dispatcherQueue;
             _audio = new CsCoreAudioPlayerService(settings);
-            _audio.PositionChanged += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePosition);
-            _audio.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(UpdatePosition);
+            _audio.PositionChanged += (_, _) =>
+            {
+                try
+                {
+                    var enqueued = _dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, UpdatePosition);
+                    if (!enqueued)
+                    {
+                        Debug.WriteLine($"[DeckViewModel] Dispatcher.TryEnqueue(High) failed for deck {TrackNumber}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[DeckViewModel] PositionChanged handler exception: {ex}");
+                }
+            };
+            _audio.PlaybackStopped += (_, _) => _dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, UpdatePosition);
 
             PlayPauseCommand = new RelayCommand(_ => TogglePlayPause());
             StopCommand = new RelayCommand(_ => Stop());
@@ -101,6 +116,7 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 if (SetProperty(ref _isHeadphone, value))
                 {
+                    Debug.WriteLine($"[DeckViewModel] IsHeadphone set to {value} on deck {TrackNumber}");
                     TryAudio(() => _audio.SetHeadphoneEnabled(IsHeadphone), "Sortie casque impossible");
                     OnPropertyChanged(nameof(HeadphoneLabel));
                 }

@@ -31,11 +31,13 @@ namespace DjApplication3.Services
         event EventHandler<bool>? ScratchRightPress;
         event EventHandler? VolumeUpHeadPhone;
         event EventHandler? VolumeDownHeadPhone;
+        event EventHandler? PreviewPlayPause;
         void Start();
         void SetPlayLeft(bool isOn);
         void SetPlayRight(bool isOn);
         void SetPreviewLeft(bool isOn);
         void SetPreviewRight(bool isOn);
+        void SetPreviewPlayPause(bool isOn);
         void SetLoadedLeft(bool isOn);
         void SetLoadedRight(bool isOn);
         void SetSelectedLeftDeck(int deckNumber);
