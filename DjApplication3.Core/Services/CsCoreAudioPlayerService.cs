@@ -24,6 +24,7 @@ namespace DjApplication3.Services
         private float _midDb;
         private float _trebleDb;
         private bool _headphoneEnabled;
+        private bool _isReinitializing;
 
         public event EventHandler? PositionChanged;
         public event EventHandler? PlaybackStopped;
@@ -190,14 +191,23 @@ namespace DjApplication3.Services
             var wasPlaying = IsPlaying;
             var currentPosition = PositionRatio;
             var fallbackDevice = _audioPlayer?.Device;
-            if (wasPlaying)
+            _isReinitializing = true;
+            try
             {
-                Pause();
+                if (wasPlaying)
+                {
+                    Pause();
+                }
+
+                InitializePlayer(currentPosition, fallbackDevice);
+                if (wasPlaying)
+                {
+                    Play();
+                }
             }
-            InitializePlayer(currentPosition, fallbackDevice);
-            if (wasPlaying)
+            finally
             {
-                Play();
+                _isReinitializing = false;
             }
         }
 
@@ -281,6 +291,11 @@ namespace DjApplication3.Services
 
         private void AudioPlayer_Stopped(object? sender, PlaybackStoppedEventArgs e)
         {
+            if (_isReinitializing || IsPlaying)
+            {
+                return;
+            }
+
             _timer.Stop();
             PositionChanged?.Invoke(this, EventArgs.Empty);
             PlaybackStopped?.Invoke(this, EventArgs.Empty);
