@@ -20,6 +20,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Direct waveform analysis failed for {Path.GetFileName(musique.url)}");
                 Console.WriteLine($"Waveform directe impossible: {ex.Message}");
                 return getWaveFormeWithFfmpegFallback(musique.url);
             }
@@ -43,8 +44,9 @@ namespace DjApplication3.DataSource
                     {
                         File.Delete(temporaryWave);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        AppLogger.Warning(ex, $"Temporary waveform file cleanup failed for {Path.GetFileName(temporaryWave)}");
                     }
                 }
             }

@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.WinUI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -201,6 +202,7 @@ namespace DjApplication3.WinUI.Views
             catch (Exception ex)
             {
                 ViewModel.Status = $"Selection dossier impossible: {ex.Message}";
+                AppLogger.Error(ex, "Folder picker failed");
             }
         }
 

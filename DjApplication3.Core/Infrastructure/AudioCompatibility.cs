@@ -22,6 +22,7 @@ namespace DjApplication3.Infrastructure
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Audio decode compatibility check failed for {Path.GetFileName(path)}");
                 Console.WriteLine($"Decode audio impossible pour {Path.GetFileName(path)}: {ex.Message}");
                 return false;
             }

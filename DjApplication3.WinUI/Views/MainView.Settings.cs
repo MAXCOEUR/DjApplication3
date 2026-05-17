@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -46,6 +47,7 @@ namespace DjApplication3.WinUI.Views
             catch (System.Exception ex)
             {
                 ViewModel.Status = $"Options indisponibles: {ex.Message}";
+                AppLogger.Error(ex, "Settings panel failed");
             }
         }
 

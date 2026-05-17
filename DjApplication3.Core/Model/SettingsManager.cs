@@ -159,6 +159,7 @@ namespace DjApplication3.model
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Audio device refresh failed");
                 Console.WriteLine($"Impossible de charger les peripheriques audio: {ex.Message}");
             }
         }
@@ -197,6 +198,7 @@ namespace DjApplication3.model
             catch (Exception ex)
             {
                 MidiDeviceRefreshError = ex.Message;
+                AppLogger.Warning(ex, "MIDI device refresh failed");
                 Console.WriteLine($"Impossible de charger les peripheriques MIDI: {ex.Message}");
             }
         }
@@ -222,8 +224,9 @@ namespace DjApplication3.model
                     _deckAreaWidth = deckWidth <= 0 ? UnsetDeckAreaWidth : Math.Max(MinDeckAreaWidth, deckWidth);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Load UI settings failed");
                 _deckAreaWidth = UnsetDeckAreaWidth;
                 _libraryNavigationWidth = DefaultLibraryNavigationWidth;
             }
@@ -242,8 +245,9 @@ namespace DjApplication3.model
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(AppPaths.SettingsFile, json);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Save UI settings failed");
                 // Saving UI preferences should never block audio or startup.
             }
         }

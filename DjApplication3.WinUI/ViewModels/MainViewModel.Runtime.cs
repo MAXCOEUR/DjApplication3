@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using System;
 using System.Threading.Tasks;
 
@@ -17,8 +18,14 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"{errorPrefix}: {ex.Message}";
+                ReportError($"{errorPrefix}: {ex.Message}", ex, errorPrefix);
             }
+        }
+
+        private void ReportError(string statusMessage, Exception exception, string context)
+        {
+            Status = statusMessage;
+            AppLogger.Error(exception, context);
         }
     }
 }

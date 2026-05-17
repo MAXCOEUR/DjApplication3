@@ -49,6 +49,7 @@
                 Grid.Row="1"
                 Waveform="{Binding Waveform}"
                 Position="{Binding PositionRatio}"
+                IsLoading="{Binding IsWaveformLoading}"
                 EndWarningActive="{Binding IsEndingSoon}"
                 SeekRequested="Waveform_SeekRequested" />
 

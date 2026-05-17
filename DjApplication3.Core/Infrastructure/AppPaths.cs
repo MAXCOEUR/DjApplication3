@@ -25,12 +25,17 @@ namespace DjApplication3.Infrastructure
 
         public static string PlayedMusicFile => Path.Combine(ExternalToolsDirectory, "played_music.json");
 
+        public static string LogDirectory => Path.Combine(ExternalToolsDirectory, "logs");
+
+        public static string ErrorLogFile => Path.Combine(LogDirectory, "errors.log");
+
         public static void EnsureRuntimeDirectories()
         {
             Directory.CreateDirectory(MusicDirectory);
             Directory.CreateDirectory(TempMusicDirectory);
             Directory.CreateDirectory(PreviewMusicDirectory);
             Directory.CreateDirectory(ExternalToolsDirectory);
+            Directory.CreateDirectory(LogDirectory);
         }
 
         public static void CleanupTempMusicDirectory()

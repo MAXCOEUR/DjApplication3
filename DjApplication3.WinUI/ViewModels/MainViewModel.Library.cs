@@ -18,7 +18,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Périphériques indisponibles: {ex.Message}";
+                ReportError($"Périphériques indisponibles: {ex.Message}", ex, "Initialize devices");
             }
 
             await RefreshLocalAsync();
@@ -30,7 +30,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"MIDI indisponible: {ex.Message}";
+                ReportError($"MIDI indisponible: {ex.Message}", ex, "Start MIDI during initialization");
             }
 
             StartMidiAutoDetection();
@@ -83,7 +83,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = ex.Message;
+                ReportError(ex.Message, ex, "Search library");
             }
             finally
             {
@@ -165,7 +165,7 @@ namespace DjApplication3.WinUI.ViewModels
             catch (Exception ex)
             {
                 row.IsDownloading = false;
-                Status = $"Chargement impossible: {ex.Message}";
+                ReportError($"Chargement impossible: {ex.Message}", ex, "Load music on deck");
             }
         }
 
@@ -258,7 +258,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = ex.Message;
+                ReportError(ex.Message, ex, "Load Youtube Music playlists");
             }
             finally
             {
@@ -369,8 +369,9 @@ namespace DjApplication3.WinUI.ViewModels
                     ? "Racine"
                     : relative;
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Local path display update failed");
                 LocalPathDisplay = "Racine";
             }
         }
@@ -418,7 +419,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Dossiers locaux indisponibles: {ex.Message}";
+                ReportError($"Dossiers locaux indisponibles: {ex.Message}", ex, "Refresh local folders");
             }
         }
 
@@ -463,7 +464,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Mise à jour yt-dlp impossible: {ex.Message}";
+                ReportError($"Mise à jour yt-dlp impossible: {ex.Message}", ex, "Update yt-dlp");
             }
         }
 

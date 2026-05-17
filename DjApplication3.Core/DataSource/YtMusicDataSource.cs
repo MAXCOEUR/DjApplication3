@@ -77,6 +77,7 @@ namespace DjApplication3.DataSource
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, "Youtube Music cookie load failed");
                     Console.WriteLine("Erreur de chargement des cookies : " + ex.Message);
                 }
             }
@@ -257,8 +258,9 @@ namespace DjApplication3.DataSource
 
                 return musique;
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Youtube Music connection check failed");
                 if (!isConnected())
                 {
                     throw new NotConnectedException("Vous n'êtes pas connecté !");
@@ -453,6 +455,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Youtube Music ID3 tag read failed for {Path.GetFileName(path)}");
                 Console.WriteLine($"Erreur Tags: {ex.Message}");
             }
 
@@ -470,6 +473,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Youtube Music artwork tag write failed for {Path.GetFileName(musique.url)}");
                 Console.WriteLine($"Erreur Tags: {ex.Message}");
             }
         }
@@ -483,8 +487,9 @@ namespace DjApplication3.DataSource
                     File.Delete(path);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Temporary file cleanup failed for {Path.GetFileName(path)}");
             }
         }
 
@@ -561,8 +566,9 @@ namespace DjApplication3.DataSource
 
                 return hasSapisid && hasSession;
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Youtube Music connection status read failed");
                 return false;
             }
         }

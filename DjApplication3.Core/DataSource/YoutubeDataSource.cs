@@ -171,6 +171,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Youtube ID3 tag read failed for {Path.GetFileName(path)}");
                 Console.WriteLine($"Erreur Tags: {ex.Message}");
             }
 
@@ -188,6 +189,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Youtube artwork tag write failed for {Path.GetFileName(musique.url)}");
                 Console.WriteLine($"Erreur Tags: {ex.Message}");
             }
         }
@@ -201,8 +203,9 @@ namespace DjApplication3.DataSource
                     File.Delete(path);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Temporary file cleanup failed for {Path.GetFileName(path)}");
             }
         }
         private string CleanFileName(string fileName)

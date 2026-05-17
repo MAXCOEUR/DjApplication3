@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.WinUI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -90,6 +91,7 @@ namespace DjApplication3.WinUI.Views
             catch (System.Exception ex)
             {
                 ViewModel.Status = $"Démarrage incomplet: {ex.Message}";
+                AppLogger.Error(ex, "Main view startup failed");
             }
         }
 

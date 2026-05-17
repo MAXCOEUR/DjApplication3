@@ -1,4 +1,5 @@
 ﻿using DjApplication3.model;
+using DjApplication3.Infrastructure;
 using NAudio.Midi;
 using System;
 using System.Collections.Generic;
@@ -99,8 +100,9 @@ namespace DjApplication3.outils
                 midiIn.ErrorReceived += midiIn_ErrorReceived;
                 midiIn.Start();
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "MIDI input initialization failed");
                 midiIn?.Dispose();
                 midiIn = null;
                 throw;
@@ -112,6 +114,7 @@ namespace DjApplication3.outils
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, "MIDI output initialization failed");
                 Console.WriteLine($"Impossible d'initialiser la sortie MIDI: {ex}");
             }
         }
@@ -127,6 +130,7 @@ namespace DjApplication3.outils
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, "MIDI input stop failed");
                     Console.WriteLine($"Impossible d'arreter l'entree MIDI: {ex.Message}");
                 }
 
@@ -142,6 +146,7 @@ namespace DjApplication3.outils
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, "MIDI output close failed");
                     Console.WriteLine($"Impossible de fermer la sortie MIDI: {ex.Message}");
                 }
 

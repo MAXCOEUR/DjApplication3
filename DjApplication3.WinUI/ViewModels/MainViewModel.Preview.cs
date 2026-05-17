@@ -56,7 +56,7 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 row.IsPreviewLoading = false;
                 row.IsDownloading = false;
-                Status = $"Pre-ecoute impossible: {ex.Message}";
+                ReportError($"Pre-ecoute impossible: {ex.Message}", ex, "Toggle preview");
                 ClearPreviewState();
             }
         }
@@ -143,8 +143,9 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 _midi.SetPreviewPlayPause(_previewPlayer.IsPlaying);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Preview MIDI LED sync failed");
                 // ignore if MIDI controller not available
             }
         }
@@ -160,8 +161,9 @@ namespace DjApplication3.WinUI.ViewModels
                     PreviewBpmText = $"{bpm} BPM";
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Preview BPM analysis failed");
                 _dispatcherQueue.TryEnqueue(() => PreviewBpmText = "BPM --");
             }
 
@@ -170,8 +172,9 @@ namespace DjApplication3.WinUI.ViewModels
                 var waveform = await _library.GetWaveAsync(musique);
                 _dispatcherQueue.TryEnqueue(() => PreviewWaveform = waveform);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Preview waveform analysis failed");
                 _dispatcherQueue.TryEnqueue(() => PreviewWaveform = Array.Empty<sbyte>());
             }
         }
@@ -222,8 +225,9 @@ namespace DjApplication3.WinUI.ViewModels
                 var keys = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(AppPaths.PlayedMusicFile));
                 return new HashSet<string>(keys ?? [], StringComparer.Ordinal);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Load played music history failed");
                 return new HashSet<string>(StringComparer.Ordinal);
             }
         }
@@ -238,7 +242,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Sauvegarde des musiques lues impossible: {ex.Message}";
+                ReportError($"Sauvegarde des musiques lues impossible: {ex.Message}", ex, "Save played music history");
             }
         }
     }

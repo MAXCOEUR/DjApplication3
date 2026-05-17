@@ -19,6 +19,7 @@ namespace DjApplication3.WinUI.Controls
         private CancellationTokenSource? _renderCts;
         private int _renderVersion;
         private bool _isLoaded;
+        private bool _isRendering;
 
         public WaveformControl()
         {
@@ -75,15 +76,32 @@ namespace DjApplication3.WinUI.Controls
             typeof(WaveformControl),
             new PropertyMetadata(false, OnEndWarningActiveChanged));
 
+        public static readonly DependencyProperty IsLoadingProperty = DependencyProperty.Register(
+            nameof(IsLoading),
+            typeof(bool),
+            typeof(WaveformControl),
+            new PropertyMetadata(false, OnIsLoadingChanged));
+
         public bool EndWarningActive
         {
             get => (bool)GetValue(EndWarningActiveProperty);
             set => SetValue(EndWarningActiveProperty, value);
         }
 
+        public bool IsLoading
+        {
+            get => (bool)GetValue(IsLoadingProperty);
+            set => SetValue(IsLoadingProperty, value);
+        }
+
         private static void OnEndWarningActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((WaveformControl)d).UpdateEndWarningState();
+        }
+
+        private static void OnIsLoadingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((WaveformControl)d).UpdateLoadingOverlay();
         }
         private readonly DispatcherTimer _endWarningBlinkTimer;
         private bool _blinkState;
@@ -146,8 +164,10 @@ namespace DjApplication3.WinUI.Controls
 
             if (Waveform == null || Waveform.Length == 0 || width < 2 || height < 2)
             {
+                _renderCts?.Cancel();
+                _isRendering = false;
                 WaveImage.Source = null;
-                LoadingOverlay.Visibility = Visibility.Collapsed;
+                UpdateLoadingOverlay();
                 return;
             }
 
@@ -160,7 +180,8 @@ namespace DjApplication3.WinUI.Controls
             var version = Interlocked.Increment(ref _renderVersion);
             var waveformSnapshot = Waveform.ToArray();
 
-            LoadingOverlay.Visibility = Visibility.Visible;
+            _isRendering = true;
+            UpdateLoadingOverlay();
 
             _ = RenderWaveformAsync(waveformSnapshot, width, height, version, cts.Token);
         }
@@ -203,7 +224,8 @@ namespace DjApplication3.WinUI.Controls
                 }
 
                 WaveImage.Source = bitmap;
-                LoadingOverlay.Visibility = Visibility.Collapsed;
+                _isRendering = false;
+                UpdateLoadingOverlay();
                 UpdateMarker();
             }
             catch (OperationCanceledException)
@@ -214,9 +236,17 @@ namespace DjApplication3.WinUI.Controls
             {
                 if (version == _renderVersion)
                 {
-                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    _isRendering = false;
+                    UpdateLoadingOverlay();
                 }
             }
+        }
+
+        private void UpdateLoadingOverlay()
+        {
+            LoadingOverlay.Visibility = IsLoading || _isRendering
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private static byte[] BuildWaveformPixels(

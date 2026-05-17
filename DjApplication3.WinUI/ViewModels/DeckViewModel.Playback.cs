@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using System;
 using System.Diagnostics;
@@ -33,8 +34,10 @@ namespace DjApplication3.WinUI.ViewModels
         {
             TryAudio(_audio.Stop, "Arret impossible");
             _isHandlingTrackEnd = false;
+            _waveformLoadVersion++;
             _currentMusic = null;
             Waveform = Array.Empty<sbyte>();
+            IsWaveformLoading = false;
             Title = "Aucune musique";
             HasMusic = false;
             IsPlaying = false;
@@ -121,6 +124,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Position update failed on deck {TrackNumber}");
                 Debug.WriteLine($"UpdatePosition crash évité: {ex}");
             }
         }
@@ -173,6 +177,7 @@ namespace DjApplication3.WinUI.ViewModels
             catch (Exception ex)
             {
                 NextMusicPreview = $"Auto impossible: {ex.Message}";
+                AppLogger.Error(ex, $"Track end handling failed on deck {TrackNumber}");
                 Debug.WriteLine($"Erreur fin de musique: {ex}");
             }
             finally
@@ -243,6 +248,7 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 IsPlaying = false;
                 NextMusicPreview = $"{errorMessage}: {ex.Message}";
+                AppLogger.Error(ex, $"{errorMessage} on deck {TrackNumber}");
                 Debug.WriteLine($"{errorMessage}: {ex}");
             }
         }

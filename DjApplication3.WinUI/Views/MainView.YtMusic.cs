@@ -1,4 +1,5 @@
 using DjApplication3.DataSource;
+using DjApplication3.Infrastructure;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -55,11 +56,13 @@ namespace DjApplication3.WinUI.Views
             {
                 LoginPanel.Visibility = Visibility.Collapsed;
                 ViewModel.Status = $"WebView2 indisponible: {ex.Message}";
+                AppLogger.Error(ex, "WebView2 unavailable for Youtube Music login");
             }
             catch (Exception ex)
             {
                 LoginPanel.Visibility = Visibility.Collapsed;
                 ViewModel.Status = $"Ouverture Youtube Music impossible: {ex.Message}";
+                AppLogger.Error(ex, "Open Youtube Music login failed");
             }
         }
 
@@ -128,6 +131,7 @@ namespace DjApplication3.WinUI.Views
             catch (Exception ex)
             {
                 ViewModel.Status = $"Connexion Youtube Music impossible: {ex.Message}";
+                AppLogger.Error(ex, "Youtube Music cookie export failed");
             }
         }
 

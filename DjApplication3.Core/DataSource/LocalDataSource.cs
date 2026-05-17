@@ -57,6 +57,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Local metadata read failed for {Path.GetFileName(filePath)}");
                 Console.WriteLine($"Erreur lors de la recuperation des metadonnees : {ex.Message}");
                 return CreateFallbackMusic(filePath);
             }

@@ -3,6 +3,7 @@ using CSCore.Codecs;
 using CSCore.SoundOut;
 using CSCore.Streams;
 using CSCore.Streams.Effects;
+using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using System.Diagnostics;
 using System;
@@ -41,6 +42,7 @@ namespace DjApplication3.Services
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, "Audio position timer failed");
                     Debug.WriteLine($"[CsCoreAudioPlayerService] Timer handler exception: {ex}");
                 }
             };
@@ -146,6 +148,7 @@ namespace DjApplication3.Services
             {
                 // If switching output fails, restore previous state and log the error.
                 _headphoneEnabled = previous;
+                AppLogger.Error(ex, "Output switch failed");
                 Debug.WriteLine($"SetHeadphoneEnabled failed: {ex}");
             }
         }

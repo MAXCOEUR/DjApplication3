@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Mise a jour peripheriques impossible: {ex.Message}";
+                ReportError($"Mise a jour peripheriques impossible: {ex.Message}", ex, "Refresh devices for options");
             }
         }
 
@@ -42,7 +43,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Controleur MIDI indisponible: {ex.Message}";
+                ReportError($"Controleur MIDI indisponible: {ex.Message}", ex, "Restart MIDI controller");
             }
         }
 
@@ -51,14 +52,26 @@ namespace DjApplication3.WinUI.ViewModels
             var leftDeck = Decks.ElementAtOrDefault(LeftDeckIndex);
             var rightDeck = Decks.ElementAtOrDefault(RightDeckIndex);
 
-            _midi.SetSelectedLeftDeck(LeftDeckNumber);
-            _midi.SetSelectedRightDeck(RightDeckNumber);
-            _midi.SetPlayLeft(leftDeck?.IsPlaying == true);
-            _midi.SetPlayRight(rightDeck?.IsPlaying == true);
-            _midi.SetPreviewLeft(leftDeck?.IsHeadphone == true);
-            _midi.SetPreviewRight(rightDeck?.IsHeadphone == true);
-            _midi.SetLoadedLeft(leftDeck?.HasMusic == true);
-            _midi.SetLoadedRight(rightDeck?.HasMusic == true);
+            SafeMidi(() => _midi.SetSelectedLeftDeck(LeftDeckNumber), "MIDI select left deck failed");
+            SafeMidi(() => _midi.SetSelectedRightDeck(RightDeckNumber), "MIDI select right deck failed");
+            SafeMidi(() => _midi.SetPlayLeft(leftDeck?.IsPlaying == true), "MIDI play left LED failed");
+            SafeMidi(() => _midi.SetPlayRight(rightDeck?.IsPlaying == true), "MIDI play right LED failed");
+            SafeMidi(() => _midi.SetPreviewLeft(leftDeck?.IsHeadphone == true), "MIDI preview left LED failed");
+            SafeMidi(() => _midi.SetPreviewRight(rightDeck?.IsHeadphone == true), "MIDI preview right LED failed");
+            SafeMidi(() => _midi.SetLoadedLeft(leftDeck?.HasMusic == true), "MIDI loaded left LED failed");
+            SafeMidi(() => _midi.SetLoadedRight(rightDeck?.HasMusic == true), "MIDI loaded right LED failed");
+        }
+
+        private static void SafeMidi(Action action, string context)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Warning(ex, context);
+            }
         }
 
         private void HandleScratchPress(bool isLeft, bool isPressed)
@@ -164,8 +177,9 @@ namespace DjApplication3.WinUI.ViewModels
                 _settings.RefreshDevices();
                 _lastSeenMidiDeviceCount = _settings.MidiDevices.Count;
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Initial MIDI auto detection refresh failed");
                 _lastSeenMidiDeviceCount = -1;
             }
 
@@ -235,7 +249,7 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Status = $"Detection MIDI impossible: {ex.Message}";
+                ReportError($"Detection MIDI impossible: {ex.Message}", ex, "MIDI auto detection");
             }
             finally
             {
@@ -259,7 +273,7 @@ namespace DjApplication3.WinUI.ViewModels
         private void Enqueue(Action action) => _dispatcherQueue.TryEnqueue(() =>
         {
             try { action(); }
-            catch (Exception ex) { Status = ex.Message; }
+            catch (Exception ex) { ReportError(ex.Message, ex, "MIDI queued action"); }
         });
     }
 }

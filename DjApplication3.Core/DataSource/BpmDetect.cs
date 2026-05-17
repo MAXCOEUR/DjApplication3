@@ -40,6 +40,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"Direct BPM analysis failed for {Path.GetFileName(filePath)}");
                 Console.WriteLine(ex.ToString());
             }
 
@@ -59,6 +60,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, $"FFmpeg BPM fallback failed for {Path.GetFileName(filePath)}");
                 Console.WriteLine(ex.ToString());
                 return 0;
             }
@@ -70,8 +72,9 @@ namespace DjApplication3.DataSource
                     {
                         File.Delete(temporaryWave);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        AppLogger.Warning(ex, $"Temporary BPM file cleanup failed for {Path.GetFileName(temporaryWave)}");
                     }
                 }
             }

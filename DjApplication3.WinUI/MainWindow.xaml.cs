@@ -38,6 +38,7 @@ namespace DjApplication3.WinUI
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Impossible to maximize main window");
                 Debug.WriteLine(ex);
             }
         }
@@ -50,6 +51,7 @@ namespace DjApplication3.WinUI
             }
             catch (Exception ex)
             {
+                AppLogger.Warning(ex, "Temporary music cleanup failed while closing");
                 Debug.WriteLine(ex);
             }
         }

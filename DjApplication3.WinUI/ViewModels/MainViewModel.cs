@@ -79,11 +79,13 @@ namespace DjApplication3.WinUI.ViewModels
                     var enqueued = _dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, UpdatePreviewPlayerState);
                     if (!enqueued)
                     {
+                        AppLogger.Warning(new InvalidOperationException("DispatcherQueue.TryEnqueue returned false."), "Preview position update enqueue failed");
                         Debug.WriteLine("[MainViewModel] Dispatcher.TryEnqueue(High) failed for UpdatePreviewPlayerState");
                     }
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, "Preview PositionChanged handler failed");
                     Debug.WriteLine($"[MainViewModel] Preview PositionChanged handler exception: {ex}");
                 }
             };

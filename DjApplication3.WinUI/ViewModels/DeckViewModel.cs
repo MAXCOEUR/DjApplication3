@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using DjApplication3.Services;
 using Microsoft.UI.Dispatching;
@@ -33,12 +34,14 @@ namespace DjApplication3.WinUI.ViewModels
         private double _trebleDb;
         private double _deckHeight = 260;
         private sbyte[] _waveform = Array.Empty<sbyte>();
+        private bool _isWaveformLoading;
         private bool _isEndingSoon;
         private bool _isHandlingTrackEnd;
         private bool _playedEnoughReported;
         private DateTime? _lastPlaybackUpdateUtc;
         private TimeSpan _listenedDuration = TimeSpan.Zero;
         private string _nextMusicPreview = "Aucune musique suivante";
+        private int _waveformLoadVersion;
 
         public event EventHandler<int>? BpmCalculated;
         public event EventHandler<Musique>? PlayedEnough;
@@ -64,11 +67,13 @@ namespace DjApplication3.WinUI.ViewModels
                     var enqueued = _dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, UpdatePosition);
                     if (!enqueued)
                     {
+                        AppLogger.Warning(new InvalidOperationException("DispatcherQueue.TryEnqueue returned false."), $"Position update enqueue failed on deck {TrackNumber}");
                         Debug.WriteLine($"[DeckViewModel] Dispatcher.TryEnqueue(High) failed for deck {TrackNumber}");
                     }
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.Warning(ex, $"Position changed handler failed on deck {TrackNumber}");
                     Debug.WriteLine($"[DeckViewModel] PositionChanged handler exception: {ex}");
                 }
             };
@@ -131,6 +136,7 @@ namespace DjApplication3.WinUI.ViewModels
         public double TrebleDb { get => _trebleDb; set { if (SetProperty(ref _trebleDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
         public double DeckHeight { get => _deckHeight; set => SetProperty(ref _deckHeight, value); }
         public sbyte[] Waveform { get => _waveform; private set => SetProperty(ref _waveform, value); }
+        public bool IsWaveformLoading { get => _isWaveformLoading; private set => SetProperty(ref _isWaveformLoading, value); }
         public string HeadphoneLabel => IsHeadphone ? "Casque ON" : "Casque OFF";
         public string PlayStateLabel => IsPlaying ? "Pause" : "Play";
 

@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace DjApplication3.WinUI.ViewModels
             catch (Exception ex)
             {
                 NextMusicPreview = $"Shuffle impossible: {ex.Message}";
+                AppLogger.Error(ex, $"Shuffle playlist failed on deck {TrackNumber}");
             }
         }
 
@@ -76,6 +78,7 @@ namespace DjApplication3.WinUI.ViewModels
                 {
                     NextMusicPreview = $"Prechargement impossible: {ex.Message}";
                 });
+                AppLogger.Error(ex, $"Auto preload failed on deck {TrackNumber}");
                 Debug.WriteLine($"Prechargement auto impossible: {ex}");
             }
         }

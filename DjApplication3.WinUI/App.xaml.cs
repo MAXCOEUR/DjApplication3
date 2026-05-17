@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using Microsoft.UI.Xaml;
 
 namespace DjApplication3.WinUI
@@ -55,15 +56,7 @@ namespace DjApplication3.WinUI
 
         private static void LogUnhandledException(System.Exception exception)
         {
-            try
-            {
-                var logPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "winui-crash.log");
-                System.IO.File.AppendAllText(logPath, $"{System.DateTime.Now:u} {exception}\n");
-            }
-            catch
-            {
-                System.Diagnostics.Debug.WriteLine(exception);
-            }
+            AppLogger.Error(exception, "Unhandled application exception");
         }
 
         private static Window CreateErrorWindow(System.Exception exception)
@@ -81,7 +74,7 @@ namespace DjApplication3.WinUI
                 {
                     new Microsoft.UI.Xaml.Controls.TextBlock
                     {
-                        Text = $"Demarrage impossible, mais l'application n'a pas crashe.\n\n{exception.Message}\n\nVoir winui-crash.log pour le detail.",
+                        Text = $"Demarrage impossible, mais l'application n'a pas crashe.\n\n{exception.Message}\n\nVoir outilsExtern\\logs\\errors.log pour le detail.",
                         Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 246, 247, 248)),
                         TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
                     }

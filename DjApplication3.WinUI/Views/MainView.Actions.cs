@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using Microsoft.UI.Xaml;
 using System;
 using System.Threading;
@@ -33,6 +34,7 @@ namespace DjApplication3.WinUI.Views
             catch (Exception ex)
             {
                 ViewModel.Status = $"Erreur: {ex.Message}";
+                AppLogger.Error(ex, $"Library action failed: {loadingText}");
             }
             finally
             {
@@ -59,6 +61,7 @@ namespace DjApplication3.WinUI.Views
             catch (Exception ex)
             {
                 ViewModel.Status = $"{errorPrefix}: {ex.Message}";
+                AppLogger.Error(ex, errorPrefix);
             }
         }
 

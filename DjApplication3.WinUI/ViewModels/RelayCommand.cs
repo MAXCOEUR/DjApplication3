@@ -1,3 +1,4 @@
+using DjApplication3.Infrastructure;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -26,15 +27,22 @@ namespace DjApplication3.WinUI.ViewModels
 
         public async void Execute(object? parameter)
         {
-            if (_execute != null)
+            try
             {
-                _execute(parameter);
-                return;
-            }
+                if (_execute != null)
+                {
+                    _execute(parameter);
+                    return;
+                }
 
-            if (_executeAsync != null)
+                if (_executeAsync != null)
+                {
+                    await _executeAsync(parameter).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
             {
-                await _executeAsync(parameter).ConfigureAwait(false);
+                AppLogger.Error(ex, "Command execution failed");
             }
         }
 
