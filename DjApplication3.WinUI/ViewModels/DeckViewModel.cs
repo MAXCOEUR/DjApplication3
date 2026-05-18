@@ -32,6 +32,9 @@ namespace DjApplication3.WinUI.ViewModels
         private double _bassDb;
         private double _midDb;
         private double _trebleDb;
+        private double _pitchPercent;
+        private double _pitchPreviewPercent;
+        private int? _baseBpm;
         private double _deckHeight = 260;
         private sbyte[] _waveform = Array.Empty<sbyte>();
         private bool _isWaveformLoading;
@@ -134,11 +137,41 @@ namespace DjApplication3.WinUI.ViewModels
         public double BassDb { get => _bassDb; set { if (SetProperty(ref _bassDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
         public double MidDb { get => _midDb; set { if (SetProperty(ref _midDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
         public double TrebleDb { get => _trebleDb; set { if (SetProperty(ref _trebleDb, Math.Clamp(value, -12, 12))) ApplyEqualizer(); } }
+        public double PitchPercent
+        {
+            get => _pitchPercent;
+            private set
+            {
+                var bounded = Math.Clamp(value, -25, 25);
+                if (SetProperty(ref _pitchPercent, bounded))
+                {
+                    TryAudio(() => _audio.SetPlaybackRate((float)(1.0 + bounded / 100.0)), "Pitch indisponible");
+                }
+            }
+        }
+
+        public double PitchPreviewPercent
+        {
+            get => _pitchPreviewPercent;
+            set
+            {
+                var bounded = Math.Clamp(value, -25, 25);
+                if (SetProperty(ref _pitchPreviewPercent, bounded))
+                {
+                    OnPropertyChanged(nameof(PitchText));
+                    UpdatePitchAdjustedBpm();
+                }
+            }
+        }
+
         public double DeckHeight { get => _deckHeight; set => SetProperty(ref _deckHeight, value); }
         public sbyte[] Waveform { get => _waveform; private set => SetProperty(ref _waveform, value); }
         public bool IsWaveformLoading { get => _isWaveformLoading; private set => SetProperty(ref _isWaveformLoading, value); }
         public string HeadphoneLabel => IsHeadphone ? "Casque ON" : "Casque OFF";
         public string PlayStateLabel => IsPlaying ? "Pause" : "Play";
+        public string PitchText => PitchPreviewPercent >= 0
+            ? $"+{PitchPreviewPercent:0.#}%"
+            : $"{PitchPreviewPercent:0.#}%";
 
         public string NextMusicPreview
         {
@@ -166,6 +199,40 @@ namespace DjApplication3.WinUI.ViewModels
             BassDb = 0;
             MidDb = 0;
             TrebleDb = 0;
+        }
+
+        public void CommitPitch()
+        {
+            PitchPercent = PitchPreviewPercent;
+        }
+
+        public void ResetPitch()
+        {
+            PitchPreviewPercent = 0;
+            CommitPitch();
+        }
+
+        private void SetBaseBpm(int bpm)
+        {
+            _baseBpm = bpm;
+            UpdatePitchAdjustedBpm();
+        }
+
+        private void ClearBaseBpm(string fallbackText)
+        {
+            _baseBpm = null;
+            Bpm = fallbackText;
+        }
+
+        private void UpdatePitchAdjustedBpm()
+        {
+            if (!_baseBpm.HasValue)
+            {
+                return;
+            }
+
+            var adjustedBpm = Math.Max(1, (int)Math.Round(_baseBpm.Value * (1.0 + PitchPreviewPercent / 100.0)));
+            Bpm = $"{adjustedBpm} BPM";
         }
 
         private void ApplyEqualizer()

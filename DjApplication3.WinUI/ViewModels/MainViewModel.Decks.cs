@@ -14,7 +14,7 @@ namespace DjApplication3.WinUI.ViewModels
                 return;
             }
 
-            const double minimumDeckHeight = 250;
+            const double minimumDeckHeight = 320;
             var spacing = Math.Max(0, Decks.Count - 1) * 10;
             var targetHeight = Math.Max(minimumDeckHeight, (availableHeight - spacing) / Decks.Count);
             foreach (var deck in Decks)

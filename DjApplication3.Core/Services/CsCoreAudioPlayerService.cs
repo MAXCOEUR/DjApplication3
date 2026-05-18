@@ -1,5 +1,6 @@
 using CSCore;
 using CSCore.Codecs;
+using CSCore.DSP;
 using CSCore.SoundOut;
 using CSCore.Streams;
 using CSCore.Streams.Effects;
@@ -24,6 +25,7 @@ namespace DjApplication3.Services
         private float _bassDb;
         private float _midDb;
         private float _trebleDb;
+        private float _playbackRate = 1;
         private bool _headphoneEnabled;
         private bool _isReinitializing;
 
@@ -161,6 +163,18 @@ namespace DjApplication3.Services
             ApplyEqualizerGains();
         }
 
+        public void SetPlaybackRate(float rate)
+        {
+            var boundedRate = Math.Clamp(rate, 0.75f, 1.25f);
+            if (Math.Abs(_playbackRate - boundedRate) < 0.001f)
+            {
+                return;
+            }
+
+            _playbackRate = boundedRate;
+            ReinitializeKeepingState();
+        }
+
         public void UpdateOutputDevice()
         {
             var currentDevice = _audioPlayer?.Device;
@@ -265,7 +279,14 @@ namespace DjApplication3.Services
             _equalizer.SampleFilters.Add(new EqualizerFilter(channels, new EqualizerChannelFilter(sampleRate, 10000, 0.8, _trebleDb)));
             ApplyEqualizerGains();
 
-            return _equalizer.ToWaveSource();
+            var equalizedSource = _equalizer.ToWaveSource();
+            if (Math.Abs(_playbackRate - 1f) < 0.001f)
+            {
+                return equalizedSource;
+            }
+
+            var rateSource = new PlaybackRateWaveSource(equalizedSource, _playbackRate);
+            return new DmoResampler(rateSource, equalizedSource.WaveFormat);
         }
 
         private void ApplyEqualizerGains()

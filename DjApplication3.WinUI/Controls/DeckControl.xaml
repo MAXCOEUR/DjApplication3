@@ -45,13 +45,66 @@
                 </StackPanel>
             </Grid>
 
-            <controls:WaveformControl
-                Grid.Row="1"
-                Waveform="{Binding Waveform}"
-                Position="{Binding PositionRatio}"
-                IsLoading="{Binding IsWaveformLoading}"
-                EndWarningActive="{Binding IsEndingSoon}"
-                SeekRequested="Waveform_SeekRequested" />
+            <Grid Grid.Row="1" ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="58" />
+                </Grid.ColumnDefinitions>
+
+                <controls:WaveformControl
+                    Waveform="{Binding Waveform}"
+                    Position="{Binding PositionRatio}"
+                    IsLoading="{Binding IsWaveformLoading}"
+                    EndWarningActive="{Binding IsEndingSoon}"
+                    SeekRequested="Waveform_SeekRequested" />
+
+                <Grid Grid.Column="1" RowSpacing="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Text="+25"
+                        Foreground="#8E9AA6"
+                        FontSize="11"
+                        HorizontalAlignment="Center" />
+
+                    <Slider
+                        x:Name="PitchSlider"
+                        Grid.Row="1"
+                        Minimum="-25"
+                        Maximum="25"
+                        Value="{Binding PitchPreviewPercent, Mode=TwoWay}"
+                        Orientation="Vertical"
+                        SmallChange="0.5"
+                        LargeChange="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        PointerReleased="PitchSlider_Commit"
+                        PointerCaptureLost="PitchSlider_Commit"
+                        LostFocus="PitchSlider_Commit"
+                        KeyUp="PitchSlider_KeyUp"
+                        RightTapped="PitchSlider_RightTapped" />
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Text="-25"
+                        Foreground="#8E9AA6"
+                        FontSize="11"
+                        HorizontalAlignment="Center" />
+
+                    <TextBlock
+                        Grid.Row="3"
+                        Text="{Binding PitchText}"
+                        Foreground="#E9FF70"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center" />
+                </Grid>
+            </Grid>
 
             <Grid Grid.Row="2" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>

@@ -35,7 +35,7 @@ namespace DjApplication3.WinUI.ViewModels
                 _audio.Load(musique);
                 HasMusic = true;
                 Title = $"{musique.title} ({musique.author})";
-                Bpm = "000 BPM";
+                ClearBaseBpm("000 BPM");
                 UpdatePosition();
                 _ = LoadBpmAsync(musique);
                 _ = LoadWaveAsync(musique, waveformLoadVersion);
@@ -61,13 +61,13 @@ namespace DjApplication3.WinUI.ViewModels
                 var bpm = await _library.GetBpmAsync(musique);
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Bpm = $"{bpm} BPM";
+                    SetBaseBpm(bpm);
                     BpmCalculated?.Invoke(this, bpm);
                 });
             }
             catch (Exception ex)
             {
-                _dispatcherQueue.TryEnqueue(() => Bpm = "BPM --");
+                _dispatcherQueue.TryEnqueue(() => ClearBaseBpm("BPM --"));
                 AppLogger.Warning(ex, $"BPM analysis failed on deck {TrackNumber}");
                 Debug.WriteLine($"BPM impossible: {ex}");
             }
