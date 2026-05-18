@@ -25,7 +25,7 @@ namespace DjApplication3.WinUI.Controls
         {
             InitializeComponent();
 
-            Root.Background = _normalBackgroundBrush;
+            ApplyNormalBackground();
 
             _endWarningBlinkTimer = new DispatcherTimer
             {
@@ -35,7 +35,7 @@ namespace DjApplication3.WinUI.Controls
             _endWarningBlinkTimer.Tick += (_, _) =>
             {
                 _blinkState = !_blinkState;
-                Root.Background = _blinkState ? _warningBackgroundBrush : _normalBackgroundBrush;
+                Root.Background = _blinkState ? _warningBackgroundBrush : WaveformBackground;
             };
 
             Loaded += (_, _) =>
@@ -54,7 +54,7 @@ namespace DjApplication3.WinUI.Controls
                 _renderCts = null;
 
                 _endWarningBlinkTimer.Stop();
-                Root.Background = _normalBackgroundBrush;
+                ApplyNormalBackground();
             };
         }
 
@@ -82,6 +82,12 @@ namespace DjApplication3.WinUI.Controls
             typeof(WaveformControl),
             new PropertyMetadata(false, OnIsLoadingChanged));
 
+        public static readonly DependencyProperty WaveformBackgroundProperty = DependencyProperty.Register(
+            nameof(WaveformBackground),
+            typeof(Brush),
+            typeof(WaveformControl),
+            new PropertyMetadata(new SolidColorBrush(Color.FromArgb(255, 32, 36, 39)), OnWaveformBackgroundChanged));
+
         public bool EndWarningActive
         {
             get => (bool)GetValue(EndWarningActiveProperty);
@@ -94,6 +100,12 @@ namespace DjApplication3.WinUI.Controls
             set => SetValue(IsLoadingProperty, value);
         }
 
+        public Brush WaveformBackground
+        {
+            get => (Brush)GetValue(WaveformBackgroundProperty);
+            set => SetValue(WaveformBackgroundProperty, value);
+        }
+
         private static void OnEndWarningActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((WaveformControl)d).UpdateEndWarningState();
@@ -103,11 +115,14 @@ namespace DjApplication3.WinUI.Controls
         {
             ((WaveformControl)d).UpdateLoadingOverlay();
         }
+
+        private static void OnWaveformBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((WaveformControl)d).ApplyNormalBackground();
+        }
+
         private readonly DispatcherTimer _endWarningBlinkTimer;
         private bool _blinkState;
-
-        private readonly SolidColorBrush _normalBackgroundBrush =
-            new(Color.FromArgb(255, 32, 36, 39));
 
         private readonly SolidColorBrush _warningBackgroundBrush =
             new(Color.FromArgb(255, 90, 0, 0));
@@ -263,7 +278,7 @@ namespace DjApplication3.WinUI.Controls
             }
 
             var center = (height - 1) / 2.0;
-            var halfHeight = Math.Max(1, center - 2);
+            var halfHeight = Math.Max(1, center);
             var stride = width * 4;
             var centerY = Math.Clamp((int)Math.Round(center), 0, height - 1);
 
@@ -361,8 +376,13 @@ namespace DjApplication3.WinUI.Controls
             {
                 _endWarningBlinkTimer.Stop();
                 _blinkState = false;
-                Root.Background = _normalBackgroundBrush;
+                ApplyNormalBackground();
             }
+        }
+
+        private void ApplyNormalBackground()
+        {
+            Root.Background = WaveformBackground;
         }
     }
 }

@@ -21,6 +21,8 @@ namespace DjApplication3.WinUI.ViewModels
             Musics
         }
 
+        private const string LikedTracksPlaylistId = "__ytmusic_liked_tracks__";
+
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly IMusicLibraryService _library = new MusicLibraryService();
         private readonly ISettingsService _settings = new SettingsService();

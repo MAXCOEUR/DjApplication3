@@ -10,6 +10,7 @@ namespace DjApplication3.Services
         Task<List<Musique>> SearchYoutubeAsync(string search);
         Task<List<Musique>> SearchYtMusicAsync(string search);
         Task<List<PlayListe>> GetYtMusicPlaylistsAsync();
+        Task<List<Musique>> GetYtMusicLikedTracksAsync();
         Task<List<Musique>> GetYtMusicPlaylistTracksAsync(string playlistId, IProgress<List<Musique>>? progress = null);
         Task<Musique> DownloadYoutubeAsync(Musique musique);
         Task<Musique> DownloadYtMusicAsync(Musique musique);

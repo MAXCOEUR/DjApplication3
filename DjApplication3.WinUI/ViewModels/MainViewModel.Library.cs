@@ -243,6 +243,8 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Playlists.Clear();
+                Playlists.Add(new PlaylistRowViewModel(new PlayListe(LikedTracksPlaylistId, "Titres likés")));
+
                 foreach (var playlist in await _library.GetYtMusicPlaylistsAsync())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -274,7 +276,9 @@ namespace DjApplication3.WinUI.ViewModels
                 cancellationToken.ThrowIfCancellationRequested();
                 Musics.Clear();
                 CurrentPlaylistName = playlist.name;
-                var all = await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
+                var all = playlist.id == LikedTracksPlaylistId
+                    ? await _library.GetYtMusicLikedTracksAsync()
+                    : await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -294,6 +298,16 @@ namespace DjApplication3.WinUI.ViewModels
                 }));
 
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (playlist.id == LikedTracksPlaylistId)
+                {
+                    foreach (var musique in all)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        Musics.Add(CreateInternetRow(musique));
+                    }
+                }
+
                 foreach (var musique in all)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

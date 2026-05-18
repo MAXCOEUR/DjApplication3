@@ -17,6 +17,8 @@ namespace DjApplication3.Services
 
         public Task<List<PlayListe>> GetYtMusicPlaylistsAsync() => _repository.GetPlayListeYtMusic();
 
+        public Task<List<Musique>> GetYtMusicLikedTracksAsync() => _repository.GetMusiqueLikeYtMusic();
+
         public Task<List<Musique>> GetYtMusicPlaylistTracksAsync(string playlistId, IProgress<List<Musique>>? progress = null)
             => _repository.GetMusiqueInPlayListeYtMusic(playlistId, progress);
 

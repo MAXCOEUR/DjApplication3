@@ -94,6 +94,7 @@
                         Grid.Column="2"
                         Waveform="{Binding PreviewWaveform}"
                         Position="{Binding PreviewWavePosition}"
+                        WaveformBackground="#101820"
                         IsEnabled="{Binding IsPreviewActive}"
                         SeekRequested="PreviewWaveform_SeekRequested"
                         Height="30"
