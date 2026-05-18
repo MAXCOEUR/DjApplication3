@@ -49,6 +49,20 @@ namespace DjApplication3.WinUI.Controls
                 typeof(TrackBarPerso),
                 new PropertyMetadata(50d));
 
+        public static readonly DependencyProperty OrientationProperty =
+            DependencyProperty.Register(
+                nameof(Orientation),
+                typeof(Microsoft.UI.Xaml.Controls.Orientation),
+                typeof(TrackBarPerso),
+                new PropertyMetadata(Microsoft.UI.Xaml.Controls.Orientation.Horizontal, OnOrientationChanged));
+
+        public static readonly DependencyProperty IsDirectionReversedProperty =
+            DependencyProperty.Register(
+                nameof(IsDirectionReversed),
+                typeof(bool),
+                typeof(TrackBarPerso),
+                new PropertyMetadata(false, OnDirectionChanged));
+
         public double Value
         {
             get => (double)GetValue(ValueProperty);
@@ -71,6 +85,18 @@ namespace DjApplication3.WinUI.Controls
         {
             get => (double)GetValue(DefaultProperty);
             set => SetValue(DefaultProperty, value);
+        }
+
+        public Microsoft.UI.Xaml.Controls.Orientation Orientation
+        {
+            get => (Microsoft.UI.Xaml.Controls.Orientation)GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
+        }
+
+        public bool IsDirectionReversed
+        {
+            get => (bool)GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         public double AnimationStep { get; set; } = 1d;
@@ -150,23 +176,51 @@ namespace DjApplication3.WinUI.Controls
             control.ApplyBarHeight();
         }
 
+        private static void OnOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (TrackBarPerso)d;
+            control.ApplyBarHeight();
+        }
+
+        private static void OnDirectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (TrackBarPerso)d;
+            control.UpdateThumbPosition();
+        }
+
         private void ApplyBarHeight()
         {
             try
             {
                 var h = Math.Max(8.0, BarHeight);
-                this.MinHeight = h;
+                var isVertical = Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical;
+                var barThickness = Math.Max(4.0, h / 2.0);
+                var thumbCrossSize = Math.Max(10.0, h - 2.0);
+
+                MinHeight = isVertical ? 0 : h;
+                MinWidth = isVertical ? h : 0;
 
                 if (BackgroundBar != null)
                 {
-                    BackgroundBar.Height = Math.Max(4.0, h / 2.0);
+                    BackgroundBar.Width = isVertical ? barThickness : double.NaN;
+                    BackgroundBar.Height = isVertical ? double.NaN : barThickness;
+                    BackgroundBar.HorizontalAlignment = isVertical ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+                    BackgroundBar.VerticalAlignment = isVertical ? VerticalAlignment.Stretch : VerticalAlignment.Center;
+                    BackgroundBar.CornerRadius = new CornerRadius(barThickness / 2.0);
                 }
 
                 if (Thumb != null)
                 {
-                    Thumb.Height = Math.Max(10.0, h - 2.0);
-                    // keep width as-is
+                    Thumb.Width = isVertical ? thumbCrossSize : 24.0;
+                    Thumb.Height = isVertical ? 24.0 : thumbCrossSize;
+                    Thumb.HorizontalAlignment = isVertical ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+                    Thumb.VerticalAlignment = isVertical ? VerticalAlignment.Top : VerticalAlignment.Center;
                 }
+
+                CenterLineVertical.Visibility = isVertical ? Visibility.Collapsed : Visibility.Visible;
+                CenterLineHorizontal.Visibility = isVertical ? Visibility.Visible : Visibility.Collapsed;
+                ThumbGripVertical.Visibility = isVertical ? Visibility.Collapsed : Visibility.Visible;
+                ThumbGripHorizontal.Visibility = isVertical ? Visibility.Visible : Visibility.Collapsed;
 
                 UpdateThumbPosition();
             }
@@ -189,7 +243,7 @@ namespace DjApplication3.WinUI.Controls
 
             if (point.Properties.IsLeftButtonPressed)
             {
-                var target = GetValueFromPointerPosition(point.Position.X);
+                var target = GetValueFromPointerPosition(point.Position.X, point.Position.Y);
                 AnimateTo(target);
                 e.Handled = true;
             }
@@ -233,7 +287,7 @@ namespace DjApplication3.WinUI.Controls
                 return;
             }
 
-            Value = GetValueFromPointerPosition(point.Position.X);
+            Value = GetValueFromPointerPosition(point.Position.X, point.Position.Y);
             e.Handled = true;
         }
 
@@ -301,8 +355,32 @@ namespace DjApplication3.WinUI.Controls
             }
         }
 
-        private double GetValueFromPointerPosition(double pointerX)
+        private double GetValueFromPointerPosition(double pointerX, double pointerY)
         {
+            if (Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
+            {
+                var height = Root.ActualHeight;
+                var thumbHeight = Thumb.ActualHeight;
+
+                if (height <= thumbHeight || Maximum <= Minimum)
+                {
+                    return Minimum;
+                }
+
+                var usableHeight = height - thumbHeight;
+                var centeredY = pointerY - thumbHeight / 2.0;
+                var verticalRatio = 1.0 - centeredY / usableHeight;
+
+                verticalRatio = Math.Clamp(verticalRatio, 0, 1);
+
+                if (IsDirectionReversed)
+                {
+                    verticalRatio = 1.0 - verticalRatio;
+                }
+
+                return Minimum + verticalRatio * (Maximum - Minimum);
+            }
+
             var width = Root.ActualWidth;
             var thumbWidth = Thumb.ActualWidth;
 
@@ -317,6 +395,11 @@ namespace DjApplication3.WinUI.Controls
 
             ratio = Math.Clamp(ratio, 0, 1);
 
+            if (IsDirectionReversed)
+            {
+                ratio = 1.0 - ratio;
+            }
+
             return Minimum + ratio * (Maximum - Minimum);
         }
 
@@ -328,19 +411,35 @@ namespace DjApplication3.WinUI.Controls
             }
 
             var width = Root.ActualWidth;
+            var height = Root.ActualHeight;
             var thumbWidth = Thumb.ActualWidth;
+            var thumbHeight = Thumb.ActualHeight;
 
-            if (width <= 0 || thumbWidth <= 0 || Maximum <= Minimum)
+            if (width <= 0 || height <= 0 || thumbWidth <= 0 || thumbHeight <= 0 || Maximum <= Minimum)
             {
                 return;
             }
 
-            var usableWidth = Math.Max(0, width - thumbWidth);
             var ratio = (Value - Minimum) / (Maximum - Minimum);
 
             ratio = Math.Clamp(ratio, 0, 1);
 
+            if (IsDirectionReversed)
+            {
+                ratio = 1.0 - ratio;
+            }
+
+            if (Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
+            {
+                var usableHeight = Math.Max(0, height - thumbHeight);
+                ThumbTransform.X = 0;
+                ThumbTransform.Y = (1.0 - ratio) * usableHeight;
+                return;
+            }
+
+            var usableWidth = Math.Max(0, width - thumbWidth);
             ThumbTransform.X = ratio * usableWidth;
+            ThumbTransform.Y = 0;
         }
 
         private void StopDragging()

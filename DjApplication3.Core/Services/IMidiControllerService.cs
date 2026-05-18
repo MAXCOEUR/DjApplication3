@@ -48,6 +48,8 @@ namespace DjApplication3.Services
         void SetPreviewPlayPause(bool isOn);
         void SetLoadedLeft(bool isOn);
         void SetLoadedRight(bool isOn);
+        void SetSyncLeft(bool isOn);
+        void SetSyncRight(bool isOn);
         void SetSelectedLeftDeck(int deckNumber);
         void SetSelectedRightDeck(int deckNumber);
     }

@@ -93,6 +93,8 @@ namespace DjApplication3.Services
         public void SetPreviewPlayPause(bool isOn) => HerculesDJ.Instance.PreviewPlayPause(isOn);
         public void SetLoadedLeft(bool isOn) => HerculesDJ.Instance.loadedLeft(isOn);
         public void SetLoadedRight(bool isOn) => HerculesDJ.Instance.loadedRight(isOn);
+        public void SetSyncLeft(bool isOn) => HerculesDJ.Instance.SyncLeft(isOn);
+        public void SetSyncRight(bool isOn) => HerculesDJ.Instance.SyncRight(isOn);
         public void SetSelectedLeftDeck(int deckNumber) => HerculesDJ.Instance.selectPisteLeft(deckNumber);
         public void SetSelectedRightDeck(int deckNumber) => HerculesDJ.Instance.selectPisteRight(deckNumber);
         public void Dispose() => HerculesDJ.Instance.Dispose();

@@ -69,9 +69,11 @@ namespace DjApplication3.WinUI.ViewModels
             }
 
             if (e.PropertyName is nameof(DeckViewModel.Bpm)
+                or nameof(DeckViewModel.PitchPreviewPercent)
                 or nameof(DeckViewModel.HasMusic))
             {
                 UpdateDeckBpmSummary();
+                SyncControllerState();
             }
         }
 

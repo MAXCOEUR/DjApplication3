@@ -60,6 +60,25 @@ namespace DjApplication3.WinUI.ViewModels
             SafeMidi(() => _midi.SetPreviewRight(rightDeck?.IsHeadphone == true), "MIDI preview right LED failed");
             SafeMidi(() => _midi.SetLoadedLeft(leftDeck?.HasMusic == true), "MIDI loaded left LED failed");
             SafeMidi(() => _midi.SetLoadedRight(rightDeck?.HasMusic == true), "MIDI loaded right LED failed");
+
+            var bpmSynced = AreDeckBpmsSynced(leftDeck, rightDeck);
+            SafeMidi(() => _midi.SetSyncLeft(bpmSynced), "MIDI sync left LED failed");
+            SafeMidi(() => _midi.SetSyncRight(bpmSynced), "MIDI sync right LED failed");
+        }
+
+        private static bool AreDeckBpmsSynced(DeckViewModel? leftDeck, DeckViewModel? rightDeck)
+        {
+            if (leftDeck?.HasMusic != true || rightDeck?.HasMusic != true)
+            {
+                return false;
+            }
+
+            if (leftDeck.EffectiveBpm is not double leftBpm || rightDeck.EffectiveBpm is not double rightBpm)
+            {
+                return false;
+            }
+
+            return Math.Abs(leftBpm - rightBpm) <= 0.5;
         }
 
         private static void SafeMidi(Action action, string context)
@@ -162,8 +181,8 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.PitchRight += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.AdjustPitchFromMidi(value));
             _midi.PitchNudgeLeft += (_, direction) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.NudgePitchFromButton(direction));
             _midi.PitchNudgeRight += (_, direction) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.NudgePitchFromButton(direction));
-            _midi.PitchResetLeft += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.ResetPitch());
-            _midi.PitchResetRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ResetPitch());
+            _midi.PitchResetLeft += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.ResetPitchSmooth());
+            _midi.PitchResetRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ResetPitchSmooth());
             _midi.SyncLeft += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.SyncPitchTo(Decks.ElementAtOrDefault(RightDeckIndex)));
             _midi.SyncRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.SyncPitchTo(Decks.ElementAtOrDefault(LeftDeckIndex)));
             _midi.VolumeUpHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume += 5);

@@ -9,8 +9,8 @@
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
-    <Version>2.0.9.0</Version>
-    <FileVersion>2.0.9.0</FileVersion>
+    <Version>2.0.10.0</Version>
+    <FileVersion>2.0.10.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

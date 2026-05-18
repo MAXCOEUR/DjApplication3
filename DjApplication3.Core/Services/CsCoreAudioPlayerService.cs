@@ -1,6 +1,5 @@
 using CSCore;
 using CSCore.Codecs;
-using CSCore.DSP;
 using CSCore.SoundOut;
 using CSCore.Streams;
 using CSCore.Streams.Effects;
@@ -18,6 +17,7 @@ namespace DjApplication3.Services
         private IWaveSource? _waveSource;
         private WasapiOut? _audioPlayer;
         private Equalizer? _equalizer;
+        private VariablePlaybackRateSampleSource? _playbackRateSource;
         private string? _loadedPath;
         private float _masterVolume = 1;
         private float _trackVolume = 1;
@@ -98,6 +98,7 @@ namespace DjApplication3.Services
             _waveSource?.Dispose();
             _waveSource = null;
             _equalizer = null;
+            _playbackRateSource = null;
             _loadedPath = null;
             PositionChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -172,7 +173,10 @@ namespace DjApplication3.Services
             }
 
             _playbackRate = boundedRate;
-            ReinitializeKeepingState();
+            if (_playbackRateSource != null)
+            {
+                _playbackRateSource.PlaybackRate = boundedRate;
+            }
         }
 
         public void UpdateOutputDevice()
@@ -279,14 +283,8 @@ namespace DjApplication3.Services
             _equalizer.SampleFilters.Add(new EqualizerFilter(channels, new EqualizerChannelFilter(sampleRate, 10000, 0.8, _trebleDb)));
             ApplyEqualizerGains();
 
-            var equalizedSource = _equalizer.ToWaveSource();
-            if (Math.Abs(_playbackRate - 1f) < 0.001f)
-            {
-                return equalizedSource;
-            }
-
-            var rateSource = new PlaybackRateWaveSource(equalizedSource, _playbackRate);
-            return new DmoResampler(rateSource, equalizedSource.WaveFormat);
+            _playbackRateSource = new VariablePlaybackRateSampleSource(_equalizer, _playbackRate);
+            return _playbackRateSource.ToWaveSource();
         }
 
         private void ApplyEqualizerGains()

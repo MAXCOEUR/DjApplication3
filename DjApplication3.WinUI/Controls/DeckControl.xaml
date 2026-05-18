@@ -67,31 +67,29 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock
-                        Text="+25"
+                        Text="-25"
                         Foreground="#8E9AA6"
                         FontSize="11"
                         HorizontalAlignment="Center" />
 
-                    <Slider
-                        x:Name="PitchSlider"
+                    <controls:TrackBarPerso
                         Grid.Row="1"
                         Minimum="-25"
                         Maximum="25"
+                        Default="0"
                         Value="{Binding PitchPreviewPercent, Mode=TwoWay}"
                         Orientation="Vertical"
-                        SmallChange="0.5"
-                        LargeChange="2"
+                        IsDirectionReversed="True"
+                        BarHeight="34"
+                        AnimationStep="0.15"
+                        AnimationIntervalMs="14"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Stretch"
-                        PointerReleased="PitchSlider_Commit"
-                        PointerCaptureLost="PitchSlider_Commit"
-                        LostFocus="PitchSlider_Commit"
-                        KeyUp="PitchSlider_KeyUp"
-                        RightTapped="PitchSlider_RightTapped" />
+                        ToolTipService.ToolTip="Pitch" />
 
                     <TextBlock
                         Grid.Row="2"
-                        Text="-25"
+                        Text="+25"
                         Foreground="#8E9AA6"
                         FontSize="11"
                         HorizontalAlignment="Center" />

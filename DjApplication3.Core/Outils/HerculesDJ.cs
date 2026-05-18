@@ -557,6 +557,16 @@ namespace DjApplication3.outils
             SendNoteOn(51, isOn ? 127 : 0);
         }
 
+        public void SyncLeft(bool isOn)
+        {
+            SendNoteOn(23, isOn ? 127 : 0);
+        }
+
+        public void SyncRight(bool isOn)
+        {
+            SendNoteOn(49, isOn ? 127 : 0);
+        }
+
         public void PreviewPlayPause(bool isOn)
         {
             SendNoteOn(53, isOn ? 127 : 0);

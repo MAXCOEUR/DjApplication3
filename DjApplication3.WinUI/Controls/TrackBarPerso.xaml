@@ -23,11 +23,21 @@
             BorderThickness="1" />
 
         <Rectangle
+            x:Name="CenterLineVertical"
             Width="2"
             Fill="#E6FFFFFF"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
             Margin="0,6" />
+
+        <Rectangle
+            x:Name="CenterLineHorizontal"
+            Height="2"
+            Fill="#E6FFFFFF"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Margin="6,0"
+            Visibility="Collapsed" />
 
         <Border
             x:Name="Thumb"
@@ -48,10 +58,19 @@
 
             <Grid>
                 <Rectangle
+                    x:Name="ThumbGripVertical"
                     Width="2"
                     Fill="#FFFFFFFF"
                     HorizontalAlignment="Center"
                     Margin="0,5" />
+
+                <Rectangle
+                    x:Name="ThumbGripHorizontal"
+                    Height="2"
+                    Fill="#FFFFFFFF"
+                    VerticalAlignment="Center"
+                    Margin="5,0"
+                    Visibility="Collapsed" />
             </Grid>
         </Border>
 
