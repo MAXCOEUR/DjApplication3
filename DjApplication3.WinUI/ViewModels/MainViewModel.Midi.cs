@@ -158,6 +158,14 @@ namespace DjApplication3.WinUI.ViewModels
             _midi.ScratchRight += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ChangePosition(value != 127));
             _midi.ScratchLeftPress += (_, isPressed) => Enqueue(() => HandleScratchPress(true, isPressed));
             _midi.ScratchRightPress += (_, isPressed) => Enqueue(() => HandleScratchPress(false, isPressed));
+            _midi.PitchLeft += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.AdjustPitchFromMidi(value));
+            _midi.PitchRight += (_, value) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.AdjustPitchFromMidi(value));
+            _midi.PitchNudgeLeft += (_, direction) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.NudgePitchFromButton(direction));
+            _midi.PitchNudgeRight += (_, direction) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.NudgePitchFromButton(direction));
+            _midi.PitchResetLeft += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.ResetPitch());
+            _midi.PitchResetRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.ResetPitch());
+            _midi.SyncLeft += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(LeftDeckIndex)?.SyncPitchTo(Decks.ElementAtOrDefault(RightDeckIndex)));
+            _midi.SyncRight += (_, _) => Enqueue(() => Decks.ElementAtOrDefault(RightDeckIndex)?.SyncPitchTo(Decks.ElementAtOrDefault(LeftDeckIndex)));
             _midi.VolumeUpHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume += 5);
             _midi.VolumeDownHeadPhone += (_, _) => Enqueue(() => HeadphoneVolume -= 5);
             _midi.PreviewPlayPause += (_, _) => Enqueue(() => TogglePreviewPlayback());

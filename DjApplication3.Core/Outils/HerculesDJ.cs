@@ -38,11 +38,23 @@ namespace DjApplication3.outils
         public event EventHandler<int>? eventScratchRight;
         public event EventHandler<bool>? eventScratchLeftPress;
         public event EventHandler<bool>? eventScratchRightPress;
+        public event EventHandler<int>? eventPitchLeft;
+        public event EventHandler<int>? eventPitchRight;
+        public event EventHandler<int>? eventPitchNudgeLeft;
+        public event EventHandler<int>? eventPitchNudgeRight;
+        public event EventHandler? eventPitchResetLeft;
+        public event EventHandler? eventPitchResetRight;
+        public event EventHandler? eventSyncLeft;
+        public event EventHandler? eventSyncRight;
         public event EventHandler? eventVolumeUpHeadPhone;
         public event EventHandler? eventVolumeDownHeadPhone;
 
         MidiIn? midiIn;
         MidiOut? midiOut;
+        private bool _pitchMinusLeftPressed;
+        private bool _pitchPlusLeftPressed;
+        private bool _pitchMinusRightPressed;
+        private bool _pitchPlusRightPressed;
 
         public static HerculesDJ Instance
         {
@@ -187,12 +199,42 @@ namespace DjApplication3.outils
                         }
                         Console.WriteLine("Droite casque " + noteOnEvent.Velocity);
                         break;
+                    case 49:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventSyncRight?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Droite sync " + noteOnEvent.Velocity);
+                        break;
                     case 24:
                         if (noteOnEvent.Velocity == 127)
                         {
                             eventCasqueLeft?.Invoke(this, EventArgs.Empty);
                         }
                         Console.WriteLine("Gauche casque " + noteOnEvent.Velocity);
+                        break;
+                    case 23:
+                        if (noteOnEvent.Velocity == 127)
+                        {
+                            eventSyncLeft?.Invoke(this, EventArgs.Empty);
+                        }
+                        Console.WriteLine("Gauche sync " + noteOnEvent.Velocity);
+                        break;
+                    case 17:
+                        HandlePitchButton(isLeft: true, isPlus: false, isPressed: noteOnEvent.Velocity == 127);
+                        Console.WriteLine("Gauche pitch - " + noteOnEvent.Velocity);
+                        break;
+                    case 18:
+                        HandlePitchButton(isLeft: true, isPlus: true, isPressed: noteOnEvent.Velocity == 127);
+                        Console.WriteLine("Gauche pitch + " + noteOnEvent.Velocity);
+                        break;
+                    case 43:
+                        HandlePitchButton(isLeft: false, isPlus: false, isPressed: noteOnEvent.Velocity == 127);
+                        Console.WriteLine("Droite pitch - " + noteOnEvent.Velocity);
+                        break;
+                    case 44:
+                        HandlePitchButton(isLeft: false, isPlus: true, isPressed: noteOnEvent.Velocity == 127);
+                        Console.WriteLine("Droite pitch + " + noteOnEvent.Velocity);
                         break;
                     case 9:
                         if (noteOnEvent.Velocity == 127)
@@ -378,6 +420,14 @@ namespace DjApplication3.outils
                         eventScratchRight?.Invoke(this, controlEvent.ControllerValue);
                         Console.WriteLine("Droite scrach " + controlEvent.ControllerValue);
                         break;
+                    case 52:
+                        eventPitchLeft?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Gauche pitch " + controlEvent.ControllerValue);
+                        break;
+                    case 53:
+                        eventPitchRight?.Invoke(this, controlEvent.ControllerValue);
+                        Console.WriteLine("Droite pitch " + controlEvent.ControllerValue);
+                        break;
                     case 58:
                         eventMixe?.Invoke(this, controlEvent.ControllerValue / 127.0F);
                         Console.WriteLine("mixage " + controlEvent.ControllerValue / 127.0F);
@@ -395,6 +445,50 @@ namespace DjApplication3.outils
                         Console.WriteLine("Droite bass " + ToEqDb(controlEvent.ControllerValue));
                         break;
                 }
+            }
+        }
+
+        private void HandlePitchButton(bool isLeft, bool isPlus, bool isPressed)
+        {
+            if (isLeft)
+            {
+                if (isPlus)
+                {
+                    _pitchPlusLeftPressed = isPressed;
+                }
+                else
+                {
+                    _pitchMinusLeftPressed = isPressed;
+                }
+
+                if (_pitchMinusLeftPressed && _pitchPlusLeftPressed)
+                {
+                    eventPitchResetLeft?.Invoke(this, EventArgs.Empty);
+                }
+                else if (isPressed)
+                {
+                    eventPitchNudgeLeft?.Invoke(this, isPlus ? 1 : -1);
+                }
+
+                return;
+            }
+
+            if (isPlus)
+            {
+                _pitchPlusRightPressed = isPressed;
+            }
+            else
+            {
+                _pitchMinusRightPressed = isPressed;
+            }
+
+            if (_pitchMinusRightPressed && _pitchPlusRightPressed)
+            {
+                eventPitchResetRight?.Invoke(this, EventArgs.Empty);
+            }
+            else if (isPressed)
+            {
+                eventPitchNudgeRight?.Invoke(this, isPlus ? 1 : -1);
             }
         }
 

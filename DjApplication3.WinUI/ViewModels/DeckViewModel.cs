@@ -42,6 +42,7 @@ namespace DjApplication3.WinUI.ViewModels
         private bool _isHandlingTrackEnd;
         private bool _playedEnoughReported;
         private DateTime? _lastPlaybackUpdateUtc;
+        private readonly DispatcherQueueTimer _pitchCommitTimer;
         private TimeSpan _listenedDuration = TimeSpan.Zero;
         private string _nextMusicPreview = "Aucune musique suivante";
         private int _waveformLoadVersion;
@@ -63,6 +64,13 @@ namespace DjApplication3.WinUI.ViewModels
             _library = library;
             _dispatcherQueue = dispatcherQueue;
             _audio = new CsCoreAudioPlayerService(settings);
+            _pitchCommitTimer = dispatcherQueue.CreateTimer();
+            _pitchCommitTimer.Interval = TimeSpan.FromMilliseconds(140);
+            _pitchCommitTimer.Tick += (_, _) =>
+            {
+                _pitchCommitTimer.Stop();
+                CommitPitch();
+            };
             _audio.PositionChanged += (_, _) =>
             {
                 try
@@ -172,6 +180,9 @@ namespace DjApplication3.WinUI.ViewModels
         public string PitchText => PitchPreviewPercent >= 0
             ? $"+{PitchPreviewPercent:0.#}%"
             : $"{PitchPreviewPercent:0.#}%";
+        public double? EffectiveBpm => _baseBpm.HasValue
+            ? Math.Max(1, _baseBpm.Value * (1.0 + PitchPreviewPercent / 100.0))
+            : null;
 
         public string NextMusicPreview
         {
@@ -192,7 +203,11 @@ namespace DjApplication3.WinUI.ViewModels
             private set => SetProperty(ref _isEndingSoon, value);
         }
 
-        public void Dispose() => _audio.Dispose();
+        public void Dispose()
+        {
+            _pitchCommitTimer.Stop();
+            _audio.Dispose();
+        }
 
         public void ResetEqualizer()
         {
@@ -209,6 +224,35 @@ namespace DjApplication3.WinUI.ViewModels
         public void ResetPitch()
         {
             PitchPreviewPercent = 0;
+            CommitPitch();
+        }
+
+        public void AdjustPitchFromMidi(int midiValue)
+        {
+            var delta = GetPitchDeltaFromMidi(midiValue);
+            if (Math.Abs(delta) < 0.001)
+            {
+                return;
+            }
+
+            PitchPreviewPercent += delta;
+            QueuePitchCommit();
+        }
+
+        public void NudgePitchFromButton(int direction)
+        {
+            PitchPreviewPercent += Math.Sign(direction) * 0.5;
+            CommitPitch();
+        }
+
+        public void SyncPitchTo(DeckViewModel? targetDeck)
+        {
+            if (!_baseBpm.HasValue || targetDeck?.EffectiveBpm is not double targetBpm)
+            {
+                return;
+            }
+
+            PitchPreviewPercent = Math.Clamp((targetBpm / _baseBpm.Value - 1.0) * 100.0, -25, 25);
             CommitPitch();
         }
 
@@ -233,6 +277,33 @@ namespace DjApplication3.WinUI.ViewModels
 
             var adjustedBpm = Math.Max(1, (int)Math.Round(_baseBpm.Value * (1.0 + PitchPreviewPercent / 100.0)));
             Bpm = $"{adjustedBpm} BPM";
+        }
+
+        private void QueuePitchCommit()
+        {
+            _pitchCommitTimer.Stop();
+            _pitchCommitTimer.Start();
+        }
+
+        private static double GetPitchDeltaFromMidi(int midiValue)
+        {
+            if (midiValue <= 0)
+            {
+                return 0;
+            }
+
+            if (midiValue <= 63)
+            {
+                return GetPitchStep(midiValue);
+            }
+
+            return -GetPitchStep(128 - midiValue);
+        }
+
+        private static double GetPitchStep(int strength)
+        {
+            var normalized = Math.Clamp(strength, 1, 63) / 63.0;
+            return 0.08 + Math.Pow(normalized, 1.35) * 1.15;
         }
 
         private void ApplyEqualizer()

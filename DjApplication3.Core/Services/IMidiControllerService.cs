@@ -29,6 +29,14 @@ namespace DjApplication3.Services
         event EventHandler<int>? ScratchRight;
         event EventHandler<bool>? ScratchLeftPress;
         event EventHandler<bool>? ScratchRightPress;
+        event EventHandler<int>? PitchLeft;
+        event EventHandler<int>? PitchRight;
+        event EventHandler<int>? PitchNudgeLeft;
+        event EventHandler<int>? PitchNudgeRight;
+        event EventHandler? PitchResetLeft;
+        event EventHandler? PitchResetRight;
+        event EventHandler? SyncLeft;
+        event EventHandler? SyncRight;
         event EventHandler? VolumeUpHeadPhone;
         event EventHandler? VolumeDownHeadPhone;
         event EventHandler? PreviewPlayPause;
