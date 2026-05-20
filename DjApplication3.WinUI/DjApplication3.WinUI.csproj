@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -9,8 +9,8 @@
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
-    <Version>2.0.10.0</Version>
-    <FileVersion>2.0.10.0</FileVersion>
+    <Version>2.0.10.1</Version>
+    <FileVersion>2.0.10.1</FileVersion>
     <WebView2PackageVersion>1.0.3967.48</WebView2PackageVersion>
   </PropertyGroup>
 
