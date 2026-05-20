@@ -11,11 +11,12 @@
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <Version>2.0.10.0</Version>
     <FileVersion>2.0.10.0</FileVersion>
+    <WebView2PackageVersion>1.0.3967.48</WebView2PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="$(WebView2PackageVersion)" />
     <PackageReference Include="WinUI.TableView" Version="1.4.1" />
   </ItemGroup>
 
@@ -26,7 +27,7 @@
   <ItemGroup>
     <Content Include="Resources\*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Resources\logo.ico" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(NuGetPackageRoot)microsoft.web.webview2\1.0.3800.47\build\native\x64\WebView2Loader.dll" Link="WebView2Loader.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.web.webview2\$(WebView2PackageVersion)\build\native\x64\WebView2Loader.dll" Link="WebView2Loader.dll" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\DjApplication3.Core\outilsExtern\**\*.*" Link="outilsExtern\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\DjApplication3\musique\**\*.*" Link="musique\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
