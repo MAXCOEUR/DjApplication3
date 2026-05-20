@@ -1,0 +1,98 @@
+name: Build installer and release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-master
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --yes --no-progress
+
+      - name: Bump version
+        id: version
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\SetupInno\bump-version.ps1 -WriteGithubOutput
+
+      - name: Restore dependencies
+        shell: powershell
+        run: dotnet restore .\DjApplication3.sln
+
+      - name: Build installer
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\SetupInno\build-installer.ps1
+
+      - name: Prepare installer artifact
+        id: installer
+        shell: powershell
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $source = Join-Path $PWD "SetupInno\Output\DjApplication3Setup.exe"
+          if (-not (Test-Path -LiteralPath $source)) {
+              throw "Installateur introuvable: $source"
+          }
+
+          $destination = Join-Path $PWD "SetupInno\Output\DjApplication3Setup-$version.exe"
+          Copy-Item -LiteralPath $source -Destination $destination -Force
+          $encoding = New-Object System.Text.UTF8Encoding $false
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "path=$destination$([System.Environment]::NewLine)", $encoding)
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DjApplication3Setup-${{ steps.version.outputs.version }}
+          path: ${{ steps.installer.outputs.path }}
+          if-no-files-found: error
+
+      - name: Commit version bump
+        shell: powershell
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .\DjApplication3.WinUI\DjApplication3.WinUI.csproj .\SetupInno\DjApplication3.iss
+          git commit -m "chore: bump version to $version"
+          git push
+
+      - name: Create GitHub release
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $tag = "v$version"
+          $target = git rev-parse HEAD
+          $installer = "${{ steps.installer.outputs.path }}"
+          $notesPath = Join-Path $env:RUNNER_TEMP "release-notes.txt"
+
+          @"
+          DjApplication3 $version
+
+          Installateur genere automatiquement depuis master avec le workflow GitHub Actions.
+          "@ | Set-Content -LiteralPath $notesPath -Encoding UTF8
+
+          gh release create $tag $installer --target $target --title "DjApplication3 $version" --notes-file $notesPath
