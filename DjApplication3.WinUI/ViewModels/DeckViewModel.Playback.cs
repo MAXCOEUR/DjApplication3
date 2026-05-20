@@ -57,7 +57,11 @@ namespace DjApplication3.WinUI.ViewModels
 
         public void SetHeadphoneVolume(float volume) => TryAudio(() => _audio.SetHeadphoneVolume(volume), "Volume casque indisponible");
 
-        public void Seek(double ratio) => TryAudio(() => _audio.Seek(ratio), "Deplacement impossible");
+        public void Seek(double ratio)
+        {
+            _isHandlingTrackEnd = false;
+            TryAudio(() => _audio.Seek(ratio), "Deplacement impossible");
+        }
 
         public void ChangePosition(bool isForward)
         {
@@ -105,8 +109,7 @@ namespace DjApplication3.WinUI.ViewModels
                 IsEndingSoon =
                     HasMusic &&
                     duration > TimeSpan.Zero &&
-                    remaining.TotalSeconds <= 30 &&
-                    remaining.TotalSeconds > 0;
+                    remaining.TotalSeconds <= 30;
 
                 ReportPlayedEnoughIfNeeded(duration);
 
@@ -118,7 +121,6 @@ namespace DjApplication3.WinUI.ViewModels
                 if (isAtEnd && !_isHandlingTrackEnd)
                 {
                     _isHandlingTrackEnd = true;
-                    IsEndingSoon = false;
                     _ = HandleTrackEndAsync();
                 }
             }
@@ -133,16 +135,17 @@ namespace DjApplication3.WinUI.ViewModels
         {
             try
             {
-                var currentMusic = _currentMusic;
                 var playlist = _currentMusic?.musiquesInPlayliste;
                 var nextMusic = GetNextMusic();
                 ReportPlayedEnough(force: true);
-                _audio.Stop();
-                IsPlaying = false;
-                PositionRatio = 0f;
 
                 if (IsAutoNext && nextMusic is not null)
                 {
+                    _audio.Stop();
+                    IsPlaying = false;
+                    PositionRatio = 0f;
+                    IsEndingSoon = false;
+
                     var next = _nextDownloadedMusic ?? nextMusic;
                     _nextDownloadedMusic = null;
 
@@ -159,29 +162,20 @@ namespace DjApplication3.WinUI.ViewModels
 
                     await SetMusicAsync(next);
                     Play();
+                    _isHandlingTrackEnd = false;
                     return;
                 }
 
-                if (currentMusic is not null)
-                {
-                    _nextDownloadedMusic = null;
-                    await SetMusicAsync(currentMusic);
-                    IsPlaying = false;
-                    PositionRatio = 0f;
-                    IsEndingSoon = false;
-                    return;
-                }
-
-                Stop();
+                // Pas d'auto-next : on laisse la musique chargée et le curseur en fin
+                // pour que l'utilisateur puisse seek et reprendre la lecture.
+                // _isHandlingTrackEnd reste vrai (reset par Seek/SetMusicAsync/Stop).
+                IsPlaying = false;
             }
             catch (Exception ex)
             {
                 NextMusicPreview = $"Auto impossible: {ex.Message}";
                 AppLogger.Error(ex, $"Track end handling failed on deck {TrackNumber}");
                 Debug.WriteLine($"Erreur fin de musique: {ex}");
-            }
-            finally
-            {
                 _isHandlingTrackEnd = false;
             }
         }
