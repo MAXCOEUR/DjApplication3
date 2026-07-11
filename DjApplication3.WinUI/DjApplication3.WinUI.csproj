@@ -11,12 +11,12 @@
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <Version>2.0.10.1</Version>
     <FileVersion>2.0.10.1</FileVersion>
-    <WebView2PackageVersion>1.0.3967.48</WebView2PackageVersion>
+    <WebView2PackageVersion>1.0.4078.44</WebView2PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="$(WebView2PackageVersion)" />
     <PackageReference Include="WinUI.TableView" Version="1.4.1" />
   </ItemGroup>
 
