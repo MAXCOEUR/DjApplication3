@@ -138,6 +138,10 @@ namespace DjApplication3.WinUI.Views
             {
                 UpdateMusicLoadingUi();
             }
+            else if (e.PropertyName == nameof(MainViewModel.IsYtMusicConnected))
+            {
+                UpdateYtMusicButton();
+            }
         }
     }
 }

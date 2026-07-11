@@ -1,3 +1,4 @@
+using DjApplication3.DataSource;
 using DjApplication3.Infrastructure;
 using DjApplication3.model;
 using System;
@@ -258,6 +259,11 @@ namespace DjApplication3.WinUI.ViewModels
             {
                 Status = "Chargement annulé";
             }
+            catch (NotConnectedException ex)
+            {
+                ClearYtMusicConnection();
+                ReportError(ex.Message, ex, "Load Youtube Music playlists");
+            }
             catch (Exception ex)
             {
                 ReportError(ex.Message, ex, "Load Youtube Music playlists");
@@ -497,6 +503,12 @@ namespace DjApplication3.WinUI.ViewModels
                 IsLibraryLoading = false;
                 LibraryLoadingText = "Chargement...";
             }
+        }
+
+        private void ClearYtMusicConnection()
+        {
+            YtMusicDataSource.removeConnect();
+            OnPropertyChanged(nameof(IsYtMusicConnected));
         }
     }
 }
