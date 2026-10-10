@@ -42,6 +42,9 @@ foreach ($file in $requiredFiles) {
 }
 
 $isccCandidates = @(
+    "${env:ProgramFiles(x86)}\Inno Setup 7\ISCC.exe",
+    "${env:ProgramFiles}\Inno Setup 7\ISCC.exe",
+    "${env:LOCALAPPDATA}\Programs\Inno Setup 7\ISCC.exe",
     "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
     "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
 )
@@ -49,7 +52,7 @@ $isccCandidates = @(
 $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $iscc) {
-    throw "Inno Setup 6 est introuvable. Installe Inno Setup, puis relance ce script."
+    throw "Inno Setup 7 ou 6 est introuvable. Installe Inno Setup, puis relance ce script."
 }
 
 & $iscc $issPath
