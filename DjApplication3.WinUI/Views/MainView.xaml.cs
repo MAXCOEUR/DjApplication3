@@ -80,13 +80,16 @@ namespace DjApplication3.WinUI.Views
         {
             try
             {
+                AppLogger.Info("Startup: MainView loaded");
                 await ViewModel.InitializeAsync();
+                AppLogger.Info("Startup: applying main view state");
                 ApplySavedDeckAreaWidth();
                 PopulateSettings();
                 UpdateSettingsVisibility();
                 UpdateLibraryModeVisibility();
                 UpdateMusicLoadingUi();
                 UpdateYtMusicButton();
+                AppLogger.Info("Startup: MainView initialization complete");
             }
             catch (System.Exception ex)
             {

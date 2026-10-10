@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DjApplication3.repository
@@ -53,30 +54,33 @@ namespace DjApplication3.repository
             YoutubeDataSource dataSource = new YoutubeDataSource();
             return await dataSource.search(search);
         }
-        public async Task<List<Musique>> GetMusiqueYtMusic(string search)
+        public async Task<List<Musique>> GetMusiqueYtMusic(string search, CancellationToken cancellationToken = default)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
-            return await dataSource.search(search);
+            return await dataSource.search(search, cancellationToken);
         }
-        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(string idPlayliste, IProgress<List<Musique>>? progress = null)
+        public async Task<List<Musique>> GetMusiqueInPlayListeYtMusic(
+            string idPlayliste,
+            IProgress<List<Musique>>? progress = null,
+            CancellationToken cancellationToken = default)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
 
-            return await dataSource.getMusiqueInPlayListe(idPlayliste, progress);
+            return await dataSource.getMusiqueInPlayListe(idPlayliste, progress, cancellationToken);
         }
-        public async Task<List<Musique>> GetMusiqueLikeYtMusic()
+        public async Task<List<Musique>> GetMusiqueLikeYtMusic(CancellationToken cancellationToken = default)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
-            return await dataSource.getMusiqueLike();
+            return await dataSource.getMusiqueLike(cancellationToken);
         }
 
 
 
 
-        public async Task<List<PlayListe>> GetPlayListeYtMusic()
+        public async Task<List<PlayListe>> GetPlayListeYtMusic(CancellationToken cancellationToken = default)
         {
             YtMusicDataSource dataSource = new YtMusicDataSource();
-            return await dataSource.getPlayListe();
+            return await dataSource.getPlayListe(cancellationToken);
         }
 
 

@@ -188,9 +188,33 @@ namespace DjApplication3.DataSource
 
                 length = (int)(length / channels) * channels;
 
+                reader.Position = (long)start * bytesPerSample;
                 ISampleProvider sampleReader = reader.ToSampleProvider();
                 float[] samples = new float[length];
-                sampleReader.Read(samples, start, length);
+                int samplesRead = 0;
+                while (samplesRead < samples.Length)
+                {
+                    int read = sampleReader.Read(samples.AsSpan(samplesRead));
+                    if (read == 0)
+                    {
+                        break;
+                    }
+
+                    samplesRead += read;
+                }
+
+                samplesRead -= samplesRead % channels;
+                if (samplesRead == 0)
+                {
+                    groups = Array.Empty<BPMGroup>();
+                    return;
+                }
+
+                if (samplesRead != samples.Length)
+                {
+                    Array.Resize(ref samples, samplesRead);
+                    length = samplesRead;
+                }
 
                 for (int ch = 0; ch < channels; ++ch)
                 {

@@ -1,6 +1,7 @@
 using DjApplication3.model;
 using DjApplication3.repository;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DjApplication3.Services
@@ -13,14 +14,20 @@ namespace DjApplication3.Services
 
         public Task<List<Musique>> SearchYoutubeAsync(string search) => _repository.GetMusiqueYoutube(search);
 
-        public Task<List<Musique>> SearchYtMusicAsync(string search) => _repository.GetMusiqueYtMusic(search);
+        public Task<List<Musique>> SearchYtMusicAsync(string search, CancellationToken cancellationToken = default)
+            => _repository.GetMusiqueYtMusic(search, cancellationToken);
 
-        public Task<List<PlayListe>> GetYtMusicPlaylistsAsync() => _repository.GetPlayListeYtMusic();
+        public Task<List<PlayListe>> GetYtMusicPlaylistsAsync(CancellationToken cancellationToken = default)
+            => _repository.GetPlayListeYtMusic(cancellationToken);
 
-        public Task<List<Musique>> GetYtMusicLikedTracksAsync() => _repository.GetMusiqueLikeYtMusic();
+        public Task<List<Musique>> GetYtMusicLikedTracksAsync(CancellationToken cancellationToken = default)
+            => _repository.GetMusiqueLikeYtMusic(cancellationToken);
 
-        public Task<List<Musique>> GetYtMusicPlaylistTracksAsync(string playlistId, IProgress<List<Musique>>? progress = null)
-            => _repository.GetMusiqueInPlayListeYtMusic(playlistId, progress);
+        public Task<List<Musique>> GetYtMusicPlaylistTracksAsync(
+            string playlistId,
+            IProgress<List<Musique>>? progress = null,
+            CancellationToken cancellationToken = default)
+            => _repository.GetMusiqueInPlayListeYtMusic(playlistId, progress, cancellationToken);
 
         public Task<Musique> DownloadYoutubeAsync(Musique musique) => _repository.DownloadMusiqueYoutube(musique);
 

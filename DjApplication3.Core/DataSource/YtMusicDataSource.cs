@@ -2,21 +2,16 @@
 using DjApplication3.outils;
 using DjApplication3.Infrastructure;
 using NAudio.Wave;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.Media.Protection.PlayReady;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 
@@ -30,16 +25,18 @@ namespace DjApplication3.DataSource
 
     public class CookieModel
     {
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public string Path { get; set; }
-        public string Domain { get; set; }
+        public string Name { get; set; } = "";
+        public string Value { get; set; } = "";
+        public string Path { get; set; } = "/";
+        public string Domain { get; set; } = "";
     }
 
     public class YtMusicDataSource
     {
         private readonly YoutubeClient _youtube = new YoutubeClient();
         private readonly YouTubeMusicClient _ytMusicClient;
+        private readonly YtMusicCookieSession? _session;
+        private readonly YtMusicInnertubeClient _innertubeClient;
         private const string baseUrl = "https://music.youtube.com/watch?v=";
 
         // Fichier pour stocker tes cookies/session
@@ -50,153 +47,226 @@ namespace DjApplication3.DataSource
 
         public YtMusicDataSource()
         {
-            List<Cookie> cookieList = new List<Cookie>();
-
-            if (isConnected())
-            {
-                try
-                {
-                    string jsonString = File.ReadAllText(sessionFile);
-                    var loadedCookies = JsonSerializer.Deserialize<List<CookieModel>>(jsonString);
-
-                    if (loadedCookies != null)
-                    {
-                        foreach (var c in loadedCookies)
-                        {
-                            if (string.IsNullOrWhiteSpace(c.Name)
-                                || string.IsNullOrWhiteSpace(c.Value)
-                                || string.IsNullOrWhiteSpace(c.Path)
-                                || string.IsNullOrWhiteSpace(c.Domain))
-                            {
-                                continue;
-                            }
-
-                            cookieList.Add(new Cookie(c.Name, c.Value, c.Path, c.Domain));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Warning(ex, "Youtube Music cookie load failed");
-                    Console.WriteLine("Erreur de chargement des cookies : " + ex.Message);
-                }
-            }
-
-            _ytMusicClient = new YouTubeMusicClient(cookies: cookieList.Any() ? cookieList : null);
+            YtMusicCookieSession.TryLoad(sessionFile, out _session);
+            var cookies = _session?.ToSystemNetCookies();
+            _ytMusicClient = new YouTubeMusicClient(cookies: cookies is { Count: > 0 } ? cookies : null);
+            _innertubeClient = new YtMusicInnertubeClient(_session);
         }
 
-        public async Task<List<Musique>> search(string search)
+        public async Task<List<Musique>> search(string search, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(search)) search = "musique";
-
-            // 1. On spécifie qu'on veut uniquement des CHANSONS (SearchCategory.Songs)
-            // Cela retourne un énumérateur asynchrone paginé
-            PaginatedAsyncEnumerable<SearchResult> searchResults = _ytMusicClient.SearchAsync(search, SearchCategory.Songs);
-
-            // 2. On récupère les 30 premiers résultats (tu peux ajuster le nombre)
-            IReadOnlyList<SearchResult> bufferedResults = await searchResults.FetchItemsAsync(0, 50);
-
-            List<Musique> musiques = new List<Musique>();
-
-            // 3. On cast en SongSearchResult pour accéder aux propriétés spécifiques comme .Artists ou .Album
-            foreach (var item in bufferedResults.Cast<SongSearchResult>())
+            Exception? packageFailure = null;
+            try
             {
-                // Construction de la chaîne des artistes (ex: "Daft Punk | Pharrell Williams")
-                string authors = string.Join(" | ", item.Artists.Select(a => a.Name));
-
-                musiques.Add(new Musique(
-                    baseUrl + item.Id,
-                    CleanFileName(item.Name),
-                    CleanFileName(string.IsNullOrWhiteSpace(authors) ? "Artiste Inconnu" : authors)
-                ));
+                PaginatedAsyncEnumerable<SearchResult> searchResults =
+                    _ytMusicClient.SearchAsync(search, SearchCategory.Songs);
+                IReadOnlyList<SearchResult> bufferedResults = await searchResults.FetchItemsAsync(0, 50, cancellationToken);
+                var packageResults = bufferedResults
+                    .OfType<SongSearchResult>()
+                    .Select(item => new Musique(
+                        baseUrl + item.Id,
+                        CleanFileName(item.Name),
+                        CleanFileName(FormatArtists(item.Artists.Select(artist => artist.Name)))))
+                    .ToList();
+                if (packageResults.Count > 0)
+                {
+                    return packageResults;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                packageFailure = ex;
+                AppLogger.Warning(ex, "YouTubeMusicAPI search failed; using Innertube fallback");
             }
 
-            return musiques;
+            try
+            {
+                return (await _innertubeClient.SearchSongsAsync(search, cancellationToken))
+                    .Select(ToMusic)
+                    .ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception fallbackFailure) when (packageFailure is not null)
+            {
+                throw new InvalidOperationException(
+                    "La recherche Youtube Music a échoué avec les deux moteurs.",
+                    new AggregateException(packageFailure, fallbackFailure));
+            }
         }
 
-        public async Task<List<Musique>> getMusiqueInPlayListe(string idPlayliste, IProgress<List<Musique>>? progress = null)
+        public async Task<List<Musique>> getMusiqueInPlayListe(
+            string idPlayliste,
+            IProgress<List<Musique>>? progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(idPlayliste)) throw new Exception("Aucune playlist sélectionnée");
-
-            string browseId = _ytMusicClient.GetCommunityPlaylistBrowseId(idPlayliste);
-            var playlistSongsEnum = _ytMusicClient.GetCommunityPlaylistSongsAsync(browseId);
-
-            List<Musique> allMusiques = new List<Musique>();
-            int offset = 0;
-            int limit = 100;
-            bool hasMore = true;
-
-            while (hasMore)
+            EnsureConnected();
+            Exception? innertubeFailure = null;
+            try
             {
-                // On récupère un paquet de 100
-                var bufferedSongs = await playlistSongsEnum.FetchItemsAsync(offset, limit);
+                var result = (await _innertubeClient.GetPlaylistSongsAsync(
+                    idPlayliste,
+                    cancellationToken: cancellationToken))
+                    .Select(ToMusic)
+                    .ToList();
+                progress?.Report(result);
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                innertubeFailure = ex;
+                AppLogger.Warning(ex, "Innertube playlist load failed; using YouTubeMusicAPI fallback");
+            }
 
-                if (bufferedSongs.Count == 0)
+            try
+            {
+                string browseId = _ytMusicClient.GetCommunityPlaylistBrowseId(idPlayliste);
+                var playlistSongs = _ytMusicClient.GetCommunityPlaylistSongsAsync(browseId);
+                var allSongs = new List<Musique>();
+                var seenIds = new HashSet<string>(StringComparer.Ordinal);
+                const int limit = 100;
+
+                for (var offset = 0; ; offset += limit)
                 {
-                    hasMore = false;
-                    break;
+                    var bufferedSongs = await playlistSongs.FetchItemsAsync(offset, limit, cancellationToken);
+                    var batch = bufferedSongs
+                        .Where(song => seenIds.Add(song.Id))
+                        .Select(song => new Musique(
+                            baseUrl + song.Id,
+                            CleanFileName(song.Name),
+                            CleanFileName(FormatArtists(song.Artists.Select(artist => artist.Name)))))
+                        .ToList();
+                    allSongs.AddRange(batch);
+                    if (batch.Count > 0)
+                    {
+                        progress?.Report(batch);
+                    }
+
+                    if (bufferedSongs.Count < limit)
+                    {
+                        return allSongs;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception packageFailure)
+            {
+                if (innertubeFailure is YtMusicAuthenticationException authenticationFailure
+                    && IsAuthenticationFailure(packageFailure))
+                {
+                    throw new NotConnectedException(authenticationFailure.Message);
                 }
 
-                // Conversion en tes objets Musique
-                var currentBatch = bufferedSongs.Select(t => new Musique(
-                    baseUrl + t.Id,
-                    CleanFileName(t.Name),
-                    CleanFileName(string.Join(", ", t.Artists.Select(a => a.Name)) ?? "Artiste Inconnu")
-                )).ToList();
-
-                allMusiques.AddRange(currentBatch);
-
-                // --- C'est ici que la magie opère ---
-                // On notifie l'UI qu'on a un nouveau paquet de musiques
-                progress?.Report(currentBatch);
-
-                // Si on a reçu moins que la limite, c'est qu'on est à la fin
-                if (bufferedSongs.Count < limit)
-                    hasMore = false;
-                else
-                    offset += limit;
+                throw new InvalidOperationException(
+                    "Le chargement de la playlist YouTube Music a échoué avec les deux moteurs.",
+                    new AggregateException(innertubeFailure!, packageFailure));
             }
-
-            return allMusiques;
-        }
-        public async Task<List<Musique>> getMusiqueLike()
-        {
-            var songs = await _ytMusicClient.GetLibrarySongsAsync();
-
-            return songs.Select(t => new Musique(
-                baseUrl + t.Id, // t.Id est le videoId pour le lien
-                CleanFileName(t.Name),
-                CleanFileName(string.Join(", ", t.Artists.Select(a => a.Name)) ?? "Artiste Inconnu")
-            )).ToList();
         }
 
-        public async Task<List<PlayListe>> getPlayListe()
+        public async Task<List<Musique>> getMusiqueLike(CancellationToken cancellationToken = default)
         {
-            if (!isConnected())
-                throw new NotConnectedException("Vous n'êtes pas connecté !");
-
-            // Récupère les playlists de la bibliothèque de l'utilisateur
-            var myPlaylists = await _ytMusicClient.GetLibraryCommunityPlaylistsAsync();
-            IEnumerable<LibraryAlbum> albums = await _ytMusicClient.GetLibraryAlbumsAsync();
-
-            var res = myPlaylists.Select(p => new PlayListe(
-                p.Id,
-                CleanFileName(p.Name)
-            )).ToList();
-
-            var res2 = albums.Select(p => new PlayListe(
-                p.Id,
-                CleanFileName(p.Name)
-            )).ToList();
-            res.AddRange(res2);
-
-            if (res.Count == 0)
+            EnsureConnected();
+            Exception? innertubeFailure = null;
+            try
             {
-                throw new NotConnectedException(
-                    "Aucune playlist Youtube Music reçue. La session existe, mais elle est probablement expirée ou incomplète. Déconnecte puis reconnecte Youtube Music.");
+                return (await _innertubeClient.GetLikedSongsAsync(cancellationToken)).Select(ToMusic).ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                innertubeFailure = ex;
+                AppLogger.Warning(ex, "Innertube liked songs failed; using YouTubeMusicAPI fallback");
             }
 
-            return res;
+            try
+            {
+                var songs = await _ytMusicClient.GetLibrarySongsAsync(cancellationToken);
+                return songs.Select(song => new Musique(
+                    baseUrl + song.Id,
+                    CleanFileName(song.Name),
+                    CleanFileName(FormatArtists(song.Artists.Select(artist => artist.Name)))))
+                    .ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception packageFailure)
+            {
+                if (innertubeFailure is YtMusicAuthenticationException authenticationFailure
+                    && IsAuthenticationFailure(packageFailure))
+                {
+                    throw new NotConnectedException(authenticationFailure.Message);
+                }
+
+                throw new InvalidOperationException(
+                    "Le chargement des favoris YouTube Music a échoué avec les deux moteurs.",
+                    new AggregateException(innertubeFailure!, packageFailure));
+            }
+        }
+
+        public async Task<List<PlayListe>> getPlayListe(CancellationToken cancellationToken = default)
+        {
+            EnsureConnected();
+            Exception? innertubeFailure = null;
+            try
+            {
+                return (await _innertubeClient.GetPlaylistsAsync(cancellationToken))
+                    .Select(playlist => new PlayListe(playlist.Id, CleanFileName(playlist.Name)))
+                    .ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                innertubeFailure = ex;
+                AppLogger.Warning(ex, "Innertube playlists failed; using YouTubeMusicAPI fallback");
+            }
+
+            try
+            {
+                var playlists = await _ytMusicClient.GetLibraryCommunityPlaylistsAsync(cancellationToken);
+                return playlists.Select(playlist => new PlayListe(
+                    playlist.Id,
+                    CleanFileName(playlist.Name)))
+                    .ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception packageFailure)
+            {
+                if (innertubeFailure is YtMusicAuthenticationException authenticationFailure
+                    && IsAuthenticationFailure(packageFailure))
+                {
+                    throw new NotConnectedException(authenticationFailure.Message);
+                }
+
+                throw new InvalidOperationException(
+                    "Le chargement des playlists YouTube Music a échoué avec les deux moteurs.",
+                    new AggregateException(innertubeFailure!, packageFailure));
+            }
         }
         
 
@@ -260,11 +330,7 @@ namespace DjApplication3.DataSource
             }
             catch (Exception ex)
             {
-                AppLogger.Warning(ex, "Youtube Music connection check failed");
-                if (!isConnected())
-                {
-                    throw new NotConnectedException("Vous n'êtes pas connecté !");
-                }
+                AppLogger.Warning(ex, "YoutubeExplode download failed; using yt-dlp fallback");
 
                 if (lienMusiqueTmp != "")
                 {
@@ -539,32 +605,48 @@ namespace DjApplication3.DataSource
             return cleanedFileName;
         }
 
-        public static bool isConnected()
+        private Musique ToMusic(YtMusicSongItem song)
+            => new(
+                baseUrl + song.Id,
+                CleanFileName(song.Title),
+                CleanFileName(string.IsNullOrWhiteSpace(song.Artists) ? "Artiste Inconnu" : song.Artists));
+
+        private static string FormatArtists(IEnumerable<string> artists)
         {
-            if (!File.Exists(sessionFile)
-                || new FileInfo(sessionFile).Length == 0
-                || !File.Exists(ytdlpCookieFile)
-                || new FileInfo(ytdlpCookieFile).Length == 0)
+            var value = string.Join(", ", artists.Where(artist => !string.IsNullOrWhiteSpace(artist)));
+            return string.IsNullOrWhiteSpace(value) ? "Artiste Inconnu" : value;
+        }
+
+        private static bool IsAuthenticationFailure(Exception exception)
+        {
+            if (exception is HttpRequestException
+                {
+                    StatusCode: System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden
+                })
             {
-                return false;
+                return true;
             }
 
+            return exception.Message.Contains("unauthorized", StringComparison.OrdinalIgnoreCase)
+                || exception.Message.Contains("forbidden", StringComparison.OrdinalIgnoreCase)
+                || exception.Message.Contains("sign in", StringComparison.OrdinalIgnoreCase)
+                || exception.Message.Contains("se connecter", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void EnsureConnected()
+        {
+            if (_session is null)
+            {
+                throw new NotConnectedException(
+                    "Aucune session Youtube Music valide. Connecte ton compte depuis les options.");
+            }
+        }
+
+        public static bool isConnected()
+        {
             try
             {
-                var jsonString = File.ReadAllText(sessionFile);
-                var loadedCookies = JsonSerializer.Deserialize<List<CookieModel>>(jsonString) ?? new List<CookieModel>();
-                var names = loadedCookies
-                    .Select(cookie => cookie.Name)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                var hasSapisid = names.Contains("SAPISID")
-                    || names.Contains("__Secure-1PAPISID")
-                    || names.Contains("__Secure-3PAPISID");
-                var hasSession = names.Contains("SID")
-                    || names.Contains("__Secure-1PSID")
-                    || names.Contains("__Secure-3PSID");
-
-                return hasSapisid && hasSession;
+                return YtMusicCookieSession.TryLoad(sessionFile, out _);
             }
             catch (Exception ex)
             {

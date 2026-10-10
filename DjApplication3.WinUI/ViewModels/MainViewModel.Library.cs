@@ -13,6 +13,7 @@ namespace DjApplication3.WinUI.ViewModels
     {
         public async Task InitializeAsync()
         {
+            AppLogger.Info("Startup: begin view model initialization");
             try
             {
                 TrackCount = _settings.TrackCount;
@@ -22,11 +23,15 @@ namespace DjApplication3.WinUI.ViewModels
                 ReportError($"Périphériques indisponibles: {ex.Message}", ex, "Initialize devices");
             }
 
+            AppLogger.Info("Startup: refreshing local library");
             await RefreshLocalAsync();
+            AppLogger.Info("Startup: local library refreshed");
             _ = RunSafeAsync(UpdateYtDlpAsync(), "Mise a jour yt-dlp impossible");
+            AppLogger.Info("Startup: yt-dlp update started in background");
 
             try
             {
+                AppLogger.Info("Startup: starting MIDI controller");
                 StartMidi();
             }
             catch (Exception ex)
@@ -34,7 +39,9 @@ namespace DjApplication3.WinUI.ViewModels
                 ReportError($"MIDI indisponible: {ex.Message}", ex, "Start MIDI during initialization");
             }
 
+            AppLogger.Info("Startup: starting MIDI auto detection");
             StartMidiAutoDetection();
+            AppLogger.Info("Startup: view model initialization complete");
         }
 
         public async Task SearchAsync(CancellationToken cancellationToken = default)
@@ -56,7 +63,7 @@ namespace DjApplication3.WinUI.ViewModels
                 else if (SelectedSource == "Youtube Music")
                 {
                     CurrentPlaylistName = "";
-                    foreach (var musique in await _library.SearchYtMusicAsync(SearchText))
+                    foreach (var musique in await _library.SearchYtMusicAsync(SearchText, cancellationToken))
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         Musics.Add(CreateInternetRow(musique));
@@ -246,7 +253,7 @@ namespace DjApplication3.WinUI.ViewModels
                 Playlists.Clear();
                 Playlists.Add(new PlaylistRowViewModel(new PlayListe(LikedTracksPlaylistId, "Titres likés")));
 
-                foreach (var playlist in await _library.GetYtMusicPlaylistsAsync())
+                foreach (var playlist in await _library.GetYtMusicPlaylistsAsync(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     Playlists.Add(new PlaylistRowViewModel(playlist));
@@ -261,7 +268,6 @@ namespace DjApplication3.WinUI.ViewModels
             }
             catch (NotConnectedException ex)
             {
-                ClearYtMusicConnection();
                 ReportError(ex.Message, ex, "Load Youtube Music playlists");
             }
             catch (Exception ex)
@@ -283,7 +289,7 @@ namespace DjApplication3.WinUI.ViewModels
                 Musics.Clear();
                 CurrentPlaylistName = playlist.name;
                 var all = playlist.id == LikedTracksPlaylistId
-                    ? await _library.GetYtMusicLikedTracksAsync()
+                    ? await _library.GetYtMusicLikedTracksAsync(cancellationToken)
                     : await _library.GetYtMusicPlaylistTracksAsync(playlist.id, new Progress<System.Collections.Generic.List<Musique>>(batch =>
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -301,7 +307,7 @@ namespace DjApplication3.WinUI.ViewModels
                         musique.musiquesInPlayliste = batch;
                         Musics.Add(CreateInternetRow(musique));
                     }
-                }));
+                }), cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -505,10 +511,5 @@ namespace DjApplication3.WinUI.ViewModels
             }
         }
 
-        private void ClearYtMusicConnection()
-        {
-            YtMusicDataSource.removeConnect();
-            OnPropertyChanged(nameof(IsYtMusicConnected));
-        }
     }
 }

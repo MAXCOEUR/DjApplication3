@@ -549,27 +549,34 @@
                     <TextBlock Text="Paramètres" FontSize="22" FontWeight="SemiBold" />
                     <Button Content="Fermer" HorizontalAlignment="Right" Click="CloseSettingsButton_Click" />
                 </Grid>
-                <StackPanel Grid.Row="1" Spacing="16" Margin="0,20,0,0">
-                    <TextBlock Text="Sortie audio standard" />
-                    <ComboBox x:Name="AudioOutputCombo" SelectionChanged="AudioOutputCombo_SelectionChanged" />
-                    <TextBlock Text="Sortie audio casque" />
-                    <ComboBox x:Name="HeadphoneOutputCombo" SelectionChanged="HeadphoneOutputCombo_SelectionChanged" />
-                    <TextBlock Text="Appareil MIDI" />
-                    <ComboBox x:Name="MidiCombo" SelectionChanged="MidiCombo_SelectionChanged" />
-                    <Button
-                        x:Name="ResetPlayedMusicButton"
-                        Content="Reset musiques lues"
-                        Click="ResetPlayedMusicButton_Click" />
-                    <Button x:Name="YtMusicButton" Content="Connexion Youtube Music" Click="YtMusicButton_Click" />
-                    <Grid x:Name="LoginPanel" Visibility="Collapsed" Height="420">
+                <Grid Grid.Row="1" Margin="0,20,0,0">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Sortie audio standard" />
+                        <ComboBox x:Name="AudioOutputCombo" SelectionChanged="AudioOutputCombo_SelectionChanged" />
+                        <TextBlock Text="Sortie audio casque" />
+                        <ComboBox x:Name="HeadphoneOutputCombo" SelectionChanged="HeadphoneOutputCombo_SelectionChanged" />
+                        <TextBlock Text="Appareil MIDI" />
+                        <ComboBox x:Name="MidiCombo" SelectionChanged="MidiCombo_SelectionChanged" />
+                        <Button
+                            x:Name="ResetPlayedMusicButton"
+                            Content="Reset musiques lues"
+                            Click="ResetPlayedMusicButton_Click" />
+                        <Button x:Name="YtMusicButton" Content="Connexion Youtube Music" Click="YtMusicButton_Click" />
+                    </StackPanel>
+                    <Grid x:Name="LoginPanel" Visibility="Collapsed" Background="#202427">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="44" />
                         </Grid.RowDefinitions>
                         <Grid x:Name="LoginWebViewHost" />
-                        <Button Grid.Row="1" Content="Continuer après connexion" Click="ContinueYtMusicButton_Click" />
+                        <Button
+                            x:Name="ContinueYtMusicButton"
+                            Grid.Row="1"
+                            Content="Continuer après connexion"
+                            IsEnabled="False"
+                            Click="ContinueYtMusicButton_Click" />
                     </Grid>
-                </StackPanel>
+                </Grid>
             </Grid>
         </Border>
 

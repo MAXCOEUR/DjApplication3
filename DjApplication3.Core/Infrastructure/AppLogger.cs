@@ -22,6 +22,18 @@ namespace DjApplication3.Infrastructure
         {
             var entry = BuildEntry(level, context, exception);
 
+            Debug.WriteLine(entry);
+#if DEBUG
+            try
+            {
+                Console.Write(entry);
+            }
+            catch
+            {
+                // The application can run without an attached console.
+            }
+#endif
+
             try
             {
                 AppPaths.EnsureRuntimeDirectories();

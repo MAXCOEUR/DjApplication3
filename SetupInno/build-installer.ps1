@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $projectPath = Join-Path $repoRoot "DjApplication3.WinUI\DjApplication3.WinUI.csproj"
 $issPath = Join-Path $PSScriptRoot "DjApplication3.iss"
-$publishPath = Join-Path $repoRoot "DjApplication3.WinUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+$publishPath = Join-Path $repoRoot "DjApplication3.WinUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"
 $repoFullPath = [System.IO.Path]::GetFullPath($repoRoot)
 $publishFullPath = [System.IO.Path]::GetFullPath($publishPath)
 

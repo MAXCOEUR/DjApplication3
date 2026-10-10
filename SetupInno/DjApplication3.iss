@@ -3,7 +3,7 @@
 #define MyAppPublisher "MaxenceCOEUR"
 #define MyAppExeName "DjApplication3.WinUI.exe"
 #define RepoRoot AddBackslash(SourcePath) + "..\"
-#define PublishDir RepoRoot + "DjApplication3.WinUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+#define PublishDir RepoRoot + "DjApplication3.WinUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"
 
 #if !FileExists(PublishDir + "\DjApplication3.WinUI.exe") || !FileExists(PublishDir + "\App.xbf") || !FileExists(PublishDir + "\DjApplication3.WinUI.pri")
   #error "Publish incomplet. Lance d'abord SetupInno\build-installer.ps1 pour generer le publish et compiler ce setup."
